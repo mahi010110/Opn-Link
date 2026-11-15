@@ -1,20 +1,24 @@
-# Les recherches
+# Recherches
 
-*Faites pendant la discussion des 12 au 15 novembre 2026, et copiées ici
-telles quelles depuis le dépôt `Opn...` (branche
-`claude/sweet-hypatia-p4qlsl`), pour que tout le projet vive au même
-endroit.*
+Faites pendant la discussion du 12 au 15 novembre 2026, et copiées sans
+changement depuis le dépôt `Opn...` (branche `claude/sweet-hypatia-p4qlsl`).
 
-| Fichier | Ce qu'on y trouve | À savoir |
-|---|---|---|
-| [`emargement/rapport.md`](emargement/rapport.md) | Le rapport : une app d'émargement et de documents signés sans serveur, est-ce que ça tient ? | Écrit quand le projet était encore une app d'émargement payante : **le volet argent (prix, licence, marché) ne compte plus**. Le reste vaut toujours, surtout pour la version 2 (l'émargement). |
-| [`emargement/notes/`](emargement/notes/) | Les notes brutes : réglementation, concurrents, douleurs des utilisateurs, marché, périmètre | Les plus utiles aujourd'hui : `reglementation.md` et `douleurs_et_local_first.md` |
-| [`ecosysteme/identite_et_multijoueur.md`](ecosysteme/identite_et_multijoueur.md) | Une note de la recherche sur le lab IA | Pour opn-link, deux parties comptent : §6 (une même identité entre les apps, les badges de compétences, les mineurs) et §8 (le lien avec « l'app école ») |
+- [emargement/rapport.md](emargement/rapport.md) : est-ce qu'une app
+  d'émargement et de documents signés sans serveur tient la route ? Il a été
+  écrit quand le projet était encore une app d'émargement payante, donc tout
+  ce qui parle d'argent (prix, licences, marché) ne compte plus. Le reste sert
+  surtout pour la version 2.
+- [emargement/notes/](emargement/notes/) : les notes de ce rapport
+  (réglementation, concurrents, attentes des utilisateurs, marché,
+  périmètre). Les plus utiles aujourd'hui sont `reglementation.md` et
+  `douleurs_et_local_first.md`.
+- [ecosysteme/identite_et_multijoueur.md](ecosysteme/identite_et_multijoueur.md) :
+  une note de la recherche sur le lab IA. Pour Opn-Link, seules les parties 6
+  (une même identité entre les apps, les badges, les mineurs) et 8 (le lien
+  avec « l'app école ») comptent.
 
-**Attention** : le rapport déconseille la messagerie (un chat façon
-Discord). opn-link l'a gardée quand même, et en a fait le cœur de son MVP :
-c'est un choix du mainteneur, pas un oubli (voir
-[`../carnet.md`](../carnet.md), 15 novembre 2026).
+Le rapport déconseille la messagerie. Opn-Link la garde quand même, c'est un
+choix du mainteneur (voir [../carnet.md](../carnet.md), 15 novembre 2026).
 
-Ce que ces recherches disent pour opn-link est résumé dans
-[`../projet.md`](../projet.md), §7.
+Ce que ces recherches changent pour Opn-Link est résumé dans
+[../projet.md](../projet.md), partie 7.

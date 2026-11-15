@@ -1,108 +1,53 @@
-# Les questions ouvertes
+# Questions ouvertes
 
-*Ce qui reste à décider. Chaque question a une recommandation, mais c'est
-le mainteneur qui tranche. Une question tranchée part dans
-[`carnet.md`](carnet.md), avec sa date, et sa réponse rejoint
-[`projet.md`](projet.md) ou [`architecture.md`](architecture.md).*
+Ce qui reste à décider. Chaque question a une recommandation, mais c'est le
+mainteneur qui tranche. Une fois tranchée, la question part d'ici : la
+décision est notée dans [carnet.md](carnet.md) avec sa date, et reportée dans
+[projet.md](projet.md) ou [architecture.md](architecture.md).
 
----
+## Le produit
 
-## Le produit — à trancher avant les maquettes
+### Qui prend la place du chef quand il s'en va ?
 
-### 1. Qui crée la classe ?
+Un prof ou l'école peut créer une classe, et celui qui la crée en est le
+chef. Mais un prof peut changer d'école, ou l'école peut vouloir reprendre
+une classe créée par un prof. Dans OpenContact, le chef d'un groupe ne peut
+pas être remplacé.
 
-La fiche dit deux choses à la fois : « un prof volontaire peut commencer
-sans attendre l'école » et « l'école est responsable, les profs adjoints ».
-Si c'est le prof qui démarre, l'école n'est pas encore là pour être cheffe.
+Recommandation : le chef peut passer la main à un autre responsable, par un
+geste signé. Sa clé est sauvée par la phrase de secours, comme dans
+OpenContact, pour qu'un téléphone perdu ne bloque pas la classe.
 
-**Recommandation** : le prof crée la classe et en est le chef. L'école la
-rejoint ensuite comme responsable, quand elle le veut. C'est ce qui permet
-de partir de la base.
+## La technique, à trancher au début du code
 
-### 2. Pour qui d'abord ?
+### Quelle clé d'identité commune aux trois apps ?
 
-Les centres de formation et le post-bac, ou aussi le collège et le lycée ?
+La recherche propose une même identité pour OpenContact, le lab IA et
+Opn-Link, sous la forme d'une clé Nostr. Mais OpenContact utilise déjà P-256
+pour sa boîte aux lettres, Ed25519 pour ses appareils et secp256k1 pour
+Nostr. Changer plus tard coûterait une migration.
 
-**Recommandation** : commencer par les centres de formation et le post-bac.
-Avant 15 ans, il faut l'accord des parents, et c'est là que les règles sur
-les données sont les plus lourdes.
+Recommandation : trancher avec un petit prototype, au tout début du code, en
+restant compatible avec la boîte aux lettres d'OpenContact.
 
-### 3. Le lien avec OpenContact est-il dans le MVP ?
+### Comment Opn-Link récupère-t-il le style d'OpenContact ?
 
-Il demande aussi de modifier OpenContact (envoyer le résumé), et c'est une
-exception à sa promesse « ton suivi privé ne sort jamais ».
+Recopié à la main, le style finit par diverger. C'est déjà arrivé au site
+`Opn...`.
 
-**Recommandation** : commencer par le questionnaire, qui marche pour tout
-le monde, et ajouter le lien avec OpenContact juste après.
+Recommandation : un petit script prend le kit dans le dépôt d'OpenContact, à
+une version notée. Quand trois projets s'en serviront, le kit pourra avoir
+son propre dépôt.
 
-### 4. Sur quelles surfaces sort le MVP ?
+## À faire
 
-Le web, l'app pour ordinateur, les deux ? Le téléphone en app de store ?
-
-**Recommandation** : le web et l'app pour ordinateur ensemble, puisque c'est
-le même code. Les élèves passent par le web sur leur téléphone ; le prof
-gagne, avec l'app, les notifications et des données gardées sur son disque.
-Les apps de store pour téléphone viennent plus tard (Apple coûte 99 $ par
-an).
-
-### 5. À quelle adresse vit le web ?
-
-Il faut une autre adresse qu'OpenContact (`mahi010110.github.io`), sinon les
-deux apps partagent le stockage du navigateur.
-
-**Recommandation** : une organisation GitHub, gratuite, qui donne sa propre
-adresse (`<organisation>.github.io/opn-link`). Un nom de domaine coûterait
-une dizaine d'euros par an. OpenContact, lui, reste où il est : changer son
-adresse ferait perdre leurs données à ses utilisateurs.
-
-### 6. Comment le nom s'écrit-il à l'écran ?
-
-« opn-link », « OpnLink », « Opn Link » ? Il en faut une seule, partout :
-l'écran, les fichiers, la doc.
-
-**Recommandation** : « opn-link », le même mot que le dépôt. Rien à
-traduire, rien à retenir en plus.
-
-## La technique — à trancher au début du code
-
-### 7. L'interface : technos web, ou tout en Rust ?
-
-Le cœur est en Rust de toute façon. L'interface peut être en technos web
-(TypeScript, avec ou sans React) ou en Rust aussi (Dioxus, Leptos).
-
-**Recommandation** : technos web et TypeScript. Le web en a besoin de toute
-façon, le kit de style d'OpenContact est du CSS, et ces outils sont mûrs
-(accessibilité, claviers des téléphones). Choisir la même chose que le lab
-IA (React) ferait une seule façon de faire pour les deux projets.
-
-### 8. Quelle clé d'identité commune ?
-
-La recherche propose une même identité pour les trois apps (une clé
-Nostr). Mais OpenContact utilise déjà P-256 pour sa boîte aux lettres,
-Ed25519 pour ses appareils et secp256k1 pour Nostr. Changer plus tard
-coûterait une migration.
-
-**Recommandation** : trancher avec un petit prototype, au tout début du
-code. La contrainte : rester compatible avec la boîte aux lettres
-d'OpenContact.
-
-### 9. Où vit le style ?
-
-Le style d'OpenContact sert à tous les projets. Recopié à la main, il
-divergera (c'est déjà arrivé au site `Opn...`).
-
-**Recommandation** : opn-link prend le kit dans le dépôt d'OpenContact, à
-une version notée, par un petit script, jamais à la main. Plus tard, quand
-trois projets s'en serviront, le kit pourra avoir son propre dépôt.
-
-### 10. Quelle licence ?
-
-**Recommandation** : « MIT OR Apache-2.0 », la double licence de Rust et de
-Tauri. Libre, simple, et compatible avec presque tout.
-
-## À faire (pas des questions)
-
-- Vérifier que le nom est libre : un nom de domaine, l'INPI, GitHub. Des
-  noms proches comme « OpenLink » existent déjà chez d'autres.
-- Trouver une classe et un prof pour tester tôt : le Wi-Fi d'une vraie école
+- Créer l'organisation GitHub `opn-link`. C'est gratuit, et c'est au
+  mainteneur de le faire depuis son compte. Le nom avait l'air libre le
+  15 novembre 2026. L'adresse exacte du site (`opn-link.github.io`, avec ou
+  sans chemin) se réglera au premier déploiement.
+- Vérifier que le nom est libre ailleurs : nom de domaine, INPI. Des noms
+  proches comme « OpenLink » existent déjà.
+- Trouver un prof et une classe pour tester tôt. Le Wi-Fi d'une vraie école
   et la limite des relais publics ne se mesurent que sur place.
+- Ajouter les fichiers de licence (MIT et Apache-2.0) avec le premier commit
+  de code.

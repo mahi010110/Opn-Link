@@ -1,87 +1,113 @@
-# Le carnet d'opn-link
+# Carnet
 
-*Les décisions dans l'ordre où elles ont été prises. Les décisions à jour
-sont dans [`projet.md`](projet.md) et [`architecture.md`](architecture.md) :
-en cas de doute, elles priment sur ce carnet.*
+Les décisions dans l'ordre où elles ont été prises. Si ce carnet ne dit pas
+la même chose que [projet.md](projet.md) ou
+[architecture.md](architecture.md), ce sont eux qui ont raison.
 
----
+## Du 12 au 15 novembre 2026 : l'idée
 
-## 12-15 novembre 2026 — la naissance de l'idée
+Repris du carnet d'une première discussion (dépôt `Opn...`, branche
+`claude/sweet-hypatia-p4qlsl`, fichier `docs/projets/carnet-de-discussion.md`),
+pour la partie qui concerne Opn-Link. Le projet s'appelait alors « projet 1,
+l'espace de vie ».
 
-*Repris du carnet tenu pendant une première discussion (dépôt `Opn...`,
-branche `claude/sweet-hypatia-p4qlsl`, fichier
-`docs/projets/carnet-de-discussion.md`), pour la partie qui concerne
-opn-link. Le projet s'appelait alors « projet 1 — l'espace de vie ».*
-
-- **Évolution de l'idée** : appli d'émargement (« faire l'appel ») + boîte
-  de documents administratifs à signer → pont élève ↔ formation →
-  **espace de vie complet** centre de formation / profs / élèves.
-- **Ce qu'il veut** :
-  - messagerie élève ↔ prof ↔ école ;
-  - suivi de l'avancée de l'élève, surtout sa **recherche de stage ou
-    d'alternance** (pas d'emploi), en **connectant OpenContact** à la
-    nouvelle app ; si l'élève ne veut pas : questions-réponses régulières +
-    preuves envoyées ;
-  - appels et visios ;
-  - documentation façon Classroom : doc de la formation pour tous, doc du
-    prof pour les élèves, doc de l'école pour les profs ;
-  - l'émargement et les documents signés (idée de départ).
-- **Ce qu'on a établi** :
-  - faisable sans serveur avec le moteur d'OpenContact ;
-  - lien OpenContact → école : l'élève scanne le QR de l'école dans
-    OpenContact, choisit ce qu'il partage, OpenContact envoie un résumé
-    chiffré (boîte aux lettres). C'est une exception à la promesse « le
-    suivi privé ne sort jamais » : chiffres seulement, jamais les notes,
-    aperçu avant envoi, révocable, toujours facultatif ;
-  - piège : deux apps sur `mahi010110.github.io` = même stockage du
-    navigateur → adresse séparée ;
-  - limites : pas de notification app fermée (l'appel quotidien fait ouvrir
-    l'app) ; petits fichiers seulement par les relais ; appels à deux
-    possibles mais échecs sans serveur relais ; visio de classe impossible en
-    direct (plus de 4 ou 5 personnes) → lien Jitsi ;
-  - ordre conseillé : messagerie + suivi de recherche → émargement +
-    documents → documentation → appels ;
-  - pitch : « le Pronote des centres de formation, libre et sans serveur » ;
-  - noms proposés : Préau, Liaison, Relais, OpenPromo, Le Fil. À éviter :
-    trop proche d'OpenClassrooms, des Cordées de la réussite, ou de
+- L'idée a évolué : une app d'émargement avec une boîte de documents à
+  signer, puis un pont entre l'élève et sa formation, puis un espace commun
+  au centre de formation, aux profs et aux élèves.
+- Ce que veut le mainteneur :
+  - une messagerie entre élèves, profs et école ;
+  - le suivi de la recherche de stage ou d'alternance de chaque élève (pas
+    d'emploi), en connectant OpenContact, ou par des questions régulières et
+    des preuves si l'élève ne veut pas ;
+  - les appels et les visios ;
+  - une documentation comme sur Classroom : celle de la formation pour tous,
+    celle du prof pour ses élèves, celle de l'école pour les profs ;
+  - l'émargement et les documents signés, l'idée de départ.
+- Ce qui a été établi :
+  - c'est faisable sans serveur avec le moteur d'OpenContact ;
+  - le lien avec OpenContact : l'élève scanne le QR de l'école dans
+    OpenContact, choisit ce qu'il partage, et OpenContact envoie un résumé
+    chiffré par sa boîte aux lettres. C'est une exception à la promesse
+    d'OpenContact (« le suivi privé ne sort jamais ») : des chiffres
+    seulement, jamais les notes, un aperçu avant l'envoi, révocable et
+    facultatif ;
+  - deux apps sur `mahi010110.github.io` partageraient le même stockage du
+    navigateur, il faut une autre adresse ;
+  - les limites : pas de notification quand l'app est fermée (l'appel
+    quotidien fera ouvrir l'app), seuls les petits fichiers passent par les
+    relais, les appels à deux peuvent échouer sans serveur relais, et une
+    visio de classe en direct ne marche pas au-delà de 4 ou 5 personnes (on
+    passera par un lien Jitsi) ;
+  - l'ordre conseillé : messagerie et suivi de recherche, puis émargement et
+    documents, puis documentation, puis appels ;
+  - la phrase pour le présenter : « le Pronote des centres de formation,
+    libre et sans serveur » ;
+  - les noms proposés : Préau, Liaison, Relais, OpenPromo, Le Fil. À éviter :
+    trop proche d'OpenClassrooms, des Cordées de la réussite ou de
     « campus ».
-- **La recherche sur l'émargement** (`recherche/emargement/rapport.md`). À
-  retenir, le volet argent ne comptant plus :
-  - aucune règle n'impose de serveur pour l'émargement (sauf le DPC santé ;
-    l'Île-de-France et l'Auvergne-Rhône-Alpes imposent SoWeSign) ;
+- La recherche sur l'émargement
+  ([recherche/emargement/rapport.md](recherche/emargement/rapport.md)). Ce
+  qui compte encore, le volet argent mis à part :
+  - aucune règle n'oblige à passer par un serveur, sauf pour le DPC santé.
+    L'Île-de-France et l'Auvergne-Rhône-Alpes imposent SoWeSign ;
   - seule la signature qualifiée est présumée fiable (Cour de cassation,
-    5 mars 2026) → contreseing du formateur, QR tournant, export au modèle
-    du financeur, archive 5 à 10 ans, horodatage qualifié de l'empreinte ;
-  - les applis élèves actuelles sont mal notées (Edusign Android autour de
-    3,8/5, SoWeSign exige Bluetooth et localisation) ;
-  - Qualiopi demande le suivi des absences, les relances, et pour
-    l'alternance le lien avec l'entreprise ; aider à trouver un employeur
-    est une mission légale des CFA.
-- **Le but de tous les projets** : s'amuser, construire des outils utiles
-  et open source, se faire connaître. Pas gagner de l'argent. Pas de budget,
-  pas de serveur à payer.
-- **La priorité, à ce moment-là** : le lab IA d'abord (projet fil rouge de
-  l'examen de juillet 2027), opn-link ensuite.
+    5 mars 2026). D'où le contreseing du formateur, le QR qui change,
+    l'export au modèle du financeur, l'archive de 5 à 10 ans et l'horodatage
+    qualifié de l'empreinte ;
+  - les applis élèves actuelles ont de mauvaises notes (Edusign autour de
+    3,8 sur 5 sur Android, SoWeSign demande le Bluetooth et la
+    localisation) ;
+  - Qualiopi demande le suivi des absences et des relances, et pour
+    l'alternance le lien avec l'entreprise. Aider à trouver un employeur fait
+    partie des missions légales des CFA.
+- Le but de tous les projets : s'amuser, faire des outils utiles et open
+  source, se faire connaître. Pas gagner de l'argent. Pas de budget, pas de
+  serveur à payer.
+- La priorité à ce moment-là : le lab IA d'abord, parce que c'est le projet
+  de l'examen de juillet 2027, et Opn-Link ensuite.
 
-## 15 novembre 2026 — le démarrage
+## 15 novembre 2026 : le démarrage
 
-- La doc des deux projets a été retrouvée sur une branche du dépôt `Opn...`,
-  qui est **public**. Celle d'opn-link est rapatriée ici, dans un dépôt
-  **privé**, sur `main` : plus de branche cachée.
-- **Le nom : opn-link.** Il dit « le lien » entre l'école, les profs et les
-  élèves, et range le projet dans la famille (OpenContact, Opn…). Restent à
-  choisir comment il s'écrit à l'écran, et à vérifier qu'il est libre.
-- **opn-link démarre maintenant**, dans cette discussion (le mainteneur :
-  « avec toi on va commencer opn-link »).
-- **La messagerie reste au cœur du MVP.** Le rapport sur l'émargement
-  déconseillait un chat façon Discord ; le mainteneur la garde quand même
-  (« il fallait quand même avoir la possibilité de discuter »). C'est un
-  choix assumé, pas un oubli.
-- **Une vraie app en Rust, aussi disponible sur le web**, avec une attention
-  à la compatibilité et à l'évolutivité. La proposition d'architecture est
-  dans `architecture.md`, à valider.
-- **Le style d'OpenContact pour tous les projets**, pris à une seule source,
-  pour que les projets ne divergent pas avec le temps.
-- **La méthode** : (1) poser les fondations dans ce dépôt ; (2) trancher les
-  questions ouvertes ; (3) faire les maquettes et les regarder avant de
-  coder ; (4) coder. L'étape 1 est faite ce jour.
+- La doc des deux projets était sur une branche du dépôt `Opn...`, qui est
+  public. Celle d'Opn-Link est copiée ici, dans un dépôt privé, sur `main`.
+- Le mainteneur choisit le nom opn-link. Il dit « le lien », et range le
+  projet avec les autres (OpenContact, Opn…).
+- Opn-Link démarre dans cette discussion. Le mainteneur : « avec toi on va
+  commencer opn-link ».
+- La messagerie reste dans la première version, même si le rapport sur
+  l'émargement déconseillait un chat comme Discord. Le mainteneur : « il
+  fallait quand même avoir la possibilité de discuter ».
+- Le mainteneur demande une app en Rust qui marche aussi sur le web, et de
+  faire attention à la compatibilité et à l'évolutivité. La proposition
+  d'architecture est dans [architecture.md](architecture.md).
+- Tous les projets prennent le style d'OpenContact, à une seule source, pour
+  qu'ils ne divergent pas.
+- La méthode : poser la doc dans ce dépôt, trancher les questions ouvertes,
+  faire les maquettes et les regarder, puis coder.
+- Le mainteneur demande que la doc et le code ne ressemblent pas à ce
+  qu'écrit une IA : pas de tournures bizarres, pas de commentaires partout.
+  La règle est dans `CLAUDE.md`, partie « Comment on écrit ».
+
+### Les décisions du jour
+
+- Création d'une classe : un prof ou l'école peut créer une classe. Celui qui
+  la crée en est le chef.
+- Public : d'abord les centres de formation et le post-bac. Les élèves y ont
+  presque tous 15 ans ou plus, donc l'accord des parents n'est pas
+  nécessaire.
+- Le lien avec OpenContact arrive juste après la première version. La
+  première version a le questionnaire.
+- La première version sort sur le web et en app pour ordinateur. Les apps de
+  store pour téléphone viendront plus tard.
+- Le site est publié par une organisation GitHub, à une autre adresse
+  qu'OpenContact. Son nom : `opn-link`.
+- À l'écran, le nom s'écrit « Opn-Link ».
+- L'interface est en HTML, CSS et TypeScript. Le mainteneur a laissé le
+  choix (« je ne sais pas, à toi de voir »). Les raisons : le site en a
+  besoin de toute façon, le style d'OpenContact est du CSS, et ces outils
+  sont plus mûrs que les interfaces écrites en Rust (Dioxus, Leptos). Avec ou
+  sans React : au prototype.
+- La licence : MIT ou Apache-2.0, comme Rust et Tauri. Le mainteneur avait
+  d'abord demandé « comme OpenContact ? », mais la licence d'OpenContact est
+  propriétaire à source visible, donc pas libre. Il a choisi la licence
+  libre, qui permet aussi de signer gratuitement l'app Windows.

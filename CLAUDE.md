@@ -1,66 +1,98 @@
-# opn-link — à lire avant tout
+# Opn-Link
 
-Ce fichier dit comment on travaille sur opn-link et ce qui est déjà décidé.
-Le détail vit dans `docs/`. Si une idée ne rentre pas dans ces règles, on en
-discute avec le mainteneur : jamais d'exception silencieuse.
+Ce fichier est lu au début de chaque session. Il dit comment on travaille et
+ce qui est déjà décidé. Le détail est dans `docs/`.
 
 ## Comment on travaille
 
-- **Français, tutoiement, réponses simples et courtes.** Le mainteneur a
-  demandé « simplifie » : un mot de tous les jours vaut mieux qu'un terme
-  technique, et une explication courte vaut mieux qu'un tableau.
-- **On discute d'abord.** Rien ne se code, ne se lance ni ne se publie sans
-  son feu vert explicite.
-- **Relire `docs/` avant de proposer quoi que ce soit** : `projet.md`,
-  `architecture.md`, `questions-ouvertes.md`, puis `carnet.md`.
-- **Ne jamais trancher à sa place.** Une décision qui n'est pas prise va dans
-  `docs/questions-ouvertes.md`, avec une recommandation.
-- **Toute décision prise se note dans `docs/carnet.md`, avec sa date**, et sa
-  réponse rejoint `projet.md` ou `architecture.md`. Un raisonnement qui
-  compte finit dans la doc, jamais seulement dans une discussion qu'on
-  perdra.
-- **La doc vit sur `main`.** Pas de branche cachée.
-- **Un changement qui se voit se montre avant d'arriver dans `main`** : la
-  capture de l'avant et celle de l'après, au téléphone et à l'ordinateur,
-  regardées par le mainteneur (règle venue d'OpenContact, `CLAUDE.md` §0).
-- **Aucune vraie donnée d'élève dans le dépôt** : captures et exemples
+- En français, en tutoyant, avec des réponses courtes et simples.
+- On discute avant d'agir. Rien ne se code, ne se lance ou ne se publie sans
+  le feu vert du mainteneur.
+- Avant de proposer quelque chose, relire `docs/projet.md`,
+  `docs/architecture.md`, `docs/questions-ouvertes.md` et `docs/carnet.md`.
+- On ne décide pas à la place du mainteneur. Une question qu'il n'a pas
+  tranchée va dans `docs/questions-ouvertes.md`, avec une recommandation.
+- Une décision prise est notée dans `docs/carnet.md` avec sa date, puis
+  reportée dans `projet.md` ou `architecture.md`.
+- La doc est sur `main`, pas sur une branche à part.
+- Un changement visible (un écran, un bouton) est montré au mainteneur en
+  captures avant d'arriver dans `main` : avant et après, sur téléphone et sur
+  ordinateur.
+- Pas de vraies données d'élèves dans le dépôt. Les exemples et les captures
   utilisent des données inventées.
+
+## Comment on écrit
+
+Le mainteneur ne veut ni texte ni code qui sentent l'IA.
+
+Dans la doc :
+
+- des phrases courtes et normales, comme quand on explique à un camarade ;
+- pas de tiret cadratin (—), une virgule ou un point suffit ;
+- le gras rarement, pour un mot qu'on doit retrouver d'un coup d'œil ;
+- pas de phrase qui annonce la liste suivante (« Trois raisons : »), on
+  donne la liste ;
+- pas de formules toutes faites (« ce n'est pas X, c'est Y », « le vrai
+  problème, c'est… »), ni de conclusion qui répète ce qu'on vient de dire ;
+- pas de mots creux : crucial, essentiel, robuste, véritable, fluide,
+  garantir, en somme, notamment ;
+- pas d'images ni de métaphores, on dit la chose ;
+- un tableau seulement pour comparer plusieurs choses sur plusieurs points.
+
+Dans le code :
+
+- un commentaire seulement quand le code ne peut pas dire pourquoi : une
+  contrainte, un piège, une source. Jamais pour répéter ce que fait la ligne ;
+- un nom clair plutôt qu'un commentaire ;
+- pas de bandeaux, pas de code commenté laissé en place, pas d'emoji ;
+- une doc courte (`///`) sur ce que le cœur expose aux autres parties, et
+  rien de plus.
 
 ## Ce qui est décidé
 
-- **Le nom : opn-link.** Le lien entre l'école (ou le centre de formation),
-  les profs et les élèves.
-- **Le but** : un outil utile, libre et gratuit, pour se faire connaître.
-  Pas pour gagner de l'argent.
-- **Une vraie app en Rust, et aussi disponible sur le web.** La
-  compatibilité et l'évolutivité passent avant la vitesse. La façon de faire
-  est une proposition à valider : `docs/architecture.md`.
-- **Sans serveur à payer**, comme OpenContact : données sur les appareils,
-  relais Nostr publics, QR hors ligne en secours.
-- **Le style d'OpenContact** (« Utilitaire 98 »), pris à sa source, jamais
+Le détail et les dates sont dans `docs/carnet.md`.
+
+- Le nom : Opn-Link à l'écran, `opn-link` pour le dépôt et le code.
+- Le but : un outil utile, libre et gratuit. Pas pour gagner de l'argent.
+- La licence : MIT ou Apache-2.0, comme Rust et Tauri.
+- Une app en Rust qui marche aussi sur le web, avec le même cœur partout. La
+  compatibilité et l'évolutivité comptent plus que la vitesse. L'architecture
+  proposée est dans `docs/architecture.md`.
+- La première version sort sur le web et en app pour ordinateur. Les apps de
+  store pour téléphone viendront plus tard.
+- Elle vise d'abord les centres de formation et le post-bac.
+- Pas de serveur à payer : les données restent sur les appareils, les
+  messages passent par des relais Nostr publics, un QR code sert quand il n'y
+  a pas de réseau.
+- Le site est publié par l'organisation GitHub `opn-link`, à une autre
+  adresse qu'OpenContact.
+- Le style d'OpenContact (« Utilitaire 98 »), pris dans son dépôt, jamais
   recopié à la main.
-- **La messagerie est au cœur du MVP**, malgré l'avis contraire de la
-  recherche : c'est un choix assumé du mainteneur.
-- **Le MVP** : `docs/projet.md`, §4.
+- La messagerie est dans la première version, même si la recherche la
+  déconseillait. C'est un choix du mainteneur.
+- Le contenu de la première version : `docs/projet.md`, partie 4.
 
-## Ce qui ne se casse jamais (repris d'OpenContact)
+## Les règles à ne jamais casser
 
-1. **Ce que l'élève n'a pas choisi de partager ne sort pas.** Il voit avant
-   d'envoyer, et peut arrêter à tout moment.
-2. **On n'écrase jamais en silence.** Un aperçu avant, un « Annuler » après
-   tout geste lourd.
-3. **Un écran, un but.**
-4. **Ça marche hors ligne**, ou ça le dit et propose un repli. Rien ne se
-   charge depuis Internet au démarrage.
-5. **Aucun serveur opn-link, aucun compte opn-link, aucune télémétrie.**
-6. **On ne renomme jamais un format ni une clé de stockage** : une nouvelle
-   version, et l'app continue de lire l'ancienne.
+Elles viennent d'OpenContact.
 
-## Où sont les autres projets
+1. Ce que l'élève n'a pas choisi de partager ne part pas. Il voit ce qui va
+   partir avant l'envoi, et peut arrêter quand il veut.
+2. On n'écrase jamais des données sans prévenir : un aperçu avant, un bouton
+   « Annuler » après les gestes importants.
+3. Un écran sert à une seule chose.
+4. L'app marche sans réseau, ou dit ce qui ne marche pas. Rien n'est
+   téléchargé d'Internet au démarrage.
+5. Pas de serveur Opn-Link, pas de compte Opn-Link, pas de statistiques
+   envoyées.
+6. Un format ou une clé de stockage ne change jamais de nom. S'il évolue, il
+   prend une nouvelle version, et l'app sait toujours lire l'ancienne.
 
-- **OpenContact** : `mahi010110/Open-Contact` (public). Son `CLAUDE.md` est
-  la référence du style et des règles d'interface ; son `CONTRAT.md` décrit
-  les formats qu'opn-link devra parler.
-- **Le lab IA** : sa doc vit dans `mahi010110/Opn...` (public), branche
+## Les autres dépôts
+
+- OpenContact (`mahi010110/Open-Contact`, public) : son `CLAUDE.md` décrit le
+  style et les règles d'interface, son `CONTRAT.md` les formats qu'Opn-Link
+  devra lire.
+- Le lab IA : sa doc est dans `mahi010110/Opn...` (public), branche
   `claude/sweet-hypatia-p4qlsl`, dossier `docs/projets/`.
-- Ce dépôt-ci est **privé**.
+- Ce dépôt est privé.

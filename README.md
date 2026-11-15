@@ -1,28 +1,27 @@
-# opn-link
+# Opn-Link
 
-Le lien entre l'école, les profs et les élèves : la classe se parle, se
-demande des choses, et suit où en est chacun dans sa recherche de stage ou
-d'alternance. Libre, gratuit, et sans serveur à payer.
+Opn-Link relie l'école, les profs et les élèves d'une classe. On s'y écrit,
+on s'y demande des documents, et le prof voit où en est chaque élève dans sa
+recherche de stage ou d'alternance. L'app est libre, gratuite, et marche sans
+serveur à payer.
 
-**État : en préparation.** Rien n'est codé. On cadre le projet, puis on fait
-les maquettes, avant d'écrire la première ligne.
+Rien n'est codé pour l'instant. Le cadrage est presque fini, les maquettes
+viennent ensuite.
 
-| Document | Ce qu'il contient |
-|---|---|
-| [`docs/projet.md`](docs/projet.md) | Ce que fait opn-link, et son MVP (la première version) |
-| [`docs/architecture.md`](docs/architecture.md) | Une vraie app en Rust, aussi disponible sur le web : comment rester compatible et évolutif |
-| [`docs/questions-ouvertes.md`](docs/questions-ouvertes.md) | Ce qui reste à décider avant de coder |
-| [`docs/carnet.md`](docs/carnet.md) | Les décisions, dans l'ordre où elles ont été prises |
-| [`docs/recherche/`](docs/recherche/) | Les recherches déjà faites (émargement, signature, réglementation, identité) |
+- [docs/projet.md](docs/projet.md) : ce que fait l'app, et ce que contient la
+  première version
+- [docs/architecture.md](docs/architecture.md) : une app en Rust qui marche
+  aussi sur le web
+- [docs/questions-ouvertes.md](docs/questions-ouvertes.md) : ce qui reste à
+  décider
+- [docs/carnet.md](docs/carnet.md) : les décisions prises, avec leur date
+- [docs/recherche/](docs/recherche/) : les recherches faites avant de
+  commencer
 
-## La famille
+Opn-Link a le même style
+qu'[OpenContact](https://github.com/mahi010110/Open-Contact), l'app de suivi
+de la recherche de stage, et que le lab IA en préparation. Plus tard, les
+trois apps pourront partager la même identité.
 
-opn-link fait partie d'une famille d'outils libres et sans serveur, qui
-partagent le même style (« Utilitaire 98 ») :
-
-- [OpenContact](https://github.com/mahi010110/Open-Contact) : le suivi de la
-  recherche de stage ou d'alternance, et l'entraide entre camarades ;
-- le lab IA : un lab informatique avec un prof IA (en préparation, à part).
-
-Plus tard, les trois se parleront : une même identité, et des formats
-ouverts.
+Licence : MIT ou Apache-2.0, comme Rust et Tauri. Les fichiers de licence
+arriveront avec le code.
