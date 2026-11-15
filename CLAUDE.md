@@ -64,9 +64,15 @@ Le détail et les dates sont dans `docs/carnet.md`.
   d'OpenContact, qui est en refonte. La direction est à choisir
   (`docs/questions-ouvertes.md`), la recherche est dans
   `docs/recherche/usagers-et-ecrans.md`.
-- D'OpenContact, on garde aussi les règles sur les données, l'accessibilité,
-  les tests et la façon de livrer (`docs/exigences.md`). Proposé, à
-  confirmer.
+- D'OpenContact, on ne garde que ce matériel. Les règles d'Opn-Link sur les
+  données, l'accessibilité, les tests et la façon de livrer sont à repenser
+  pour lui ; `docs/exigences.md` garde celles d'OpenContact comme point de
+  départ (15 novembre 2026).
+- Une interface par personne et par écran : l'apprenant sur son téléphone,
+  le formateur en cours avec l'appel sur l'écran de la salle, le centre à
+  l'ordinateur, le tuteur sur une page ouverte depuis un e-mail. Chacune
+  s'adapte au téléphone, à la tablette, à l'ordinateur et à l'écran de la
+  salle (15 novembre 2026, `docs/ux.md`).
 - Une app intuitive, simple et efficace, sans trop en faire. Les exigences
   d'UX et de design propres à Opn-Link sont dans `docs/ux.md`.
 - Le nom : Opn-Link à l'écran, `opn-link` pour le dépôt et le code.
@@ -108,7 +114,8 @@ Le détail et les dates sont dans `docs/carnet.md`.
 
 ## Les règles à ne jamais casser
 
-Elles viennent d'OpenContact.
+Elles viennent d'OpenContact, et seront repensées avec les autres règles
+d'Opn-Link.
 
 1. Ce que l'apprenant n'a pas choisi de partager ne part pas. Il voit ce qui
    va partir avant l'envoi, et peut arrêter quand il veut.

@@ -59,9 +59,10 @@ formation, puis un espace commun au centre, aux formateurs et aux apprenants.
   outil utile et de se faire connaître, pas de gagner de l'argent.
 - Le matériel de design « Utilitaire 98 » d'OpenContact, avec des écrans,
   une navigation et une UX propres à Opn-Link, pensés pour ses usagers et
-  leurs écrans. D'OpenContact, on garde aussi les règles sur les données,
-  l'accessibilité, les tests et la façon de livrer
-  ([exigences.md](exigences.md)).
+  leurs écrans. D'OpenContact, on ne garde que ce matériel : les règles sur
+  les données, l'accessibilité, les tests et la façon de livrer sont à
+  repenser pour Opn-Link ([exigences.md](exigences.md) sert de point de
+  départ).
 
 ## 4. Les mots
 
