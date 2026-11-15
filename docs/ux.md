@@ -14,7 +14,9 @@ tous, quatre onglets, le scanner au milieu de la barre, l'onglet qui change
 de couleur) seront revues avec la direction choisie
 ([questions-ouvertes.md](questions-ouvertes.md)). La recherche sur les
 usagers et leurs écrans est dans
-[recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md).
+[recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md). Pour
+concevoir l'app, le brief ([brief-conception.md](brief-conception.md)) passe
+avant ce fichier quand ils ne disent pas la même chose.
 
 ## Les interfaces
 

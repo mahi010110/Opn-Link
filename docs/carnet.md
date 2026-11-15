@@ -300,6 +300,15 @@ refusés.
   l'accessibilité, les tests et la façon de livrer sont à repenser pour
   Opn-Link.
 - La recherche sur les usagers et leurs écrans est dans
-  [recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md). La
-  direction du design est à choisir
-  ([questions-ouvertes.md](questions-ouvertes.md)).
+  [recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md).
+- Devant les trois directions dessinées : « Je sais pas du tout. Mais toutes
+  sont bien, à toi de décider. » Puis : « Ce que je veux, c'est plus un
+  concept UX qu'une maquette déjà existante. J'aimerais être surpris par des
+  démarches audacieuses et une manière de faire intelligente et
+  perspicace. » Il veut laisser sa part de créativité à Fable 5, et lui
+  préparer tout le travail en amont.
+- Décidé par Claude, le choix lui étant laissé : le concept directeur « une
+  chose à la fois, au bon moment », qui réunit les trois directions.
+- Le brief de conception pour Fable 5 est dans
+  [brief-conception.md](brief-conception.md). Les explorations restent sur la
+  branche de travail, comme essais.

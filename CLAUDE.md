@@ -11,6 +11,8 @@ ce qui est déjà décidé. Le détail est dans `docs/`.
 - Avant de proposer quelque chose, relire `docs/projet.md`,
   `docs/exigences.md`, `docs/ux.md`, `docs/architecture.md`,
   `docs/mesures.md`, `docs/questions-ouvertes.md` et `docs/carnet.md`.
+- Pour concevoir l'app, son design ou sa navigation, lire d'abord
+  `docs/brief-conception.md`.
 - Ce qui dépend d'un service public (relais, OpenTimestamps) se mesure avant
   d'être décidé. Les sondes sont dans `mesures/`, et se relancent depuis
   l'environnement cloud « OpenContact et Opn-Link ».
@@ -61,9 +63,9 @@ Le détail et les dates sont dans `docs/carnet.md`.
   dans son dépôt par un script, jamais recopiés à la main (15 novembre 2026).
 - Les écrans, la navigation et l'UX sont propres à Opn-Link, pensés pour ses
   usagers et pour leurs différents écrans. Rien n'est repris de l'interface
-  d'OpenContact, qui est en refonte. La direction est à choisir
-  (`docs/questions-ouvertes.md`), la recherche est dans
-  `docs/recherche/usagers-et-ecrans.md`.
+  d'OpenContact, qui est en refonte. Le concept directeur : « une chose à la
+  fois, au bon moment ». La conception est confiée à Fable 5, à partir de
+  `docs/brief-conception.md` (15 novembre 2026).
 - D'OpenContact, on ne garde que ce matériel. Les règles d'Opn-Link sur les
   données, l'accessibilité, les tests et la façon de livrer sont à repenser
   pour lui ; `docs/exigences.md` garde celles d'OpenContact comme point de
