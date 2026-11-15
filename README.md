@@ -27,10 +27,11 @@ produit sont tranchées. Les maquettes viennent ensuite.
 - [docs/recherche/](docs/recherche/) : les recherches faites avant de
   commencer, et celle sur les usagers et leurs écrans
 
-Opn-Link a son propre design, pensé pour les apprenants, les formateurs, le
-centre et les tuteurs, et pour leurs différents écrans. Il partage avec
-[OpenContact](https://github.com/mahi010110/Open-Contact), l'app de suivi de
-la recherche de stage, ses règles sur les données et sa façon de livrer.
+Opn-Link utilise le même matériel de design
+qu'[OpenContact](https://github.com/mahi010110/Open-Contact), l'app de suivi
+de la recherche de stage : le style « Utilitaire 98 ». Ses écrans, sa
+navigation et son UX sont pensés pour lui, pour les apprenants, les
+formateurs, le centre et les tuteurs, et pour leurs différents écrans.
 
 Licence : MIT ou Apache-2.0, comme Rust et Tauri. Les fichiers de licence
 arriveront avec le code.

@@ -56,13 +56,17 @@ Dans le code :
 
 Le détail et les dates sont dans `docs/carnet.md`.
 
-- Opn-Link a son propre design, sa navigation et son UX, pensés pour ses
-  usagers et pour leurs différents écrans (15 novembre 2026). Rien n'est
-  repris du style d'OpenContact, qui est en refonte. La direction est à
-  choisir (`docs/questions-ouvertes.md`), la recherche est dans
+- Le matériel de design est celui d'OpenContact, « Utilitaire 98 » : ses
+  jetons, ses polices, ses icônes et les règles de son kit `design/`, pris
+  dans son dépôt par un script, jamais recopiés à la main (15 novembre 2026).
+- Les écrans, la navigation et l'UX sont propres à Opn-Link, pensés pour ses
+  usagers et pour leurs différents écrans. Rien n'est repris de l'interface
+  d'OpenContact, qui est en refonte. La direction est à choisir
+  (`docs/questions-ouvertes.md`), la recherche est dans
   `docs/recherche/usagers-et-ecrans.md`.
-- D'OpenContact, on garde les règles sur les données, l'accessibilité, les
-  tests et la façon de livrer (`docs/exigences.md`). Proposé, à confirmer.
+- D'OpenContact, on garde aussi les règles sur les données, l'accessibilité,
+  les tests et la façon de livrer (`docs/exigences.md`). Proposé, à
+  confirmer.
 - Une app intuitive, simple et efficace, sans trop en faire. Les exigences
   d'UX et de design propres à Opn-Link sont dans `docs/ux.md`.
 - Le nom : Opn-Link à l'écran, `opn-link` pour le dépôt et le code.
@@ -122,7 +126,8 @@ Elles viennent d'OpenContact.
 
 - OpenContact (`mahi010110/Open-Contact`, public) : son `CLAUDE.md` décrit en
   détail la façon de livrer, son `CONTRAT.md` les formats qu'Opn-Link devra
-  lire. Son style et son UX ne s'appliquent pas à Opn-Link.
+  lire. Son kit `design/` et ses jetons donnent le matériel « Utilitaire 98 ».
+  Son interface, elle, ne s'applique pas à Opn-Link.
 - Le lab IA : sa doc est dans `mahi010110/Opn...` (public), branche
   `claude/sweet-hypatia-p4qlsl`, dossier `docs/projets/`.
 - Ce dépôt est privé.
