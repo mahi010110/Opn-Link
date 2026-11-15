@@ -5,66 +5,22 @@ qui pouvait se mesurer à distance a été mesuré ([mesures.md](mesures.md)). L
 décisions sont dans [carnet.md](carnet.md) et reportées dans
 [projet.md](projet.md), [ux.md](ux.md) et [architecture.md](architecture.md).
 
-## À choisir avant les maquettes
+## La conception
 
-Le mainteneur a refusé les premières maquettes le 15 novembre 2026 : elles
-reprenaient l'interface d'OpenContact. Le matériel « Utilitaire 98 » reste ;
-ce sont les écrans, la navigation et l'UX qui sont à choisir. La recherche
-faite le même jour est dans
-[recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md).
+Le 15 novembre 2026, le mainteneur a laissé le choix de la direction, et veut
+un concept d'UX plutôt qu'une maquette finie, pour laisser sa part de
+créativité à Fable 5. Retenu : « une chose à la fois, au bon moment ». Tout ce
+que Fable 5 doit savoir pour concevoir l'app est dans
+[brief-conception.md](brief-conception.md). Les trois directions explorées
+avant ce choix y sont résumées, partie 10.
 
-Une interface par personne et par écran a été décidée le même jour
-([ux.md](ux.md), partie « Les interfaces »).
+### Le ton
 
-### La direction du design
+Tutoyer partout, comme OpenContact, ou vouvoyer certains usagers ?
 
-Le mainteneur veut choisir sur images : l'écran de la présence est dessiné
-dans les trois directions, au téléphone et sur l'écran de la salle.
-
-#### A. Une chose à la fois
-
-- L'apprenant ouvre l'app sur ce qu'il doit faire maintenant, en grand :
-  signer sa présence, signer un document, envoyer un fichier. Une fois fait,
-  la chose suivante prend la place. Quand il n'y a rien, il lit les nouvelles
-  de sa classe.
-- L'appel s'ouvre en plein écran sur l'écran de la salle : un code géant, le
-  QR, et le nombre de présents qui monte, comme l'écran d'attente de Wooclap
-  ou de Kahoot que les apprenants connaissent. On y voit combien sont là,
-  jamais qui manque : la liste des absents reste sur l'appareil du formateur.
-- Avec le matériel 98 : chaque chose à faire est une fenêtre, avec la classe
-  dans sa barre de titre et son bouton principal en bas. L'écran de la salle
-  est une seule grande fenêtre, avec le code en très grand.
-- Pour : le moins de décisions possible, lisible de loin et par ceux qui
-  lisent mal. Contre : moins de vue d'ensemble, que le formateur et le centre
-  retrouvent dans leurs interfaces.
-
-#### B. Le fil de la classe
-
-- Chaque classe est une conversation, comme un groupe d'annonces WhatsApp.
-  Les annonces, les documents à signer et l'appel y arrivent comme des
-  messages, avec leur bouton. Les messages privés aux formateurs sont à côté.
-- Avec le matériel 98 : le fil est une fenêtre, et chaque annonce, document
-  ou appel une carte en relief avec son bouton.
-- Pour : rien à apprendre, et ça remplace le groupe WhatsApp de la classe,
-  sans numéro de téléphone et avec des heures calmes. Contre : une action
-  importante peut se perdre sous les messages, et Opn-Link devient une
-  messagerie de plus.
-
-#### C. La semaine
-
-- L'app s'ouvre sur la semaine. Chaque demi-journée dit où l'on est (au
-  centre, en entreprise) et ce qui s'y passe : l'appel, un document à rendre
-  vendredi.
-- Avec le matériel 98 : la semaine est une grille de cases, le matin et
-  l'après-midi séparés, et la demi-journée en cours en sélection marine.
-- Pour : on voit venir, et ça suit le rythme de l'alternance. Contre : il faut
-  savoir quels jours l'apprenant est au centre, ce que la première version ne
-  gère pas, et les messages trouvent mal leur place dans un agenda.
-
-Recommandation : A. C'est la direction qui sert
-le mieux le geste de tous les jours (la présence en deux gestes), ceux qui
-lisent mal et l'écran de la salle. Le plus sûr pour choisir : dessiner
-l'écran de la présence dans les trois directions et comparer les images.
+Recommandation : tutoyer l'apprenant, le formateur et le centre, comme entre
+collègues d'un même centre, et vouvoyer le tuteur, qui ne connaît pas l'app
+et la découvre dans un e-mail.
 
 ### Les règles d'Opn-Link
 
@@ -74,8 +30,8 @@ livrer sont à repenser pour Opn-Link.
 
 Recommandation : partir de [exigences.md](exigences.md) et des six règles du
 `CLAUDE.md`, garder ce qui protège les usagers (la vie privée, rien d'écrasé
-sans prévenir, le hors ligne, pas de serveur), et réécrire le reste pour les
-quatre interfaces, une fois la direction choisie.
+sans prévenir, le hors ligne, pas de serveur), et réécrire le reste avec la
+conception de Fable 5, pour les cinq interfaces.
 
 ## À mesurer sur place
 

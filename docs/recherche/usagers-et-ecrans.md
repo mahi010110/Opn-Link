@@ -154,8 +154,8 @@ Ce sont des propositions, à valider avec le mainteneur.
 8. Un formateur a plusieurs centres : ses classes se rangent par centre, sans
    changer de compte.
 
-La direction du design reste à choisir
-([../questions-ouvertes.md](../questions-ouvertes.md)).
+Le concept retenu et tout ce qu'il faut pour concevoir l'app sont dans
+[../brief-conception.md](../brief-conception.md).
 
 ## Sources
 

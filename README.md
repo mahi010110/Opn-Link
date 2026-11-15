@@ -8,10 +8,12 @@ chacun dans sa recherche de stage ou d'alternance. L'app est libre, gratuite,
 et marche sans serveur à payer.
 
 Rien n'est codé pour l'instant. Le cadrage est fini : toutes les questions de
-produit sont tranchées. Les maquettes viennent ensuite.
+produit sont tranchées. La conception de l'app part du brief de conception.
 
 - [docs/projet.md](docs/projet.md) : ce que fait l'app, et ce que contient la
   première version
+- [docs/brief-conception.md](docs/brief-conception.md) : tout ce qu'il faut
+  savoir pour concevoir l'app, son design et sa navigation
 - [docs/ux.md](docs/ux.md) : les exigences d'UX et de design, et ce que font
   les concurrents
 - [docs/exigences.md](docs/exigences.md) : les règles de qualité, reprises
