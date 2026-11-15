@@ -12,11 +12,11 @@ les contacts d'OpenContact ne s'applique pas ici.
 Le même jour, après les premières maquettes, le mainteneur a précisé que
 chaque projet a ses écrans, sa navigation et son UX (« Chaque concept a son
 design et sa navigation et son ux/ui »), mais qu'Opn-Link utilise « le même
-matériel design 98 utilitaire ». Ce fichier garde donc le matériel
-« Utilitaire 98 », et les règles sur les données, l'accessibilité, les tests
-et la façon de livrer (ces dernières : proposé, à confirmer). Les règles qui
-décrivent l'interface d'OpenContact (ses onglets, sa navigation, son seuil de
-901 px) seront revues quand la direction sera choisie
+matériel design 98 utilitaire ». Puis il a décidé de ne garder d'OpenContact
+que ce matériel. La partie « Le matériel « Utilitaire 98 » » s'applique donc.
+Les autres règles de ce fichier viennent d'OpenContact : elles ne
+s'appliquent plus telles quelles, et serviront de point de départ quand on
+repensera les règles d'Opn-Link
 ([questions-ouvertes.md](questions-ouvertes.md)).
 
 ## Avant d'ajouter une fonction

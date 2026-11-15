@@ -290,8 +290,15 @@ refusés.
   jetons, les polices, les icônes et les règles du kit `design/`
   d'OpenContact). Ses écrans, sa navigation et son UX sont pensés pour lui,
   sans rien reprendre de l'interface d'OpenContact.
-- Proposé, à confirmer : on garde aussi d'OpenContact les règles sur les
-  données, l'accessibilité, les tests et la façon de livrer.
+- Le mainteneur veut choisir la direction sur images : l'écran de la
+  présence sera dessiné dans les trois directions, au téléphone et sur
+  l'écran de la salle.
+- Décidé : une interface par personne et par écran (l'apprenant, le
+  formateur et l'écran de la salle, le centre, le tuteur).
+- Décidé : d'OpenContact, on ne garde que le matériel de design
+  (« Non, seulement le matériel »). Les règles sur les données,
+  l'accessibilité, les tests et la façon de livrer sont à repenser pour
+  Opn-Link.
 - La recherche sur les usagers et leurs écrans est dans
   [recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md). La
   direction du design est à choisir

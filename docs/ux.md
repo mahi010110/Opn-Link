@@ -16,6 +16,21 @@ de couleur) seront revues avec la direction choisie
 usagers et leurs écrans est dans
 [recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md).
 
+## Les interfaces
+
+Décidé le 15 novembre 2026 : une interface par personne, chacune pensée pour
+ses écrans.
+
+- L'apprenant : son téléphone.
+- Le formateur : son cours, au téléphone ou à l'ordinateur, et l'écran de la
+  salle pour l'appel, lu de loin.
+- Le centre : l'ordinateur, avec des listes, des filtres et des exports.
+- Le tuteur : une page ouverte depuis un e-mail, sans app ni compte.
+
+Chacune s'adapte au téléphone, à la tablette, à l'ordinateur et à l'écran de
+la salle. Le cœur est le même dessous, et une personne ne voit que les gestes
+de son rôle.
+
 ## Le but
 
 Le mainteneur : « intuitive, simple, et efficace sans trop en faire ».

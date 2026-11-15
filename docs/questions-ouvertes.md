@@ -13,19 +13,13 @@ ce sont les écrans, la navigation et l'UX qui sont à choisir. La recherche
 faite le même jour est dans
 [recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md).
 
-### Les interfaces
-
-Proposé : une interface par public, chacune pensée pour ses écrans. Le même
-cœur dessous, et chacun ne voit que les gestes de son rôle.
-
-- L'apprenant : son téléphone, une action à la fois.
-- Le formateur : son cours, au téléphone ou à l'ordinateur, et l'écran de la
-  salle pour l'appel, lu de loin.
-- Le centre : son bureau, à l'ordinateur, avec des listes, des filtres et des
-  exports.
-- Le tuteur : une page ouverte depuis un e-mail, sans app ni compte.
+Une interface par personne et par écran a été décidée le même jour
+([ux.md](ux.md), partie « Les interfaces »).
 
 ### La direction du design
+
+Le mainteneur veut choisir sur images : l'écran de la présence est dessiné
+dans les trois directions, au téléphone et sur l'écran de la salle.
 
 #### A. Une chose à la fois
 
@@ -67,16 +61,21 @@ cœur dessous, et chacun ne voit que les gestes de son rôle.
   savoir quels jours l'apprenant est au centre, ce que la première version ne
   gère pas, et les messages trouvent mal leur place dans un agenda.
 
-Recommandation : A, avec les quatre interfaces. C'est la direction qui sert
+Recommandation : A. C'est la direction qui sert
 le mieux le geste de tous les jours (la présence en deux gestes), ceux qui
 lisent mal et l'écran de la salle. Le plus sûr pour choisir : dessiner
 l'écran de la présence dans les trois directions et comparer les images.
 
-### Ce qu'on garde d'OpenContact
+### Les règles d'Opn-Link
 
-Décidé le 15 novembre 2026 : le matériel de design « Utilitaire 98 ».
-Proposé : aussi les règles sur les données et la vie privée, l'accessibilité,
-les tests et la façon de livrer.
+Décidé le 15 novembre 2026 : d'OpenContact, on ne garde que le matériel de
+design. Les règles sur les données, l'accessibilité, les tests et la façon de
+livrer sont à repenser pour Opn-Link.
+
+Recommandation : partir de [exigences.md](exigences.md) et des six règles du
+`CLAUDE.md`, garder ce qui protège les usagers (la vie privée, rien d'écrasé
+sans prévenir, le hors ligne, pas de serveur), et réécrire le reste pour les
+quatre interfaces, une fois la direction choisie.
 
 ## À mesurer sur place
 
