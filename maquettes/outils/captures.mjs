@@ -11,15 +11,15 @@ const SORTIE = join(MAQUETTES, 'captures');
 const TAILLES = {
   tel: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
   'petit-tel': { viewport: { width: 360, height: 640 }, isMobile: true, hasTouch: true },
-  poste: { viewport: { width: 1280, height: 800 } },
+  salle: { viewport: { width: 1280, height: 800 } },
 };
 const ECRANS = [
-  ['aujourdhui-apprenant', ['tel', 'petit-tel', 'poste']],
-  ['aujourdhui-apprenant-signee', ['tel']],
-  ['presence-scanner', ['tel', 'petit-tel']],
-  ['presence-code', ['tel', 'petit-tel']],
-  ['aujourdhui-formateur', ['tel', 'petit-tel', 'poste']],
-  ['appel', ['tel', 'petit-tel', 'poste']],
+  ['a-telephone', ['tel', 'petit-tel']],
+  ['a-salle', ['salle']],
+  ['b-telephone', ['tel', 'petit-tel']],
+  ['b-salle', ['salle']],
+  ['c-telephone', ['tel', 'petit-tel']],
+  ['c-salle', ['salle']],
 ];
 const seul = process.argv[2];
 
@@ -54,19 +54,19 @@ for (const [ecran, tailles] of ECRANS) {
       await page.evaluate(() => document.fonts.ready);
       const debordement = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       if (debordement > 0) erreurs.push(`${ecran} ${taille} : la page défile de côté (${debordement} px)`);
-      // Une feuille coupe ce qui dépasse (overflow-x:hidden) : on cherche ce qui sort de sa boîte, pas le défilement.
+      // Un cadre peut couper ce qui dépasse sans que la page défile : on cherche ce qui sort de l'écran ou de son parent.
       const releve = await page.evaluate(() => {
         const nom = (e) => `${e.tagName.toLowerCase()}${[...e.classList].map((c) => '.' + c).join('')} « ${e.textContent.trim().slice(0, 32)} »`;
         const sortent = [];
         const elides = [];
-        for (const boite of document.querySelectorAll('.modal-b, .view')) {
-          const b = boite.getBoundingClientRect();
-          for (const e of boite.querySelectorAll('*')) {
-            const r = e.getBoundingClientRect();
-            if (!r.width || !r.height) continue;
-            if (r.right > b.right + 0.5 || r.left < b.left - 0.5) sortent.push(nom(e));
-            if (getComputedStyle(e).textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth + 1) elides.push(nom(e));
-          }
+        for (const e of document.body.querySelectorAll('*')) {
+          const r = e.getBoundingClientRect();
+          if (!r.width || !r.height) continue;
+          const parent = e.parentElement.getBoundingClientRect();
+          const horsEcran = r.left < -0.5 || r.right > innerWidth + 0.5;
+          const horsParent = r.left < parent.left - 0.5 || r.right > parent.right + 0.5;
+          if (horsEcran || horsParent) sortent.push(nom(e));
+          if (getComputedStyle(e).textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth + 1) elides.push(nom(e));
         }
         return { sortent, elides };
       });

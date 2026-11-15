@@ -9,9 +9,10 @@ const OC = process.env.OC_REPO ?? join(MAQUETTES, '..', '..', 'Open-Contact');
 
 // La version d'OpenContact dont on prend le style. Elle change exprès, jamais en passant.
 const VERSION_OC = 'a1d317b82c3b2f3621ac9aa947b1349dcfdab79a';
-const CHEMINS = ['styles/tokens', 'styles/app.css', 'assets/fonts', 'assets/icons'];
+// Le matériel seulement : les jetons, les polices et les icônes. Pas l'interface d'OpenContact (styles/app.css).
+const CHEMINS = ['styles/tokens', 'assets/fonts', 'assets/icons'];
 // Ces icônes manquent aux 73 qu'OpenContact a copiées : elles viennent du même jeu.
-const ICONES_EN_PLUS = ['qr-code', 'camera', 'file-text', 'pen-square', 'check-double', 'clipboard-note', 'notes', 'teach', 'user-x', 'bell-ring'];
+const ICONES_EN_PLUS = ['qr-code', 'camera', 'file-text', 'pen-square', 'check-double', 'clipboard-note', 'notes', 'teach', 'user-x', 'bell-ring', 'calendar-weeks', 'message-reply', 'projector'];
 
 const git = (...args) => execFileSync('git', ['-C', OC, ...args]);
 rmSync(KIT, { recursive: true, force: true });

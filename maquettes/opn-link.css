@@ -1,101 +1,273 @@
-/* Les pièces propres à Opn-Link. Tout le reste vient du kit d'OpenContact (kit/). */
+/* Les pièces d'Opn-Link, faites avec le matériel « Utilitaire 98 » d'OpenContact
+   (ses jetons, ses polices, ses icônes, dans kit/). Rien ne vient de son interface. */
 
-@media (max-width: 900px) {
-  .ol-poste { display: none !important; }
-}
-@media (min-width: 901px) {
-  .ol-tel { display: none !important; }
+html,
+body {
+  margin: 0;
 }
 
-.act-sub > span + span::before {
-  content: "·";
-  margin-right: 6px;
+.ic {
+  display: inline-block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.ic-12 { width: 12px; height: 12px; }
+.ic-20 { width: 20px; height: 20px; }
+.ic-24 { width: 24px; height: 24px; }
+.ic-32 { width: 32px; height: 32px; }
+
+.donnee {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+  line-height: 1.45;
   color: var(--text-muted);
 }
 
-/* Le cadre du compte ajoutait 2 px à l'en-tête : « Présence », sans compte, était plus basse que ses voisines. */
-.bcol-h .tr-n { margin-block: -1px; }
+.etiquette {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-11);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.compte {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  padding: 1px 5px;
+  border: 1px solid var(--border-frame);
+}
 
-/* La même marge que le scanner d'OpenContact entre son message et le champ du code. */
-.modal-b > .hint + .field { margin-top: 10px; }
+.pastille {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-11);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  padding: 4px 6px;
+  border: 1px solid var(--border-frame);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.pastille.attente { color: var(--amber); border-color: var(--amber); background: var(--amber-wash); }
+.pastille.maintenant { color: var(--accent); border-color: var(--accent); background: var(--teal-wash); }
 
-.ol-carte {
+.fen {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 12px;
+  min-width: 0;
   background: var(--surface-window);
   border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-raised);
+  box-shadow: var(--shadow-window);
 }
-.ol-carte-t {
+.fen-barre {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 6px 0 10px;
+  background: var(--titlebar-bg);
+  color: var(--titlebar-text);
+  border-bottom: 1px solid var(--border-strong);
+}
+.fen-barre.active { background: var(--titlebar-accent-bg); color: var(--on-navy); }
+/* --dither porte sa taille et ne marche que dans le raccourci background : ici on prend l'image seule. */
+.fen-barre.inactive {
+  background: var(--dither-img), var(--titlebar-inactive-bg);
+  background-size: var(--dither-size), auto;
+  color: var(--titlebar-inactive-text);
+}
+.fen-titre {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-pixel);
+  font-size: var(--pixel-16);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.fen-titre.petit { font-size: var(--pixel-8); letter-spacing: 0.1em; }
+.fen-corps { padding: var(--space-5); min-width: 0; }
+.fen-etat {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface-chrome);
+  border-top: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: var(--text-13);
+  color: var(--text-muted);
+}
+.fen-etat .vide { flex: 1; }
+.fen-btn {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  background: var(--surface-chrome);
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-1);
+  box-shadow: var(--bevel-up);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--control-h-touch);
+  padding: 0 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-0);
+  background: var(--surface-window);
+  color: var(--text-body);
+  box-shadow: var(--bevel-up), var(--shadow-raised);
+  font-family: var(--font-ui);
   font-size: var(--text-15);
   font-weight: var(--weight-semibold);
-  line-height: 1.35;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
 }
-.ol-carte .btn { margin-top: 9px; }
-.ol-carte.ol-fait .ol-carte-t { display: flex; align-items: center; gap: 7px; }
-.ol-carte.ol-fait .ol-carte-t .ic { color: var(--accent); }
-
-/* Le lavis de « montrerChange » d'OpenContact, figé pour la capture. */
-.ol-vient-de-changer { background: var(--teal-wash); }
-
-.ol-entete {
-  margin: 0 0 12px;
-  font-family: var(--font-mono);
-  font-size: var(--text-12);
-  color: var(--text-muted);
-}
-
-.qr-wrap img { display: block; width: 100%; height: auto; }
-
-.ol-code {
-  margin: 0;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: var(--text-26);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.12em;
-}
-.ol-code-champ { font-family: var(--font-mono); letter-spacing: 0.12em; }
-
-.ol-heure {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: var(--text-12);
-  color: var(--text-muted);
-}
-
-/* Tient la place du flux de la caméra : il n'a pas de thème, il reste sombre. */
-.ol-camera {
-  position: absolute;
-  inset: 0;
-  display: grid;
+.btn:active { box-shadow: var(--bevel-down); transform: translate(2px, 2px); }
+.btn-principal { background: var(--accent); color: var(--on-accent); }
+.btn-large { width: 100%; min-height: 56px; font-size: var(--text-16); }
+.btn-icone {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
   place-items: center;
-  background: #1d242c;
-}
-.ol-camera img {
-  width: 46%;
-  border: 8px solid #ffffff;
-  transform: rotate(-4deg) skewX(3deg);
-  opacity: 0.9;
+  padding: 0;
+  background: var(--surface-window);
+  color: var(--text-body);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--bevel-up), var(--shadow-raised);
 }
 
-/* L'appel à l'ordinateur se projette : le QR prend la place, la liste défile à côté. */
-@media (min-width: 901px) {
-  .modal.ol-appel { max-width: 1180px; height: 92dvh; }
-  .modal.ol-appel .modal-b { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-  .ol-projection {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    gap: 28px;
-  }
-  .ol-proj-qr { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .ol-projection .qr-wrap { width: min(100%, 56dvh); max-width: none; margin: 0; }
-  .ol-projection .ol-code { font-size: var(--text-34); }
-  .ol-proj-noms { min-height: 0; overflow-y: auto; }
-  .ol-proj-noms > .gr-sec:first-child { margin-top: 0; }
+/* Au téléphone, la destination où l'on est prend la sélection marine du matériel. */
+.barre-bas {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  background: var(--surface-chrome);
+  border-top: 1px solid var(--border-strong);
 }
+.barre-bas a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 52px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: var(--text-12);
+  font-weight: var(--weight-semibold);
+  border: 1px solid transparent;
+}
+.barre-bas a.ici { background: var(--select-bg); color: var(--select-text); border-color: var(--border-strong); }
+.barre-bas a.nouveau { color: var(--accent); }
+.barre-bas a.nouveau::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: calc(50% - 18px);
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  border: 1px solid var(--border-strong);
+}
+
+/* Un QR se lit sur du blanc, même en thème sombre. */
+.qr-cadre {
+  background: #ffffff;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+  padding: 16px;
+}
+.qr-cadre img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+
+.progres {
+  display: flex;
+  gap: 3px;
+  height: 32px;
+  padding: 3px;
+  background: var(--surface-field);
+  border: 1px solid var(--border-field);
+  box-shadow: var(--bevel-field);
+}
+.progres i { flex: 1; }
+.progres i.plein { background: var(--accent); }
+
+/* L'écran de la salle : lu de loin, donc tout y est plus grand que les jetons. */
+body.salle {
+  height: 100dvh;
+  overflow: hidden;
+  padding: 16px;
+  box-sizing: border-box;
+  background: var(--surface-desktop);
+}
+.salle .fen-pleine { height: 100%; }
+.salle .fen-barre { min-height: 48px; }
+.salle .fen-titre { font-size: var(--pixel-24); }
+.salle-corps {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 56px;
+  padding: 28px 56px;
+}
+.salle-qr { height: min(100%, 540px); aspect-ratio: 1; box-sizing: border-box; }
+.salle-qr img { height: 100%; width: auto; }
+.salle-etiquette {
+  margin: 0 0 10px;
+  font-family: var(--font-pixel);
+  font-size: var(--pixel-24);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.code-geant {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 7rem;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.salle-consigne { margin: 22px 0 0; font-size: 1.5rem; line-height: 1.3; }
+.salle-compte { margin-top: 44px; }
+.salle-compte p { margin: 0 0 12px; font-size: 1.75rem; }
+.salle-compte b { font-family: var(--font-mono); font-size: 3rem; }
+.salle .fen-etat { font-size: var(--text-14); }

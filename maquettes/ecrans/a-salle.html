@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A, une chose à la fois · écran de la salle · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="salle">
+<section class="fen fen-pleine">
+  <header class="fen-barre active">
+    <i data-ic="qr-code" data-t="ic-24"></i>
+    <h1 class="fen-titre">Appel · BTS SIO 2 · lundi matin</h1>
+    <button class="fen-btn" aria-label="Fermer"><i data-ic="close" data-t="ic-12"></i></button>
+  </header>
+  <div class="salle-corps">
+    <div class="qr-cadre salle-qr"><img src="../images/qr-appel.svg" alt="Le QR de l’appel"></div>
+    <div>
+      <p class="salle-etiquette">Le code</p>
+      <p class="code-geant">482&nbsp;913</p>
+      <p class="salle-consigne">Ouvre Opn-Link et vise le QR, ou tape le code.</p>
+      <div class="salle-compte">
+        <p><b>12</b> présents</p>
+        <div class="progres" role="img" aria-label="12 présents sur 18">
+          <i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i>
+          <i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="fen-etat">
+    <span>Centre Exemple · Awa Diallo · 9&nbsp;h à 12&nbsp;h&nbsp;30</span>
+    <span class="vide"></span>
+    <button class="btn btn-principal">Clore et signer</button>
+  </footer>
+</section>
+<script src="../maquette.js"></script>
+</body>
+</html>

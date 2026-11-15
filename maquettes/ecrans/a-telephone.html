@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A, une chose à la fois · téléphone · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+.a-ecran { display: flex; flex-direction: column; gap: 14px; padding: 20px 16px 110px; }
+.a-tete { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.a-tete h1 { margin: 0 0 4px; font-size: var(--text-26); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); }
+.a-maintenant .fen-corps { display: flex; flex-direction: column; gap: 6px; padding: 22px 16px 16px; }
+.a-gros { margin: 0; font-size: var(--text-26); font-weight: var(--weight-bold); line-height: var(--leading-tight); }
+.a-maintenant .btn-large { margin-top: 20px; }
+.a-ensuite { margin-top: 12px; }
+.a-suivante {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+  cursor: pointer;
+}
+.a-suivante .fen-barre { min-height: 24px; gap: 6px; }
+.a-suivante-corps { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; }
+.a-suivante-texte { flex: 1; min-width: 0; }
+.a-suivante-texte b { display: block; font-size: var(--text-15); font-weight: var(--weight-semibold); }
+.a-suivante-texte .donnee { display: block; }
+.a-suivante-corps > .ic { color: var(--text-muted); }
+</style>
+</head>
+<body>
+<main class="a-ecran">
+  <header class="a-tete">
+    <div>
+      <h1>Lundi 16&nbsp;novembre</h1>
+      <p class="donnee">BTS SIO 2 · au centre</p>
+    </div>
+    <button class="btn-icone" aria-label="Moi"><i data-ic="user" data-t="ic-20"></i></button>
+  </header>
+
+  <section class="fen a-maintenant" aria-label="À faire maintenant">
+    <header class="fen-barre active"><i data-ic="qr-code"></i><h2 class="fen-titre">Présence</h2></header>
+    <div class="fen-corps">
+      <p class="a-gros">L’appel est ouvert</p>
+      <p class="donnee">Matin, 9&nbsp;h à 12&nbsp;h&nbsp;30 · Awa Diallo</p>
+      <button class="btn btn-principal btn-large"><i data-ic="qr-code" data-t="ic-20"></i>Je suis là</button>
+    </div>
+  </section>
+
+  <h2 class="etiquette a-ensuite">Ensuite <span class="compte">2</span></h2>
+  <button class="a-suivante">
+    <span class="fen-barre inactive"><i data-ic="pen-square" data-t="ic-12"></i><span class="fen-titre petit">À signer</span></span>
+    <span class="a-suivante-corps">
+      <span class="a-suivante-texte"><b>Règlement intérieur</b><span class="donnee">Centre Exemple · reçu ven.&nbsp;13/11</span></span>
+      <i data-ic="chevron-right"></i>
+    </span>
+  </button>
+  <button class="a-suivante">
+    <span class="fen-barre inactive"><i data-ic="upload" data-t="ic-12"></i><span class="fen-titre petit">À rendre</span></span>
+    <span class="a-suivante-corps">
+      <span class="a-suivante-texte"><b>Convention de stage</b><span class="donnee">Awa Diallo · avant ven.&nbsp;20/11</span></span>
+      <i data-ic="chevron-right"></i>
+    </span>
+  </button>
+</main>
+
+<nav class="barre-bas" aria-label="Navigation">
+  <a class="ici" href="#" aria-current="page"><i data-ic="zap" data-t="ic-20"></i>À faire</a>
+  <a href="#"><i data-ic="users" data-t="ic-20"></i>Classe</a>
+  <a class="nouveau" href="#"><i data-ic="message-text" data-t="ic-20"></i>Messages</a>
+</nav>
+<script src="../maquette.js"></script>
+</body>
+</html>

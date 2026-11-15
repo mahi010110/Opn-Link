@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B, le fil de la classe · écran de la salle · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+.b-salle-fil { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 18px 40px 24px; }
+.b-avant {
+  align-self: flex-start;
+  max-width: 60%;
+  padding: 8px 12px;
+  background: var(--surface-window);
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  font-size: var(--text-16);
+}
+.b-avant b { color: var(--text-body); }
+.b-appel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+  box-shadow: inset 6px 0 0 var(--accent), var(--shadow-window);
+  padding: 16px 28px 20px 34px;
+}
+.b-de { margin: 0; font-family: var(--font-mono); font-size: var(--text-16); color: var(--text-muted); }
+.b-appel .salle-corps { padding: 18px 0 0; }
+.b-appel .salle-qr { height: min(100%, 440px); }
+</style>
+</head>
+<body class="salle">
+<section class="fen fen-pleine">
+  <header class="fen-barre active">
+    <i data-ic="users" data-t="ic-24"></i>
+    <h1 class="fen-titre">BTS SIO 2</h1>
+    <button class="fen-btn" aria-label="Fermer"><i data-ic="close" data-t="ic-12"></i></button>
+  </header>
+  <div class="b-salle-fil">
+    <p class="b-avant">Hier · Awa Diallo · <b>Planning de décembre</b></p>
+    <article class="b-appel">
+      <p class="b-de">Awa Diallo · 9&nbsp;h&nbsp;00 · L’appel est ouvert</p>
+      <div class="salle-corps">
+        <div class="qr-cadre salle-qr"><img src="../images/qr-appel.svg" alt="Le QR de l’appel"></div>
+        <div>
+          <p class="salle-etiquette">Le code</p>
+          <p class="code-geant">482&nbsp;913</p>
+          <p class="salle-consigne">Ouvre Opn-Link et vise le QR, ou tape le code.</p>
+          <div class="salle-compte">
+            <p><b>12</b> présents</p>
+            <div class="progres" role="img" aria-label="12 présents sur 18">
+              <i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i>
+              <i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i><i class="plein"></i>
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+  <footer class="fen-etat">
+    <span>Centre Exemple · matin, 9&nbsp;h à 12&nbsp;h&nbsp;30</span>
+    <span class="vide"></span>
+    <button class="btn btn-principal">Clore et signer</button>
+  </footer>
+</section>
+<script src="../maquette.js"></script>
+</body>
+</html>

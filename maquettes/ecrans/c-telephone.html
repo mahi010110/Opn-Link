@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C, la semaine · téléphone · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+.c-ecran { display: flex; flex-direction: column; gap: 12px; padding: 18px 16px 110px; }
+.c-tete { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.c-tete h1 { margin: 0 0 4px; font-size: var(--text-20); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); }
+.c-fleches { display: flex; gap: 6px; }
+.c-ligne {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 12px;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+}
+.c-texte { flex: 1; min-width: 0; }
+.c-texte b { display: block; font-size: var(--text-15); font-weight: var(--weight-semibold); }
+.c-texte .donnee { display: block; }
+.c-ligne > .ic { color: var(--text-muted); }
+.c-jour .fen-barre { justify-content: space-between; }
+.c-ou { font-family: var(--font-ui); font-size: var(--text-12); font-weight: var(--weight-semibold); text-transform: none; letter-spacing: 0; white-space: nowrap; }
+.c-demi { display: grid; grid-template-columns: 104px minmax(0, 1fr); border-top: 1px dashed var(--border-soft); }
+.c-demi:first-of-type { border-top: 0; }
+.c-heure { display: flex; align-items: center; padding: 12px 10px; font-size: var(--text-13); font-weight: var(--weight-semibold); border-right: 1px solid var(--border-soft); }
+.c-demi.ici .c-heure { background: var(--select-bg); color: var(--select-text); }
+.c-quoi { display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 10px 12px; min-width: 0; font-size: var(--text-14); }
+.c-quoi .donnee { display: block; font-size: var(--text-12); }
+.c-quoi .btn { align-self: stretch; }
+.c-entreprise .fen-corps { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.c-entreprise .c-texte { font-size: var(--text-14); }
+</style>
+</head>
+<body>
+<main class="c-ecran">
+  <header class="c-tete">
+    <div>
+      <h1>Semaine du 16&nbsp;novembre</h1>
+      <p class="donnee">BTS SIO 2 · Centre Exemple</p>
+    </div>
+    <span class="c-fleches">
+      <button class="btn-icone" aria-label="Semaine d’avant"><i data-ic="chevron-left"></i></button>
+      <button class="btn-icone" aria-label="Semaine d’après"><i data-ic="chevron-right"></i></button>
+    </span>
+  </header>
+
+  <button class="c-ligne">
+    <span class="c-texte"><b>Règlement intérieur</b><span class="donnee">Centre Exemple · reçu ven.&nbsp;13/11</span></span>
+    <span class="pastille attente">à signer</span>
+  </button>
+
+  <section class="fen c-jour">
+    <header class="fen-barre active"><h2 class="fen-titre">Lundi 16</h2><span class="c-ou">au centre</span></header>
+    <div class="c-demi ici">
+      <span class="c-heure">Matin</span>
+      <div class="c-quoi">
+        <span>L’appel est ouvert<span class="donnee">9&nbsp;h à 12&nbsp;h&nbsp;30 · Awa Diallo</span></span>
+        <button class="btn btn-principal"><i data-ic="qr-code"></i>Je suis là</button>
+      </div>
+    </div>
+    <div class="c-demi">
+      <span class="c-heure">Après-midi</span>
+      <div class="c-quoi"><span class="donnee">Présence à 14&nbsp;h</span></div>
+    </div>
+  </section>
+
+  <section class="fen c-jour">
+    <header class="fen-barre inactive"><h2 class="fen-titre">Mardi 17</h2><span class="c-ou">au centre</span></header>
+    <div class="c-demi">
+      <span class="c-heure">Matin</span>
+      <div class="c-quoi"><span class="donnee">Présence à 9&nbsp;h</span></div>
+    </div>
+    <div class="c-demi">
+      <span class="c-heure">Après-midi</span>
+      <div class="c-quoi"><span class="donnee">Présence à 14&nbsp;h</span></div>
+    </div>
+  </section>
+
+  <section class="fen c-jour c-entreprise">
+    <header class="fen-barre inactive"><h2 class="fen-titre">Mer 18 à ven 20</h2><span class="c-ou">en entreprise</span></header>
+    <div class="fen-corps">
+      <i data-ic="upload"></i>
+      <span class="c-texte"><b>Convention de stage</b><span class="donnee">avant ven.&nbsp;20/11</span></span>
+      <span class="pastille attente">à rendre</span>
+    </div>
+  </section>
+</main>
+
+<nav class="barre-bas" aria-label="Navigation">
+  <a class="ici" href="#" aria-current="page"><i data-ic="calendar-weeks" data-t="ic-20"></i>Semaine</a>
+  <a href="#"><i data-ic="users" data-t="ic-20"></i>Classe</a>
+  <a class="nouveau" href="#"><i data-ic="message-text" data-t="ic-20"></i>Messages</a>
+</nav>
+<script src="../maquette.js"></script>
+</body>
+</html>

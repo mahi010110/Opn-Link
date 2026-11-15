@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B, le fil de la classe · téléphone · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+.b-tete {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--titlebar-accent-bg);
+  color: var(--on-navy);
+  border-bottom: 1px solid var(--border-strong);
+}
+.b-tete .btn-icone { width: 40px; height: 40px; }
+.b-visage {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-chrome);
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--bevel-up);
+  font-family: var(--font-pixel);
+  font-size: var(--pixel-16);
+}
+.b-nom { flex: 1; min-width: 0; }
+.b-nom b { display: block; font-size: var(--text-16); }
+.b-nom .donnee { color: inherit; opacity: 0.85; }
+.b-fil { display: flex; flex-direction: column; gap: 10px; padding: 12px 12px 140px; }
+.b-jour {
+  align-self: center;
+  margin: 8px 0 0;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: var(--text-11);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-window);
+  border: 1px solid var(--border-soft);
+}
+.b-carte {
+  align-self: flex-start;
+  max-width: 88%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px 12px;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+}
+.b-de { margin: 0; font-family: var(--font-mono); font-size: var(--text-12); color: var(--text-muted); }
+.b-titre { margin: 0; display: flex; align-items: center; gap: 6px; font-size: var(--text-15); font-weight: var(--weight-semibold); }
+.b-texte { margin: 0; font-size: var(--text-14); line-height: var(--leading-body); }
+.b-fichier { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-family: var(--font-mono); font-size: var(--text-12); }
+.b-carte .btn { align-self: flex-start; margin-top: 8px; }
+.b-appel { align-self: stretch; max-width: none; padding: 12px 14px 14px 18px; box-shadow: inset 4px 0 0 var(--accent), var(--shadow-window); }
+.b-gros { margin: 2px 0 0; font-size: var(--text-20); font-weight: var(--weight-bold); }
+.b-appel .btn-large { margin-top: 12px; }
+.b-pied {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: var(--surface-chrome);
+  border-top: 1px solid var(--border-strong);
+  font-size: var(--text-13);
+  color: var(--text-muted);
+}
+.b-pied span { flex: 1; min-width: 0; }
+</style>
+</head>
+<body>
+<header class="b-tete">
+  <button class="btn-icone" aria-label="Retour aux conversations"><i data-ic="chevron-left"></i></button>
+  <span class="b-visage" aria-hidden="true">S2</span>
+  <div class="b-nom"><b>BTS SIO 2</b><span class="donnee">Centre Exemple · 18 apprenants</span></div>
+  <button class="btn-icone" aria-label="Documents de la classe"><i data-ic="folder"></i></button>
+</header>
+
+<main class="b-fil">
+  <p class="b-jour">Vendredi 13</p>
+  <article class="b-carte">
+    <p class="b-de">Centre Exemple · 16&nbsp;h&nbsp;40</p>
+    <p class="b-titre"><i data-ic="pen-square"></i>Règlement intérieur</p>
+    <p class="donnee">PDF · 4 pages · à signer</p>
+    <button class="btn">Lire et signer</button>
+  </article>
+
+  <p class="b-jour">Hier</p>
+  <article class="b-carte">
+    <p class="b-de">Awa Diallo · 18&nbsp;h&nbsp;02</p>
+    <p class="b-titre">Planning de décembre</p>
+    <p class="b-texte">Le planning des cours de décembre est joint.</p>
+    <a class="b-fichier" href="#"><i data-ic="file-text"></i>planning-decembre.pdf</a>
+  </article>
+
+  <p class="b-jour">Aujourd’hui</p>
+  <article class="b-carte b-appel">
+    <p class="b-de">Awa Diallo · 9&nbsp;h&nbsp;00</p>
+    <p class="b-gros">L’appel est ouvert</p>
+    <p class="donnee">Matin, 9&nbsp;h à 12&nbsp;h&nbsp;30</p>
+    <button class="btn btn-principal btn-large"><i data-ic="qr-code" data-t="ic-20"></i>Je suis là</button>
+  </article>
+</main>
+
+<footer class="b-pied">
+  <span>Seuls les formateurs et le centre écrivent ici.</span>
+  <button class="btn"><i data-ic="message-reply"></i>Écrire en privé</button>
+</footer>
+<script src="../maquette.js"></script>
+<script>scrollTo(0, document.documentElement.scrollHeight)</script>
+</body>
+</html>
