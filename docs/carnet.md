@@ -271,3 +271,23 @@ les adresses à mesurer. Les sondes sont dans `mesures/`, les résultats dans
 - Le sceau PAdES marche avec underskrift et notre propre signataire. La
   version 0.1.4 d'underskrift signe mal en ECDSA (vérifié avec pyHanko et
   OpenSSL).
+
+### Le design, après les premières maquettes
+
+Le 15 novembre 2026, six écrans de la présence ont été dessinés avec le style
+et l'UX d'OpenContact, sur la branche de travail. Le mainteneur les a
+refusés.
+
+- OpenContact est en pleine refonte : son style d'aujourd'hui ne vaut plus.
+- « Chaque concept a son design et sa navigation et son ux/ui. Donc veille à
+  être original et à penser au bien des users, rendre simple et efficace
+  l'appli, sans oublier les différents types d'interfaces car tout le monde
+  n'a pas la même. Renseigne-toi. »
+- Décidé : Opn-Link a son propre design, sa navigation et son UX. Rien n'est
+  repris du style d'OpenContact.
+- Proposé, à confirmer : on garde d'OpenContact les règles sur les données,
+  l'accessibilité, les tests et la façon de livrer.
+- La recherche sur les usagers et leurs écrans est dans
+  [recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md). La
+  direction du design est à choisir
+  ([questions-ouvertes.md](questions-ouvertes.md)).

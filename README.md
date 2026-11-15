@@ -25,12 +25,12 @@ produit sont tranchées. Les maquettes viennent ensuite.
   décider
 - [docs/carnet.md](docs/carnet.md) : les décisions prises, avec leur date
 - [docs/recherche/](docs/recherche/) : les recherches faites avant de
-  commencer
+  commencer, et celle sur les usagers et leurs écrans
 
-Opn-Link a le même style
-qu'[OpenContact](https://github.com/mahi010110/Open-Contact), l'app de suivi
-de la recherche de stage, et que le lab IA en préparation. Plus tard, les
-trois apps pourront partager la même identité.
+Opn-Link a son propre design, pensé pour les apprenants, les formateurs, le
+centre et les tuteurs, et pour leurs différents écrans. Il partage avec
+[OpenContact](https://github.com/mahi010110/Open-Contact), l'app de suivi de
+la recherche de stage, ses règles sur les données et sa façon de livrer.
 
 Licence : MIT ou Apache-2.0, comme Rust et Tauri. Les fichiers de licence
 arriveront avec le code.

@@ -5,6 +5,16 @@ maquettes avant de coder. Les règles générales, reprises d'OpenContact, sont
 dans [exigences.md](exigences.md). Ce fichier ajoute ce qui est propre à
 Opn-Link.
 
+Le même jour, les premières maquettes, faites avec le style et les habitudes
+d'OpenContact, ont été refusées : Opn-Link aura son propre design, sa
+navigation et son UX. La partie « Ce que font les autres » reste valable. Les
+règles plus bas qui recopient le dessin d'OpenContact (une même app pour
+tous, quatre onglets, le scanner au milieu de la barre, l'onglet qui change
+de couleur) seront revues avec la direction choisie
+([questions-ouvertes.md](questions-ouvertes.md)). La recherche sur les
+usagers et leurs écrans est dans
+[recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md).
+
 ## Le but
 
 Le mainteneur : « intuitive, simple, et efficace sans trop en faire ».
