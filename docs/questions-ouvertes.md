@@ -14,6 +14,12 @@ que Fable 5 doit savoir pour concevoir l'app est dans
 [brief-conception.md](brief-conception.md). Les trois directions explorées
 avant ce choix y sont résumées, partie 10.
 
+### L'étape 1 de Fable 5
+
+Le concept et la navigation proposés sont dans
+[conception.md](conception.md). Les questions qui attendent l'avis du
+mainteneur y sont en partie 10, chacune avec une recommandation.
+
 ### Le ton
 
 Tutoyer partout, comme OpenContact, ou vouvoyer certains usagers ?
