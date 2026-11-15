@@ -36,7 +36,7 @@ L'écran est une page web (HTML, CSS et TypeScript), la même dans le
 navigateur et dans la fenêtre de l'app.
 
 ```
-            l'écran : une page web, style « Utilitaire 98 »
+            l'écran : une page web
                   │                                │
           dans le navigateur                dans l'app Tauri
                   │                                │

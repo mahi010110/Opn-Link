@@ -9,6 +9,15 @@ d'OpenContact donne le détail et les raisons de chaque règle, souvent avec la
 mesure ou la photo qui l'a fait naître. Ce qui ne concerne que les pistes et
 les contacts d'OpenContact ne s'applique pas ici.
 
+Le même jour, après les premières maquettes, le mainteneur a demandé un
+design, une navigation et une UX propres à Opn-Link : « Chaque concept a son
+design et sa navigation et son ux/ui. » Le style d'OpenContact ne s'applique
+donc plus. Les règles sur les données, l'accessibilité, les tests et la façon
+de livrer restent (proposé, à confirmer). Celles qui décrivent le dessin
+d'OpenContact (ses onglets, ses feuilles, son seuil de 901 px) seront revues
+quand la direction du design sera choisie
+([questions-ouvertes.md](questions-ouvertes.md)).
+
 ## Avant d'ajouter une fonction
 
 - Est-ce que ça marche pour quelqu'un qui ouvre le site sur son téléphone,
@@ -53,29 +62,13 @@ les contacts d'OpenContact ne s'applique pas ici.
   propose une autre voie. Rien n'est téléchargé d'Internet au démarrage :
   les bibliothèques sont dans le dépôt, avec leur licence.
 
-## Le style « Utilitaire 98 »
+## Le style
 
-Le kit vient du dépôt d'OpenContact (`styles/tokens/` et `design/`).
-
-- Les couleurs passent toujours par les jetons du kit (`var(--…)`), jamais
-  en dur. Le bleu marine est réservé au cadre de l'app (l'onglet actif, les
-  barres de titre, la sélection), le teal au contenu.
-- Une ligne cochée dans une liste ne change pas de couleur : c'est sa case
-  qui se coche.
-- Des reliefs nets : biseaux, ombres dures, coins droits. Pas de flou, pas
-  de dégradé, pas de coins arrondis.
-- Les boutons ont le relief 98. Un seul bouton principal par écran, rempli
-  d'accent. Un geste qui détruit est rouge, nommé, à part et en dernier.
-- Trois polices et pas d'autre : Silkscreen pour les titres, IBM Plex Mono
-  pour les données (dates, compteurs), Public Sans pour le texte.
-- Les tailles de texte sont en `rem`, pour suivre le réglage du navigateur.
-  Seule la police pixel reste en `px`.
-- Les icônes viennent de pixelarticons. Pas d'emoji.
-- Les objets réagissent tout de suite. Seuls les passages d'un état à un
-  autre glissent, et vite : une feuille qui monte, une fenêtre qui se pose.
-  `prefers-reduced-motion` coupe tout mouvement.
-- Le thème sombre est obligatoire. Le thème se règle sur automatique, clair
-  ou sombre.
+Propre à Opn-Link, à définir avec la direction du design. Quelle que soit
+cette direction, les couleurs passent par des jetons et jamais en dur, les
+tailles de texte sont en `rem` pour suivre le réglage du navigateur,
+l'interface n'a pas d'emoji, `prefers-reduced-motion` coupe tout mouvement, et
+le thème sombre est obligatoire (automatique, clair ou sombre).
 
 ## Téléphone et ordinateur
 

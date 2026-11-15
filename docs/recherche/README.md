@@ -17,6 +17,13 @@ changement depuis le dépôt `Opn...` (branche `claude/sweet-hypatia-p4qlsl`).
   (une même identité entre les apps, les badges, les mineurs) et 8 (le lien
   avec « l'app école ») comptent.
 
+Une recherche a été faite ensuite, le 15 novembre 2026, après le refus des
+premières maquettes :
+
+- [usagers-et-ecrans.md](usagers-et-ecrans.md) : qui sont les apprenants, les
+  formateurs, le centre et les tuteurs, quels écrans ils ont, ce qu'ils
+  reprochent aux outils actuels, et ce que ça change pour le design.
+
 Le rapport déconseille un chat où toute la classe écrit. Opn-Link le suit sur
 ce point : la classe est un fil d'annonces, et chaque apprenant écrit en
 privé à ses formateurs (voir [../carnet.md](../carnet.md), 15 novembre
