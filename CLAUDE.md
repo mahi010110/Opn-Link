@@ -9,7 +9,8 @@ ce qui est déjà décidé. Le détail est dans `docs/`.
 - On discute avant d'agir. Rien ne se code, ne se lance ou ne se publie sans
   le feu vert du mainteneur.
 - Avant de proposer quelque chose, relire `docs/projet.md`,
-  `docs/architecture.md`, `docs/questions-ouvertes.md` et `docs/carnet.md`.
+  `docs/exigences.md`, `docs/architecture.md`, `docs/questions-ouvertes.md`
+  et `docs/carnet.md`.
 - On ne décide pas à la place du mainteneur. Une question qu'il n'a pas
   tranchée va dans `docs/questions-ouvertes.md`, avec une recommandation.
 - Une décision prise est notée dans `docs/carnet.md` avec sa date, puis
@@ -18,8 +19,8 @@ ce qui est déjà décidé. Le détail est dans `docs/`.
 - Un changement visible (un écran, un bouton) est montré au mainteneur en
   captures avant d'arriver dans `main` : avant et après, sur téléphone et sur
   ordinateur.
-- Pas de vraies données d'élèves dans le dépôt. Les exemples et les captures
-  utilisent des données inventées.
+- Pas de vraies données d'apprenants dans le dépôt. Les exemples et les
+  captures utilisent des données inventées.
 
 ## Comment on écrit
 
@@ -52,12 +53,19 @@ Dans le code :
 
 Le détail et les dates sont dans `docs/carnet.md`.
 
+- Les mêmes exigences qu'OpenContact : le style, l'ergonomie,
+  l'accessibilité, les tests et la façon de livrer. Elles sont résumées dans
+  `docs/exigences.md`.
 - Le nom : Opn-Link à l'écran, `opn-link` pour le dépôt et le code.
+- Les mots à l'écran : formateur, apprenant, centre, classe. Jamais prof,
+  élève ou école. La liste complète est dans `docs/projet.md`, partie 4.
 - Le but : un outil utile, libre et gratuit. Pas pour gagner de l'argent.
 - La licence : MIT ou Apache-2.0, comme Rust et Tauri.
 - Une app en Rust qui marche aussi sur le web, avec le même cœur partout. La
   compatibilité et l'évolutivité comptent plus que la vitesse. L'architecture
   proposée est dans `docs/architecture.md`.
+- Le moins de données possible, et une app légère. Chaque donnée a une durée
+  de vie.
 - La première version sort sur le web et en app pour ordinateur. Les apps de
   store pour téléphone viendront plus tard.
 - Elle vise d'abord les centres de formation et le post-bac.
@@ -68,16 +76,17 @@ Le détail et les dates sont dans `docs/carnet.md`.
   adresse qu'OpenContact.
 - Le style d'OpenContact (« Utilitaire 98 »), pris dans son dépôt, jamais
   recopié à la main.
-- La messagerie est dans la première version, même si la recherche la
-  déconseillait. C'est un choix du mainteneur.
-- Le contenu de la première version : `docs/projet.md`, partie 4.
+- La classe est un fil d'annonces où seuls les responsables écrivent. Chaque
+  apprenant écrit en privé à un formateur ou au centre. Les apprenants ne
+  s'écrivent pas entre eux dans Opn-Link.
+- Le contenu de la première version : `docs/projet.md`, partie 5.
 
 ## Les règles à ne jamais casser
 
 Elles viennent d'OpenContact.
 
-1. Ce que l'élève n'a pas choisi de partager ne part pas. Il voit ce qui va
-   partir avant l'envoi, et peut arrêter quand il veut.
+1. Ce que l'apprenant n'a pas choisi de partager ne part pas. Il voit ce qui
+   va partir avant l'envoi, et peut arrêter quand il veut.
 2. On n'écrase jamais des données sans prévenir : un aperçu avant, un bouton
    « Annuler » après les gestes importants.
 3. Un écran sert à une seule chose.
@@ -90,9 +99,9 @@ Elles viennent d'OpenContact.
 
 ## Les autres dépôts
 
-- OpenContact (`mahi010110/Open-Contact`, public) : son `CLAUDE.md` décrit le
-  style et les règles d'interface, son `CONTRAT.md` les formats qu'Opn-Link
-  devra lire.
+- OpenContact (`mahi010110/Open-Contact`, public) : son `CLAUDE.md` décrit en
+  détail le style, l'ergonomie et la façon de livrer, son `CONTRAT.md` les
+  formats qu'Opn-Link devra lire.
 - Le lab IA : sa doc est dans `mahi010110/Opn...` (public), branche
   `claude/sweet-hypatia-p4qlsl`, dossier `docs/projets/`.
 - Ce dépôt est privé.

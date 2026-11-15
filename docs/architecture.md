@@ -14,7 +14,7 @@ Concrètement :
 
 - une app installée sur l'ordinateur, écrite en Rust, qui garde ses données
   sur le disque, et plus tard la même sur téléphone ;
-- un site où un élève rejoint sa classe depuis son téléphone, sans rien
+- un site où un apprenant rejoint sa classe depuis son téléphone, sans rien
   installer ;
 - le site et l'app ne se contredisent jamais, une ancienne version comprend
   une nouvelle, et on peut ajouter l'émargement, les documents ou plusieurs
@@ -93,7 +93,7 @@ tournent deux fois : en Rust normal et dans un navigateur.
 
 ### Avec OpenContact
 
-Juste après la première version, l'élève enverra un résumé de sa recherche
+Juste après la première version, l'apprenant enverra un résumé de sa recherche
 depuis OpenContact. Plus tard, les deux apps partageront aussi une identité.
 OpenContact est en JavaScript et Opn-Link en Rust, et ils doivent produire
 exactement les mêmes octets.
@@ -128,8 +128,8 @@ utilisateurs perdraient les données gardées dans leur navigateur.
 ### Entre les versions
 
 Sans serveur, les mises à jour n'arrivent pas chez tout le monde en même
-temps. Un élève peut garder une version vieille de trois mois quand son prof
-a la dernière. On suit donc ces règles :
+temps. Un apprenant peut garder une version vieille de trois mois quand son
+formateur a la dernière. On suit donc ces règles :
 
 1. Chaque message et chaque donnée enregistrée porte un numéro de version
    (`v`).
@@ -153,7 +153,7 @@ a la dernière. On suit donc ces règles :
   jours. Une app web ajoutée à l'écran d'accueil a son propre compteur, et
   rien ne s'efface tant qu'on s'en sert. Le site propose donc de l'ajouter à
   l'écran d'accueil, et une copie de secours comme dans OpenContact.
-- Certains élèves ont un vieux téléphone ou un téléphone d'occasion (voir
+- Certains apprenants ont un vieux téléphone ou un téléphone d'occasion (voir
   `recherche/emargement/notes/douleurs_et_local_first.md`, partie 6). Le site
   doit rester léger, et être testé sur un petit téléphone.
 - L'app pour ordinateur vise Windows 10 et 11, macOS et Linux. Sous Linux, la
@@ -168,6 +168,22 @@ au format Open Badges 3.0) et le même système de relais. Voir
 [recherche/ecosysteme/identite_et_multijoueur.md](recherche/ecosysteme/identite_et_multijoueur.md),
 parties 6 et 8.
 
+## Le moins de données possible
+
+Le mainteneur veut une app légère, qui garde le moins de données possible et
+seulement ce qui compte (15 novembre 2026). Chaque donnée a donc une durée de
+vie, écrite dans le contrat.
+
+| Donnée | Durée |
+|---|---|
+| Une annonce | jusqu'à ce qu'un responsable la retire |
+| Un message privé | tant que la classe existe |
+| Les autres (demandes, suivi, fin d'une classe) | à fixer, voir [questions-ouvertes.md](questions-ouvertes.md) |
+
+Les relais ne gardent rien plus de 30 jours. Ce qui dure plus longtemps vit
+sur les appareils. Comment un apprenant qui arrive en cours d'année reçoit les
+annonces plus anciennes : à régler au prototype.
+
 ## Évolutivité
 
 - Le cœur est découpé par fonction : la classe, les messages, les demandes,
@@ -177,12 +193,12 @@ parties 6 et 8.
   version 2 sans la montrer.
 - Le transport est séparé du reste. Aujourd'hui, ce sont les relais Nostr.
   Plus tard, on pourra passer en direct sur le Wi-Fi de la classe, ou faire
-  de l'app du prof un relais pour sa classe, sans toucher aux règles.
+  de l'app du formateur un relais pour sa classe, sans toucher aux règles.
 - Le stockage aussi : SQLite ou IndexedDB, avec les migrations faites à la
   lecture.
-- Toutes les données sont rangées par classe, avec un identifiant, dès le
-  début. Gérer plusieurs classes ou tout un centre (version 3) ne demandera
-  pas de tout reprendre.
+- Toutes les données sont rangées par classe, avec un identifiant. On peut
+  être dans plusieurs classes dès la première version, et gérer tout un
+  centre (version 3) ne demandera pas de tout reprendre.
 - Les formats seront décrits et testés dans `contrat.md`, créé en même temps
   que le code.
 - La licence est libre dès le début (MIT ou Apache-2.0), pour que d'autres
@@ -190,12 +206,12 @@ parties 6 et 8.
 
 ## Les risques à tester tôt
 
-- Le Wi-Fi des écoles bloque souvent les connexions directes entre appareils
-  (voir
+- Le Wi-Fi des centres de formation bloque souvent les connexions directes
+  entre appareils (voir
   [identite_et_multijoueur.md](recherche/ecosysteme/identite_et_multijoueur.md),
   partie 2). La première version passe donc par les relais, et doit être
   essayée dans une vraie classe le plus tôt possible.
-- Tous les téléphones d'une école sortent par la même adresse Internet, et
+- Tous les téléphones d'un centre sortent par la même adresse Internet, et
   les relais publics peuvent limiter ce trafic.
 - Un message sur un relais fait au plus 64 Ko environ, et reste 30 jours au
   maximum. Seuls les petits fichiers passent, et l'historique est gardé sur

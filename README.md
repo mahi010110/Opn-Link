@@ -1,15 +1,18 @@
 # Opn-Link
 
-Opn-Link relie l'école, les profs et les élèves d'une classe. On s'y écrit,
-on s'y demande des documents, et le prof voit où en est chaque élève dans sa
-recherche de stage ou d'alternance. L'app est libre, gratuite, et marche sans
-serveur à payer.
+Opn-Link relie le centre de formation, les formateurs et les apprenants
+d'une classe. Le centre et les formateurs y passent leurs annonces, chaque
+apprenant peut leur écrire en privé, on s'y demande des documents, et les
+formateurs voient où en est chacun dans sa recherche de stage ou
+d'alternance. L'app est libre, gratuite, et marche sans serveur à payer.
 
 Rien n'est codé pour l'instant. Le cadrage est presque fini, les maquettes
 viennent ensuite.
 
 - [docs/projet.md](docs/projet.md) : ce que fait l'app, et ce que contient la
   première version
+- [docs/exigences.md](docs/exigences.md) : les règles de qualité, reprises
+  d'OpenContact
 - [docs/architecture.md](docs/architecture.md) : une app en Rust qui marche
   aussi sur le web
 - [docs/questions-ouvertes.md](docs/questions-ouvertes.md) : ce qui reste à

@@ -4,6 +4,10 @@ Les décisions dans l'ordre où elles ont été prises. Si ce carnet ne dit pas
 la même chose que [projet.md](projet.md) ou
 [architecture.md](architecture.md), ce sont eux qui ont raison.
 
+Les premières entrées disent « école », « prof » et « élève ». Ces mots ont
+été remplacés le 15 novembre 2026 par « centre », « formateur » et
+« apprenant ».
+
 ## Du 12 au 15 novembre 2026 : l'idée
 
 Repris du carnet d'une première discussion (dépôt `Opn...`, branche
@@ -76,7 +80,8 @@ l'espace de vie ».
   commencer opn-link ».
 - La messagerie reste dans la première version, même si le rapport sur
   l'émargement déconseillait un chat comme Discord. Le mainteneur : « il
-  fallait quand même avoir la possibilité de discuter ».
+  fallait quand même avoir la possibilité de discuter ». Plus tard dans la
+  journée, il a écarté le fil où toute la classe discute (voir plus bas).
 - Le mainteneur demande une app en Rust qui marche aussi sur le web, et de
   faire attention à la compatibilité et à l'évolutivité. La proposition
   d'architecture est dans [architecture.md](architecture.md).
@@ -88,7 +93,7 @@ l'espace de vie ».
   qu'écrit une IA : pas de tournures bizarres, pas de commentaires partout.
   La règle est dans `CLAUDE.md`, partie « Comment on écrit ».
 
-### Les décisions du jour
+### Les premières décisions
 
 - Création d'une classe : un prof ou l'école peut créer une classe. Celui qui
   la crée en est le chef.
@@ -111,3 +116,38 @@ l'espace de vie ».
   d'abord demandé « comme OpenContact ? », mais la licence d'OpenContact est
   propriétaire à source visible, donc pas libre. Il a choisi la licence
   libre, qui permet aussi de signer gratuitement l'app Windows.
+
+### Les décisions suivantes
+
+- Les mêmes exigences qu'OpenContact. Le mainteneur : « Je souhaite les
+  mêmes exigences que OpenContact ! ». Elles sont résumées dans
+  [exigences.md](exigences.md).
+- Si le chef s'en va, il passe la main à un autre responsable par un geste
+  signé. Sa phrase de secours sauve sa clé si son téléphone est perdu.
+- On peut être dans plusieurs classes dès la première version, avec une
+  limite à fixer.
+- Chacun apparaît avec son prénom et son nom.
+- Les apprenants ne s'écrivent pas en privé entre eux dans Opn-Link. Le
+  mainteneur ajoute une idée : les apprenants d'une classe qui connectent
+  OpenContact deviennent amis dans OpenContact, automatiquement. Elle fait
+  partie du lien avec OpenContact.
+- Pas de « vu », comme dans OpenContact. Une demande est envoyée, puis faite.
+- Une demande vise un apprenant, plusieurs, ou toute la classe. Le mainteneur
+  trouvait les deux options proposées bien ; on garde celle qui couvre les
+  deux.
+- Le moins de données possible. Le mainteneur : « Le but c'est d'avoir le
+  moins de données possible. Le plus important reste. Ce qui serait cool
+  c'est de faire une app légère. »
+- Pas de fil où toute la classe discute. Le mainteneur : « faire un groupe où
+  toute la classe peut discuter, je pense pas que ce soit une bonne idée ».
+  Avis de Claude, du même côté : les apprenants ont déjà leurs groupes, un fil
+  ouvert demanderait de la modération alors que le signalement vient plus
+  tard, et il garderait beaucoup de données. La classe devient un fil
+  d'annonces où seuls les responsables écrivent, et un apprenant répond à une
+  annonce en privé, à son auteur. Le mainteneur avait d'abord trouvé les
+  trois formes proposées pour les annonces intéressantes.
+- Les messages privés restent tant que la classe existe.
+- Une annonce reste jusqu'à ce qu'un responsable la retire.
+- Signaler un message : plus tard.
+- On retrouve ses classes sur plusieurs appareils dès la première version.
+- Les mots à l'écran : formateur, apprenant, centre.

@@ -7,16 +7,24 @@ décision est notée dans [carnet.md](carnet.md) avec sa date, et reportée dans
 
 ## Le produit
 
-### Qui prend la place du chef quand il s'en va ?
+### Que devient une classe à la fin de la formation ?
 
-Un prof ou l'école peut créer une classe, et celui qui la crée en est le
-chef. Mais un prof peut changer d'école, ou l'école peut vouloir reprendre
-une classe créée par un prof. Dans OpenContact, le chef d'un groupe ne peut
-pas être remplacé.
+Les messages privés restent tant que la classe existe. Il faut donc un moment
+où elle s'arrête, et savoir ce qui reste après. C'est aussi là que se règle la
+durée des demandes et du suivi.
 
-Recommandation : le chef peut passer la main à un autre responsable, par un
-geste signé. Sa clé est sauvée par la phrase de secours, comme dans
-OpenContact, pour qu'un téléphone perdu ne bloque pas la classe.
+Recommandation : le chef ferme la classe. Les annonces, les messages, les
+demandes et le suivi s'effacent alors de tous les appareils. Avant, le centre
+peut exporter ce qu'il doit garder (le tableau de bord, les documents reçus).
+
+### Combien de classes au plus ?
+
+On peut être dans plusieurs classes, avec une limite. OpenContact s'arrête à
+5 groupes, et un formateur peut avoir plus de classes que ça.
+
+Recommandation : fixer le chiffre au prototype, en mesurant ce que coûte une
+classe de plus (chaque classe ajoute des abonnements sur les relais). Une
+dizaine semble un bon point de départ.
 
 ## La technique, à trancher au début du code
 
@@ -47,7 +55,10 @@ son propre dépôt.
   sans chemin) se réglera au premier déploiement.
 - Vérifier que le nom est libre ailleurs : nom de domaine, INPI. Des noms
   proches comme « OpenLink » existent déjà.
-- Trouver un prof et une classe pour tester tôt. Le Wi-Fi d'une vraie école
-  et la limite des relais publics ne se mesurent que sur place.
+- Trouver un formateur et une classe pour tester tôt. Le Wi-Fi d'un vrai
+  centre et la limite des relais publics ne se mesurent que sur place.
 - Ajouter les fichiers de licence (MIT et Apache-2.0) avec le premier commit
   de code.
+- Quand on fera le lien avec OpenContact, écrire dans son `CLAUDE.md` et son
+  `CONTRAT.md` les deux nouveautés : le résumé envoyé aux responsables, et
+  l'amitié automatique entre apprenants d'une même classe.

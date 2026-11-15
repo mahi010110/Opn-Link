@@ -17,8 +17,10 @@ changement depuis le dépôt `Opn...` (branche `claude/sweet-hypatia-p4qlsl`).
   (une même identité entre les apps, les badges, les mineurs) et 8 (le lien
   avec « l'app école ») comptent.
 
-Le rapport déconseille la messagerie. Opn-Link la garde quand même, c'est un
-choix du mainteneur (voir [../carnet.md](../carnet.md), 15 novembre 2026).
+Le rapport déconseille un chat où toute la classe écrit. Opn-Link le suit sur
+ce point : la classe est un fil d'annonces, et chaque apprenant écrit en
+privé à ses formateurs (voir [../carnet.md](../carnet.md), 15 novembre
+2026).
 
 Ce que ces recherches changent pour Opn-Link est résumé dans
-[../projet.md](../projet.md), partie 7.
+[../projet.md](../projet.md), partie 8.
