@@ -171,3 +171,72 @@ l'espace de vie ».
 - À la fin de la formation, le chef ferme la classe. Tout s'efface chez les
   apprenants et les formateurs, et le centre garde ce que la loi lui demande
   (les feuilles de présence et les documents signés, de 5 à 10 ans).
+
+### Les zones d'ombre, éclaircies avant les maquettes
+
+Le mainteneur : « Je préfère qu'on sache tout dès maintenant ! On fait la
+maquette quand toutes les zones d'ombre sont élucidées. » Claude a relu toute
+la doc et la recherche, et a posé une vingtaine de questions.
+
+- Les rôles : le mainteneur voulait « les deux » (responsables à égalité, et
+  selon la fonction). Par défaut, tous les responsables peuvent tout faire.
+  Le chef peut réserver au centre les documents à signer et les archives,
+  par un réglage.
+- La vérification d'identité : « Si l'école le demande, sinon non. C'est un
+  paramètre comme beaucoup d'autres choses. » C'est un réglage, éteint par
+  défaut. Allumé, le formateur vérifie une fois chaque apprenant, en face à
+  face.
+- La règle des réglages : un réglage existe seulement quand les centres font
+  vraiment différemment. Il a une valeur par défaut, et seul le chef le voit.
+  Le suivi de recherche est aussi un réglage, éteint par défaut.
+- Une signature de présence qui arrive après la clôture ne compte pas. Un
+  apprenant sans réseau montre au formateur un QR qui contient sa signature,
+  avant la clôture.
+- La date d'une feuille est prouvée par un registre public gratuit
+  (OpenTimestamps), qui ne reçoit que son empreinte.
+- Les justificatifs médicaux : la recherche conseillait de ne pas les faire
+  passer par les relais. Le mainteneur : « le passer quand même ». Avec des
+  protections : chiffré pour les seuls responsables, 7 jours au plus sur les
+  relais, l'apprenant prévenu avant l'envoi, effacé de son téléphone une fois
+  reçu.
+- L'export de présence est une feuille commune, avec tout ce que demandent
+  les OPCO et France Travail. Les modèles propres à un financeur viendront à
+  la demande.
+- La présence se fait en salle. Les cours à distance viendront plus tard.
+- Les horaires des demi-journées sont réglés une fois par classe.
+- Un retard ou un départ : la feuille montre l'heure de chaque signature, et
+  le formateur peut noter un retard ou un départ avant de clore.
+- Les documents à signer sont ceux du centre. Opn-Link ne fabrique aucun
+  document.
+- La signature d'un document : « les deux ». Une page de signature s'ajoute
+  toujours à la fin, et le dessin se pose aussi dans la case du PDF quand il
+  y en a une.
+- La documentation : « les deux ». Chaque classe a sa documentation, et la
+  documentation du centre pour ses formateurs vit dans une classe pour son
+  équipe.
+- Le questionnaire de suivi est prêt à l'emploi et modifiable, chaque
+  semaine par défaut.
+- Quand une classe est fermée, chacun a 30 jours pour télécharger ses
+  propres documents. Une classe sans activité pendant 6 mois se ferme toute
+  seule.
+- Les gros fichiers passent par des serveurs publics gratuits (Blossom),
+  mesurés comme les relais. À défaut, un lien.
+- Les clés : le mainteneur a laissé le choix (« les meilleurs »). P-256 comme
+  OpenContact, pour la compatibilité, pour les lecteurs de PDF signés, pour
+  les futurs portefeuilles d'identité européens, et parce que le navigateur
+  sait protéger ces clés. Les raisons sont dans
+  [architecture.md](architecture.md), partie « Les clés ».
+- Prévenir l'employeur d'un apprenti dès la première version, de deux
+  façons : un mail déjà écrit à son tuteur, et le tuteur qui suit son
+  apprenti dans l'app, où il ne voit que ses présences et ses absences. Le
+  mot à l'écran est « tuteur ».
+- Les petits choix par défaut, acceptés en bloc : on peut corriger son nom ;
+  une annonce peut être modifiée et joindre un document ou un lien ; un
+  apprenant écrit à n'importe quel responsable, et les responsables entre
+  eux ; une demande se répond par un texte, un fichier ou « C'est fait », et
+  peut avoir une date limite ; le centre contresigne un document s'il le
+  veut, et l'entreprise signe en dehors ; qui ne peut pas dessiner tape son
+  nom ; une classe donne son nom et celui du centre ; le suivi s'exporte en
+  tableur ; l'app est en français, prête à être traduite ; les relais en
+  Europe passent d'abord ; pas de lien direct avec EDOF, Kairos ou Chorus
+  Pro ; le style vient du dépôt d'OpenContact par un script.

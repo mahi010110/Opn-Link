@@ -98,6 +98,8 @@ test les gardent.
 | Publier une annonce | formateur | écrire, « Publier » |
 | Répondre à une demande | apprenant | ouvrir la demande, joindre le fichier, « Envoyer » |
 | Voir qui n'a pas répondu | formateur | 1 geste depuis « Aujourd'hui » |
+| Prévenir l'entreprise d'une absence | responsable | 1 geste : le mail s'ouvre déjà écrit |
+| Vérifier une identité, si le centre le demande | formateur | une fois par apprenant : regarder sa pièce, scanner son QR |
 
 ## Les règles d'Opn-Link
 
@@ -119,13 +121,15 @@ test les gardent.
    pas de compte, ni Bluetooth ni localisation. Si la caméra ne marche pas,
    l'apprenant signe sur l'appareil du formateur.
 6. L'appel marche même sans réseau dans la salle. Le QR du formateur contient
-   tout ce qu'il faut pour signer. La signature part dès que le téléphone
-   retrouve le réseau, ou l'apprenant la montre au formateur sous forme de QR.
-7. À la clôture de l'appel, chaque case vide devient « absent » sur la feuille.
-   Le formateur ne recopie rien.
+   tout ce qu'il faut pour signer. Un apprenant sans réseau montre au
+   formateur un QR qui contient sa signature, avant la clôture.
+7. Avant de clore, le formateur voit qui manque, et peut noter un retard ou un
+   départ. À la clôture, chaque case vide devient « absent », et plus rien
+   n'entre. Le formateur ne recopie rien.
 8. Un document se lit en entier avant d'être signé. « Signer » est en bas, à
-   portée de pouce. On dessine sa signature une fois, et elle vaut pour tous
-   les documents envoyés ensemble.
+   portée de pouce. On dessine sa signature une fois (ou on tape son nom), et
+   elle vaut pour tous les documents envoyés ensemble. Elle s'ajoute sur une
+   page à la fin, et dans la case du PDF quand il y en a une.
 9. Ce qu'on reçoit reste signalé chez soi tant qu'on ne l'a pas ouvert. Rien
    ne dit à l'autre quand on l'a ouvert.
 10. Les mêmes mots pour les mêmes états, partout : une demande est envoyée ou
@@ -139,6 +143,17 @@ test les gardent.
 13. À l'ordinateur, le formateur a plus de place, pas plus de fonctions :
     « Aujourd'hui » en colonnes, le suivi en tableau, et l'appel en plein
     écran pour être projeté.
+14. Peu de réglages. Un réglage existe seulement quand les centres font
+    vraiment différemment. Il a une valeur par défaut, et seul le chef le
+    voit, dans les réglages de la classe.
+15. Quand le centre demande de vérifier les identités, ça se fait pendant le
+    premier appel. La liste montre les apprenants pas encore vérifiés, et le
+    formateur les vérifie un par un.
+16. Le tuteur ne voit que ses apprentis : leurs présences et leurs absences.
+    Ni les annonces, ni les messages, ni les autres apprenants. Il n'a que
+    deux onglets, Aujourd'hui et Moi.
+17. Un justificatif médical est annoncé comme tel avant l'envoi : l'apprenant
+    sait qu'il ira seulement aux responsables.
 
 ## Sans trop en faire
 
@@ -173,6 +188,12 @@ Dans une classe :
   l'apprenant.
 - Membres : qui est là et avec quel rôle, inviter, passer la main, fermer la
   classe.
+- Réglages : seulement chez le chef.
+
+Chez un tuteur :
+
+- Aujourd'hui : les présences et les absences de ses apprentis.
+- Moi : son nom, ses appareils, le thème.
 
 Les feuilles, qui s'ouvrent par-dessus un écran :
 
@@ -187,6 +208,9 @@ Les feuilles, qui s'ouvrent par-dessus un écran :
 - Envoyer un document
 - Le questionnaire de suivi : l'envoyer, y répondre
 - Inviter : le QR et le code de la classe
+- Inviter un tuteur : son lien à lui
+- Vérifier une identité
+- Justifier une absence
 
 ## Comment on vérifie
 

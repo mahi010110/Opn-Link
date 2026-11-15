@@ -69,7 +69,7 @@ plus.
 |---|---|---|
 | Stockage | SQLite, sur le disque | IndexedDB |
 | Relais Nostr | en Rust, même fenêtre fermée | le WebSocket du navigateur, tant que la page est ouverte |
-| Secrets | le trousseau du système | le stockage du navigateur, chiffré si l'utilisateur met un code |
+| Secrets | le trousseau du système | des clés WebCrypto non exportables, que la page ne peut pas lire |
 | Prévenir | une notification du système, tant que l'app tourne | l'écran « Aujourd'hui », à l'ouverture |
 
 ## Ce que fait le site, ce que fait l'app
@@ -171,6 +171,81 @@ au format Open Badges 3.0) et le même système de relais. Voir
 [recherche/ecosysteme/identite_et_multijoueur.md](recherche/ecosysteme/identite_et_multijoueur.md),
 parties 6 et 8.
 
+## Les clés
+
+Décidé le 15 novembre 2026. Le mainteneur a laissé le choix : « les
+meilleurs ».
+
+- P-256 pour chiffrer et pour signer, avec deux clés séparées : une pour la
+  boîte aux lettres (ECDH), une pour signer (ECDSA). Ce sont les mêmes
+  familles de clés qu'OpenContact.
+- Des clés jetables secp256k1 pour signer les événements Nostr, comme dans
+  OpenContact : un relais ne peut pas relier deux messages à la même
+  personne.
+- Opn-Link sait aussi lire Ed25519, qu'OpenContact utilise pour ses
+  appareils, si le lien avec OpenContact en a besoin.
+
+Pourquoi P-256 :
+
+- OpenContact l'utilise déjà pour sa boîte aux lettres et pour les rôles de
+  ses groupes, donc les deux apps se comprennent sans traduction ;
+- les lecteurs de PDF signés (Adobe et les autres) savent vérifier une
+  signature sur cette courbe, ce qui compte pour la feuille de présence et
+  les documents signés ;
+- les portefeuilles d'identité européens s'appuient sur la même courbe, ce
+  qui laisse la porte ouverte à une signature qualifiée plus tard ;
+- sur le site, le navigateur peut garder la clé sans jamais la donner à la
+  page (une clé « non exportable » de WebCrypto). Le cœur demande alors à
+  l'adaptateur de signer.
+
+## La preuve d'une présence ou d'une signature
+
+La recherche dit ce qu'il faut pour qu'une feuille de présence ou un document
+signé tienne lors d'un contrôle. Voici comment Opn-Link le fait.
+
+- Qui a signé : la clé de l'appareil de l'apprenant. Quand le centre le
+  demande, le formateur a validé cette clé en face à face, pièce d'identité à
+  l'appui, et sa validation est signée.
+- Quand : la signature contient le code du QR, qui change toutes les quelques
+  secondes et que l'appareil du formateur a affiché à un moment connu. À la
+  clôture, l'empreinte de la feuille part vers OpenTimestamps, un registre
+  public gratuit, qui prouve qu'elle existait à cette date.
+- Rien n'a changé : chaque signature, chaque contreseing et chaque correction
+  entre dans un journal où l'on peut seulement ajouter, et chaque ligne
+  contient l'empreinte de la précédente. Ce journal est gardé chez le centre,
+  le formateur et l'apprenant. Un appareil perdu n'efface pas la preuve, et
+  une modification se voit.
+- Pas de rattrapage : après la clôture, aucune signature n'entre plus, sauf
+  une correction du formateur, qui reste dans le journal.
+- Lisible par un contrôleur : l'export est un PDF/A signé (PAdES), avec un
+  paquet de preuve (le journal, les clés publiques, les vérifications
+  d'identité, les preuves OpenTimestamps) et une notice qui explique comment
+  tout vérifier.
+
+## Ce qui ne passe pas par le fil de la classe
+
+- Le tuteur ne reçoit pas le code de la classe, qui ouvrirait les annonces.
+  Il a sa propre clé, et les responsables lui envoient par sa boîte aux
+  lettres seulement les présences et les absences de ses apprentis.
+- Le mail préparé pour l'entreprise est un lien `mailto:`. Il s'ouvre dans la
+  messagerie du responsable, et Opn-Link n'envoie rien lui-même.
+- Un justificatif médical part dans la boîte aux lettres des seuls
+  responsables. Il expire au bout de 7 jours sur les relais. Quand un
+  responsable l'a reçu, son app le dit à celle de l'apprenant, qui l'efface.
+
+## Les gros fichiers
+
+- Au-dessus de 500 Ko environ, le fichier est chiffré, puis déposé sur un
+  serveur public gratuit qui suit le protocole Blossom et le range sous son
+  empreinte. La clé part avec le message, par les relais. Le serveur ne voit
+  que du bruit.
+- Comme les relais d'OpenContact, ces serveurs sont mesurés avant d'être
+  retenus : un serveur qui répond ne garde pas forcément les fichiers. Un
+  serveur qui refuse ou perd un fichier est écarté, sur l'appareil qui l'a
+  constaté.
+- À défaut, on colle un lien vers l'espace où le centre range déjà ses
+  fichiers.
+
 ## Le moins de données possible
 
 Le mainteneur veut une app légère, qui garde le moins de données possible et
@@ -182,6 +257,10 @@ vie, écrite dans le contrat.
 | Une annonce | jusqu'à ce qu'un responsable la retire, au plus jusqu'à la fermeture de la classe |
 | Un message privé, une demande, le suivi, la documentation | jusqu'à la fermeture de la classe |
 | Une feuille de présence, un document signé | chez le centre (ou le chef), de 5 à 10 ans ; chez les autres, jusqu'à la fermeture de la classe |
+| Un justificatif médical | au plus 7 jours sur les relais, effacé du téléphone de l'apprenant une fois reçu ; chez les responsables, jusqu'à la fermeture de la classe |
+| L'adresse du tuteur | jusqu'à la fermeture de la classe |
+| Un gros fichier sur un serveur Blossom | jusqu'à la fermeture de la classe, puis supprimé quand le serveur le permet |
+| Une classe | fermée par le chef, ou toute seule après 6 mois sans activité ; ensuite, 30 jours pour télécharger ses documents, puis tout s'efface |
 
 Les relais ne gardent rien plus de 30 jours. Ce qui dure plus longtemps vit
 sur les appareils, et les archives du centre vivent dans son app pour
@@ -229,6 +308,15 @@ prototype.
 - La feuille de présence exportée doit être acceptée par les financeurs. La
   recherche conseille de la faire valider par deux ou trois OPCO et un
   certificateur Qualiopi avant qu'un centre compte dessus pour être payé.
+- Les justificatifs médicaux passent par les relais, chiffrés, par choix du
+  mainteneur. La loi sur l'hébergement des données de santé (HDS) n'est pas
+  tranchée pour des relais qui ne voient que du chiffré.
+- OpenTimestamps depuis le navigateur : l'accès à ses serveurs, et le délai
+  avant que la preuve soit complète. À vérifier.
+- La signature PAdES d'un PDF, et la lecture des cases de signature d'un PDF
+  existant, en Rust et en WebAssembly. À vérifier au prototype.
+- Les serveurs Blossom publics : combien acceptent un fichier sans compte, et
+  le gardent assez longtemps. À mesurer.
 - Publier chez Apple coûte 99 $ par an, pour signer l'app macOS et publier
   sur iOS. La signature de l'app Windows est gratuite pour un projet sous
   licence libre, avec la SignPath Foundation. Linux ne coûte rien. En
@@ -245,5 +333,9 @@ prototype.
 | Chiffrement | RustCrypto (`p256`, `aes-gcm`, `hkdf`, `pbkdf2`, `sha2`, `ed25519-dalek`) |
 | Relais Nostr | `rust-nostr`, qui annonce marcher en natif et dans le navigateur (à vérifier) |
 | Stockage | SQLite (`rusqlite`) dans l'app, IndexedDB dans le navigateur |
+| PDF | `lopdf` pour lire un PDF, trouver ses cases de signature et ajouter une page ; la signature PAdES est à vérifier |
+| Date des feuilles | OpenTimestamps, un registre public gratuit |
+| Gros fichiers | serveurs Blossom publics, mesurés comme les relais |
+| Mail à l'entreprise | un lien `mailto:` |
 | Interface | HTML, CSS et TypeScript, avec le style du kit d'OpenContact. Avec ou sans React : au prototype |
 | Tests | `cargo test` en natif, `wasm-bindgen-test` dans un navigateur, Playwright sur Chromium, WebKit et Firefox |

@@ -8,7 +8,7 @@ Les autres noms envisagés au départ : Préau, Liaison, Relais, OpenPromo,
 Le Fil.
 
 Rien n'est codé. Ce fichier dit ce qui est décidé, et
-[questions-ouvertes.md](questions-ouvertes.md) ce qui reste à trancher. Les
+[questions-ouvertes.md](questions-ouvertes.md) ce qui reste à mesurer. Les
 règles de qualité, reprises d'OpenContact, sont dans
 [exigences.md](exigences.md), et celles de l'UX et du design dans
 [ux.md](ux.md).
@@ -29,6 +29,7 @@ formation, puis un espace commun au centre, aux formateurs et aux apprenants.
   sur Classroom.
 - Se demander des choses (« envoie ta convention », « justifie ton
   absence ») et suivre la demande.
+- Prévenir l'entreprise des absences d'un apprenti.
 - Suivre l'avancée de chaque apprenant, surtout sa recherche de stage ou
   d'alternance (pas d'emploi), avec OpenContact ou par des questions
   régulières.
@@ -41,6 +42,9 @@ formation, puis un espace commun au centre, aux formateurs et aux apprenants.
   [architecture.md](architecture.md).
 - Le moins de données possible, et une app légère. Ce qui compte reste, le
   reste s'efface ou n'est jamais gardé.
+- Peu de réglages. Un réglage existe seulement quand les centres font
+  vraiment différemment. Il a une valeur par défaut, et seul le chef de la
+  classe le voit.
 - Pas de serveur à payer, comme OpenContact. Les données restent sur les
   appareils, des relais Nostr publics servent à se trouver et à garder les
   messages, les appareils se parlent aussi en direct, et un QR code sert
@@ -66,6 +70,7 @@ produit.
 | la personne qui suit la formation | apprenant | élève, étudiant, stagiaire |
 | la personne qui enseigne | formateur | prof, professeur, enseignant |
 | l'établissement | centre | école, organisme, établissement |
+| la personne de l'entreprise qui suit l'apprenant | tuteur | maître d'apprentissage, référent entreprise |
 | le groupe qu'on rejoint | classe | groupe, promo, session |
 | celui qui a créé la classe, ou qui l'a reçue | chef | admin, propriétaire |
 | un responsable nommé par le chef | adjoint | modérateur |
@@ -88,98 +93,161 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
 1. **Rejoindre une classe**
    - Une classe se rejoint avec un code ou un QR code, comme les groupes
      d'OpenContact.
-   - Un formateur ou le centre peut créer une classe. Celui qui la crée en
-     est le chef. Il nomme des adjoints (d'autres formateurs, ou le centre
-     s'il arrive après), et peut passer la main à l'un d'eux par un geste
-     signé.
+   - Un formateur ou le centre peut créer une classe. Il donne son nom, celui
+     du centre, et les horaires du matin et de l'après-midi. Celui qui la crée
+     en est le chef.
    - On peut être dans plusieurs classes, avec une limite comme pour les
      groupes d'OpenContact.
-   - Chacun apparaît avec son prénom et son nom.
+   - Chacun apparaît avec son prénom et son nom. Chacun peut corriger le
+     sien, et les responsables voient l'ancien.
    - Les apprenants entrent sur demande. Retirer un membre change le code de
      la classe.
-2. **Les annonces**
+   - Si le centre le demande, le formateur vérifie une fois l'identité de
+     chaque apprenant : il regarde sa pièce d'identité et valide son
+     téléphone en scannant son QR.
+2. **Les responsables et les réglages**
+   - Le chef nomme des adjoints : d'autres formateurs, ou le centre s'il
+     arrive après. À côté de chaque responsable s'écrit « formateur » ou
+     « centre ».
+   - Par défaut, tous les responsables peuvent tout faire : publier, faire
+     l'appel, envoyer et faire signer des documents, voir le suivi. Seul le
+     chef nomme les adjoints, règle la classe, passe la main à un autre
+     responsable par un geste signé, et ferme la classe.
+   - Les réglages de la classe, que seul le chef voit : vérifier l'identité
+     des apprenants (éteint), réserver au centre les documents à signer et
+     les archives (éteint), le suivi de recherche (éteint), les horaires des
+     demi-journées, le questionnaire de suivi.
+3. **Les annonces**
    - La classe est un fil d'annonces. Seuls les responsables y écrivent.
+   - Une annonce peut joindre un document ou un lien. Son auteur peut la
+     modifier, et elle montre alors « modifiée ».
    - Une annonce reste jusqu'à ce qu'un responsable la retire.
-3. **Les messages privés**
-   - Un apprenant écrit en privé à un formateur ou au centre. Il peut
-     répondre à une annonce : sa réponse part en privé à l'auteur de
-     l'annonce.
+4. **Les messages privés**
+   - Un apprenant écrit en privé à n'importe quel responsable de sa classe.
+     Les responsables peuvent aussi s'écrire entre eux. Quand un apprenant
+     répond à une annonce, sa réponse part en privé à l'auteur de l'annonce.
    - Les apprenants ne s'écrivent pas entre eux dans Opn-Link. Ils le font
      dans OpenContact (partie 6).
    - Ni « vu » ni « en train d'écrire », comme dans OpenContact.
-4. **La présence**
-   - Pour chaque demi-journée, le formateur lance l'appel. Il affiche un QR
-     code qui change toutes les quelques secondes, sur son écran ou projeté.
+5. **La présence**
+   - Pour chaque demi-journée, le formateur lance l'appel. L'app propose la
+     demi-journée en cours, avec les horaires de la classe, qu'on peut
+     changer. Le formateur affiche un QR code qui change toutes les quelques
+     secondes, sur son écran ou projeté.
    - L'apprenant signe en visant le QR, d'un seul geste, avec la clé de son
      appareil. La signature est liée à cette demi-journée et ne peut pas
      resservir. Il n'y a rien à dessiner.
    - Un apprenant sans smartphone, sans téléphone autorisé, ou dont la caméra
-     ne marche pas, signe sur l'appareil du formateur.
-   - L'appel marche même sans réseau dans la salle : la signature part plus
-     tard, ou passe au formateur par un QR.
+     ne marche pas, signe sur l'appareil du formateur. Un apprenant sans
+     réseau montre au formateur un QR qui contient sa signature.
+   - Avant de clore, le formateur voit qui manque, et peut noter un retard ou
+     un départ. La feuille montre l'heure de chaque signature.
    - Le formateur clôt l'appel et contresigne. Chaque case vide devient
-     « absent ».
-   - La feuille de présence s'exporte en PDF, au modèle demandé par chaque
-     financeur.
-5. **Les documents**
+     « absent ». Après la clôture, plus rien n'entre, sauf une correction du
+     formateur, qui reste visible.
+   - À la clôture, l'empreinte de la feuille part vers un registre public
+     gratuit (OpenTimestamps), sans aucune donnée personnelle. Il prouve que
+     la feuille existait à cette date, et personne ne peut plus l'antidater.
+   - La feuille de présence s'exporte en PDF. C'est une feuille commune, qui
+     contient tout ce que demandent les OPCO et France Travail : l'intitulé,
+     les dates, les horaires, le centre, les noms, les signatures par
+     demi-journée et les absences. Les modèles propres à un financeur
+     viendront à la demande.
+   - La présence se fait en salle. Les cours à distance viendront plus tard.
+6. **Les absences**
+   - L'apprenant peut dire pourquoi il était absent, et joindre un
+     justificatif, même médical.
+   - Un justificatif médical est chiffré pour les seuls responsables, jamais
+     pour la classe. Il reste au plus 7 jours sur les relais. L'apprenant est
+     prévenu avant l'envoi, et le justificatif disparaît de son téléphone une
+     fois reçu.
+   - Pour un apprenti, un responsable peut prévenir son entreprise. Un geste
+     ouvre un mail déjà écrit à son tuteur : la date, la demi-journée,
+     justifiée ou non, jamais le motif médical.
+   - Le tuteur peut aussi suivre son apprenti dans l'app, invité par un
+     responsable avec un lien à lui. Il ne voit que les présences et les
+     absences de son ou ses apprentis, rien d'autre de la classe.
+7. **Les documents**
    - Le centre ou un formateur envoie un document à un apprenant, à plusieurs
      ou à toute la classe.
-   - Un document peut être à signer : la convention, le règlement intérieur
-     (accusé de remise), une attestation. L'apprenant le lit en entier, signe
-     d'un geste avec la clé de son appareil, et dessine sa signature au
-     doigt. Un seul dessin vaut pour tous les documents envoyés ensemble.
+   - Les documents à signer sont ceux du centre : ses propres PDF
+     (convention, règlement intérieur, attestation). Opn-Link ne fabrique
+     aucun document.
+   - L'apprenant lit le document en entier, signe d'un geste avec la clé de
+     son appareil, et dessine sa signature au doigt. S'il ne peut pas
+     dessiner, il tape son nom. Un seul dessin vaut pour tous les documents
+     envoyés ensemble.
+   - Une page de signature s'ajoute toujours à la fin du document : le nom,
+     la date, le dessin, et de quoi vérifier la signature. Si le PDF du
+     centre contient déjà une case de signature, le dessin s'y pose aussi.
+   - Le centre contresigne s'il le veut. L'entreprise, pour une convention de
+     stage, signe en dehors d'Opn-Link.
    - Chaque document signé a son dossier de preuve : l'empreinte du
-     document, l'heure, l'identité, le journal. En option, un prestataire
-     certifié peut horodater l'empreinte seule, sans recevoir aucune donnée
-     personnelle.
-   - Les petits fichiers passent par les relais. Les gros passent en direct
-     quand on est sur le même Wi-Fi, ou par un lien vers l'endroit où le
-     centre range déjà ses fichiers (Drive, Moodle…).
-6. **Les demandes suivies**
+     document, l'heure, l'identité, le journal.
+   - Les petits fichiers passent par les relais. Les gros passent par des
+     serveurs publics gratuits du même genre que les relais (Blossom), chiffrés.
+     À défaut, on colle un lien vers l'endroit où le centre range déjà ses
+     fichiers (Drive, Moodle…).
+8. **Les demandes suivies**
    - Un formateur ou le centre demande quelque chose à un apprenant, à
      plusieurs, ou à toute la classe. Pour chaque apprenant, on voit si la
      demande est envoyée ou faite. Il n'y a pas d'état « vue » : rien ne dit
      au formateur quand l'apprenant l'a ouverte.
-   - L'apprenant répond avec un petit fichier, jusqu'à 500 Ko environ (une
-     photo compressée, un PDF léger).
+   - L'apprenant répond par un texte, un fichier, ou « C'est fait ».
+   - Une demande peut avoir une date limite. Passé cette date, elle
+     s'affiche « en retard » chez les responsables.
    - On relance en un geste.
-7. **La documentation partagée**
-   - Comme sur Classroom, en trois espaces : celle de la formation pour tous,
-     celle d'un formateur pour ses apprenants, celle du centre pour les
-     formateurs.
+9. **La documentation partagée**
+   - Chaque classe a sa documentation. Un document peut être réservé aux
+     responsables.
+   - La documentation du centre pour ses formateurs vit dans une classe que
+     le centre crée pour son équipe.
    - Les fichiers suivent les mêmes règles de taille que les documents.
-8. **Le suivi de la recherche de stage ou d'alternance**
-   - Le formateur envoie un questionnaire régulier (« combien de
-     candidatures cette semaine ? des entretiens ? ») et l'apprenant répond,
-     avec des preuves s'il le veut.
-   - Le lien avec OpenContact arrive juste après la première version
-     (partie 6).
-9. **Le tableau de bord des responsables**
-   - Pour chaque apprenant : où en est sa recherche (trouvé, en cours,
-     bloqué, sans nouvelles), ses absences, ce qu'il lui reste à signer ou à
-     envoyer.
-   - Les relances à faire, et un export du tableau.
-10. **L'écran « Aujourd'hui »**
+10. **Le suivi de la recherche de stage ou d'alternance**
+    - Le chef l'allume pour sa classe.
+    - Un questionnaire tout prêt part chaque semaine : le nombre de
+      candidatures, de réponses, d'entretiens, et « ça avance », « je bloque »
+      ou « j'ai trouvé ». Le formateur peut changer la fréquence et les
+      questions. L'apprenant joint des preuves s'il le veut.
+    - Le lien avec OpenContact arrive juste après la première version
+      (partie 6).
+11. **Le tableau de bord des responsables**
+    - Pour chaque apprenant : où en est sa recherche (trouvé, en cours,
+      bloqué, sans nouvelles), ses absences, ce qu'il lui reste à signer ou à
+      envoyer.
+    - Les relances à faire, et un export du tableau en tableur.
+12. **L'écran « Aujourd'hui »**
     - Ce qui attend : la présence à signer ou l'appel à clore, les documents
       à signer, les demandes, les nouvelles annonces, les messages non lus,
-      les relances. Sur le web, il remplace les notifications, qui ne
-      marchent pas quand la page est fermée. L'app pour ordinateur ajoute des
-      notifications.
-11. **Plusieurs appareils**
+      les relances. Chez un tuteur, les absences de ses apprentis.
+    - Sur le web, il remplace les notifications, qui ne marchent pas quand la
+      page est fermée. L'app pour ordinateur ajoute des notifications.
+13. **Plusieurs appareils**
     - On retrouve ses classes sur l'app de l'ordinateur et sur le site du
       téléphone. Les deux se synchronisent, avec une phrase de secours, comme
       dans OpenContact.
-12. **Fermer la classe**
-    - À la fin de la formation, le chef ferme la classe. Tout s'efface chez
-      les apprenants et les formateurs.
+14. **Fermer la classe**
+    - À la fin de la formation, le chef ferme la classe. Chacun est prévenu
+      et a 30 jours pour télécharger ses propres documents (sa convention,
+      ses attestations). Ensuite tout s'efface chez les apprenants, les
+      formateurs et les tuteurs.
+    - Une classe sans aucune activité pendant 6 mois se ferme de la même
+      façon.
     - Le centre garde ce que la loi lui demande, les feuilles de présence et
       les documents signés, de 5 à 10 ans. Il les garde dans son app pour
       ordinateur et dans des fichiers qu'il range où il veut. Si le centre
       n'est pas dans la classe, c'est le chef qui les garde et les lui
       transmet.
+15. **La langue et les autres outils**
+    - L'app est en français, et ses textes sont rangés pour être traduits
+      plus tard.
+    - Pas de lien direct avec EDOF, Kairos ou Chorus Pro : on exporte, et le
+      centre ressaisit.
 
-Pas dans la première version : signaler un message (plus tard), les appels et
-les visios (version 2), le lien avec le lab IA (version 3).
+Pas dans la première version : signaler un message, les cours à distance,
+les modèles de feuille propres à un financeur et l'horodatage qualifié (plus
+tard), les appels et les visios (version 2), le lien avec le lab IA (version
+3).
 
 ## 6. Les versions suivantes
 
@@ -203,7 +271,12 @@ d'OpenContact sur ce qui sort de l'app, et devra y être écrit.
 
 ### Plus tard, sans version fixée
 
-Signaler un message aux responsables.
+- Signaler un message aux responsables.
+- La présence pour les cours à distance, avec les preuves que demandent les
+  financeurs (temps de connexion, travaux rendus).
+- Les modèles de feuille de présence propres à un financeur, à la demande.
+- L'horodatage qualifié par un prestataire certifié, pour les centres qui en
+  ont un.
 
 ### Version 2
 
@@ -238,8 +311,12 @@ lien vers une salle Jitsi.
   solution par QR. À tester tôt, dans une vraie classe.
 - La signature d'Opn-Link est une signature électronique simple. Seule la
   signature « qualifiée » est présumée fiable devant un juge : avec une
-  signature simple, c'est au centre de prouver. Le dossier de preuve sert à
-  ça.
+  signature simple, c'est au centre de prouver. Le dossier de preuve, la
+  vérification d'identité et le registre public servent à ça.
+- Les justificatifs médicaux passent par les relais, chiffrés, par choix du
+  mainteneur. La loi encadre l'hébergement des données de santé (HDS), et ce
+  n'est pas tranché pour des relais qui ne voient que du chiffré. Les
+  protections de la partie 5 limitent le risque.
 - Le DPC santé exige un émargement à la main : Opn-Link ne convient pas à ces
   formations.
 - Le lien avec OpenContact fait une exception à sa promesse « ton suivi privé
@@ -267,6 +344,11 @@ réglementation dans
   cassation, 5 mars 2026). Avec une signature simple, c'est au centre de
   prouver. D'où le contreseing, le QR qui change, le dossier de preuve et
   l'archive.
+- Une clé créée sur un téléphone prouve « ce téléphone », pas « cette
+  personne ». D'où la vérification d'identité, quand le centre la demande.
+- L'heure d'un appareil se règle à volonté, et l'émargement antidaté est la
+  fraude typique. D'où le registre public, qui date la feuille sans rien
+  savoir d'elle.
 - Une signature scannée n'a pas la valeur d'une signature électronique (Cour
   de cassation, 13 mars 2024). Le dessin des documents rassure, mais la preuve
   vient de la clé et du journal.
@@ -276,8 +358,9 @@ réglementation dans
 - Qualiopi demande de suivre les absences, de garder la trace des relances,
   et pour l'alternance de faire le lien avec l'entreprise. Aider les jeunes à
   trouver un employeur fait même partie des missions légales des CFA.
-- Les justificatifs médicaux sont des données de santé. Ils ne passent jamais
-  par un relais.
+- La recherche conseillait de ne jamais faire passer les justificatifs
+  médicaux par un relais. Le mainteneur a choisi de les faire passer, avec
+  les protections de la partie 5.
 - Le test que conseille la recherche : faire valider la feuille de présence
   exportée par deux ou trois OPCO et un certificateur Qualiopi avant qu'un
   centre compte dessus pour être payé.
@@ -294,9 +377,9 @@ exactement les mêmes octets (voir [architecture.md](architecture.md), partie
 |---|---|
 | Un groupe = un code, dont on tire la clé qui chiffre les messages | La classe |
 | Les rôles chef et adjoint, signés ; retirer quelqu'un change le code | Les responsables et les apprenants |
-| La boîte aux lettres chiffrée pour une seule personne | Les messages privés, les demandes, les documents, plus tard le résumé de recherche |
+| La boîte aux lettres chiffrée pour une seule personne | Les messages privés, les demandes, les documents, le tuteur, plus tard le résumé de recherche |
 | La demande suivie comme un colis | Les demandes suivies |
-| L'identité de chaque appareil (une paire de clés) | La signature de la présence et des documents |
+| Les clés P-256 | Les mêmes, pour chiffrer et pour signer |
 | Le QR qui porte les données dans l'image | L'appel sans réseau |
 | La synchro entre ses appareils, la phrase de secours | La même chose |
 | Le transport : relais Nostr, liaison directe, QR hors ligne | Le même |

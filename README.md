@@ -7,8 +7,8 @@ apprenant peut leur écrire en privé, et les formateurs voient où en est
 chacun dans sa recherche de stage ou d'alternance. L'app est libre, gratuite,
 et marche sans serveur à payer.
 
-Rien n'est codé pour l'instant. Le cadrage est presque fini, les maquettes
-viennent ensuite.
+Rien n'est codé pour l'instant. Le cadrage est fini : toutes les questions de
+produit sont tranchées. Les maquettes viennent ensuite.
 
 - [docs/projet.md](docs/projet.md) : ce que fait l'app, et ce que contient la
   première version

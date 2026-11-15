@@ -59,8 +59,15 @@ Le détail et les dates sont dans `docs/carnet.md`.
 - Une app intuitive, simple et efficace, sans trop en faire. Les exigences
   d'UX et de design propres à Opn-Link sont dans `docs/ux.md`.
 - Le nom : Opn-Link à l'écran, `opn-link` pour le dépôt et le code.
-- Les mots à l'écran : formateur, apprenant, centre, classe. Jamais prof,
-  élève ou école. La liste complète est dans `docs/projet.md`, partie 4.
+- Les mots à l'écran : formateur, apprenant, centre, tuteur, classe. Jamais
+  prof, élève ou école. La liste complète est dans `docs/projet.md`,
+  partie 4.
+- Peu de réglages : un réglage existe seulement quand les centres font
+  vraiment différemment. Il a une valeur par défaut, et seul le chef le voit.
+- Les clés : P-256 comme OpenContact, et des clés jetables pour les relais
+  (`docs/architecture.md`, partie « Les clés »).
+- Toutes les questions de produit ont été tranchées le 15 novembre 2026. Ce
+  qui reste se mesure (`docs/questions-ouvertes.md`).
 - Le but : un outil utile, libre et gratuit. Pas pour gagner de l'argent.
 - La licence : MIT ou Apache-2.0, comme Rust et Tauri.
 - Une app en Rust qui marche aussi sur le web, avec le même cœur partout. La
