@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Appel · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body data-onglet="aujourdhui" data-attend="messages">
+<template id="ecran">
+<div class="page-inner">
+  <div class="td-head"><h1>Aujourd’hui</h1><div class="td-date">lundi 16&nbsp;novembre</div></div>
+  <section class="tranche">
+    <h2 class="tr-h"><i data-ic="check" data-t="ic-14"></i> Présence</h2>
+    <div class="ol-carte">
+      <div class="ol-carte-t">BTS SIO 2, matin</div>
+      <div class="act-sub"><span>9&nbsp;h à 12&nbsp;h&nbsp;30</span><span>18&nbsp;apprenants</span></div>
+      <button class="btn btn-primary"><i data-ic="qr-code" data-t="ic-14"></i> Lancer l’appel</button>
+    </div>
+  </section>
+</div>
+</template>
+<template id="feuille">
+<div class="modal ol-appel" role="dialog" aria-modal="true" aria-label="Appel">
+  <div class="modal-h"><h2><i data-ic="qr-code" data-t="ic-14"></i><span class="mh-t">Appel</span></h2><button class="x" aria-label="Fermer" title="Fermer">✕</button></div>
+  <div class="modal-b">
+    <div class="ol-entete">BTS SIO 2 · lun.&nbsp;16/11 · matin · 9&nbsp;h à 12&nbsp;h&nbsp;30</div>
+    <div class="ol-projection">
+      <div class="ol-proj-qr">
+        <div class="qr-wrap" role="img" aria-label="Le QR de l’appel"><img src="../images/qr-appel.svg" alt=""></div>
+        <p class="ol-code" aria-label="Le code : 482 913">482&nbsp;913</p>
+      </div>
+      <div class="ol-proj-noms">
+        <h3 class="tr-h gr-sec">Pas encore <span class="tr-n">6</span></h3>
+        <ul class="gr-noms">
+          <li><button class="gr-membre"><span>Karim Benali</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Tom Garnier</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Hugo Lefèvre</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Sofia Meriem</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Inès Moreau</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Yanis Ould</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+        </ul>
+        <h3 class="tr-h gr-sec">Signés <span class="tr-n">12</span></h3>
+        <ul class="gr-noms">
+          <li><button class="gr-membre"><span>Lina Robin</span><span class="ol-heure">9&nbsp;h&nbsp;06</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Rayan Lambert</span><span class="ol-heure">9&nbsp;h&nbsp;05</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Zoé Mercier</span><span class="ol-heure">9&nbsp;h&nbsp;04</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Noah Vidal</span><span class="ol-heure">9&nbsp;h&nbsp;04</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Jade Picard</span><span class="ol-heure">9&nbsp;h&nbsp;03</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Adam Colin</span><span class="ol-heure">9&nbsp;h&nbsp;03</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Léa Martin</span><span class="ol-heure">9&nbsp;h&nbsp;02</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Manon Brun</span><span class="ol-heure">9&nbsp;h&nbsp;02</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Lucas Henry</span><span class="ol-heure">9&nbsp;h&nbsp;02</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Nathan Roux</span><span class="ol-heure">9&nbsp;h&nbsp;01</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Chloé Petit</span><span class="ol-heure">9&nbsp;h&nbsp;01</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+          <li><button class="gr-membre"><span>Emma Faure</span><span class="ol-heure">9&nbsp;h&nbsp;01</span><i data-ic="chevron-right" data-t="ic-14"></i></button></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="modal-f"><button class="btn btn-primary">Clore et signer</button></div>
+</div>
+</template>
+<script src="../coque.js"></script>
+</body>
+</html>

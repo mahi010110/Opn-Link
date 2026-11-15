@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scanner sans caméra · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body data-onglet="aujourdhui" data-attend="messages">
+<template id="ecran">
+<div class="page-inner">
+  <div class="td-head"><h1>Aujourd’hui</h1><div class="td-date">lundi 16&nbsp;novembre</div></div>
+  <section class="tranche">
+    <h2 class="tr-h"><i data-ic="check" data-t="ic-14"></i> Présence</h2>
+    <div class="ol-carte">
+      <div class="ol-carte-t">BTS SIO 2, matin</div>
+      <div class="act-sub"><span>L’appel est ouvert</span><span>Awa Diallo</span></div>
+      <button class="btn btn-primary"><i data-ic="qr-code" data-t="ic-14"></i> Signer ma présence</button>
+    </div>
+  </section>
+</div>
+</template>
+<template id="feuille">
+<div class="modal" role="dialog" aria-modal="true" aria-label="Scanner">
+  <div class="modal-h"><h2><i data-ic="qr-code" data-t="ic-14"></i><span class="mh-t">Scanner</span></h2><button class="x" aria-label="Fermer" title="Fermer">✕</button></div>
+  <div class="modal-b">
+    <div class="ol-entete">BTS SIO 2 · lun.&nbsp;16/11 · matin</div>
+    <p class="hint warn">La caméra est bloquée. Autorise-la dans les réglages du navigateur.</p>
+    <div class="field">
+      <label for="code">Ou le code sous le QR</label>
+      <div class="date-row">
+        <input id="code" class="ol-code-champ" inputmode="numeric" autocomplete="one-time-code" maxlength="7" value="482913">
+        <button class="btn btn-primary">Signer</button>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+<script src="../coque.js"></script>
+</body>
+</html>

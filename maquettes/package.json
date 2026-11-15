@@ -1,0 +1,15 @@
+{
+  "name": "opn-link-maquettes",
+  "private": true,
+  "type": "module",
+  "description": "Les maquettes d'Opn-Link, au style d'OpenContact",
+  "scripts": {
+    "style": "node outils/prendre-style.mjs",
+    "qr": "node outils/qr.mjs",
+    "captures": "node outils/captures.mjs"
+  },
+  "devDependencies": {
+    "pixelarticons": "2.4.2",
+    "qrcode": "1.5.4"
+  }
+}
