@@ -9,13 +9,14 @@ d'OpenContact donne le détail et les raisons de chaque règle, souvent avec la
 mesure ou la photo qui l'a fait naître. Ce qui ne concerne que les pistes et
 les contacts d'OpenContact ne s'applique pas ici.
 
-Le même jour, après les premières maquettes, le mainteneur a demandé un
-design, une navigation et une UX propres à Opn-Link : « Chaque concept a son
-design et sa navigation et son ux/ui. » Le style d'OpenContact ne s'applique
-donc plus. Les règles sur les données, l'accessibilité, les tests et la façon
-de livrer restent (proposé, à confirmer). Celles qui décrivent le dessin
-d'OpenContact (ses onglets, ses feuilles, son seuil de 901 px) seront revues
-quand la direction du design sera choisie
+Le même jour, après les premières maquettes, le mainteneur a précisé que
+chaque projet a ses écrans, sa navigation et son UX (« Chaque concept a son
+design et sa navigation et son ux/ui »), mais qu'Opn-Link utilise « le même
+matériel design 98 utilitaire ». Ce fichier garde donc le matériel
+« Utilitaire 98 », et les règles sur les données, l'accessibilité, les tests
+et la façon de livrer (ces dernières : proposé, à confirmer). Les règles qui
+décrivent l'interface d'OpenContact (ses onglets, sa navigation, son seuil de
+901 px) seront revues quand la direction sera choisie
 ([questions-ouvertes.md](questions-ouvertes.md)).
 
 ## Avant d'ajouter une fonction
@@ -62,13 +63,31 @@ quand la direction du design sera choisie
   propose une autre voie. Rien n'est téléchargé d'Internet au démarrage :
   les bibliothèques sont dans le dépôt, avec leur licence.
 
-## Le style
+## Le matériel « Utilitaire 98 »
 
-Propre à Opn-Link, à définir avec la direction du design. Quelle que soit
-cette direction, les couleurs passent par des jetons et jamais en dur, les
-tailles de texte sont en `rem` pour suivre le réglage du navigateur,
-l'interface n'a pas d'emoji, `prefers-reduced-motion` coupe tout mouvement, et
-le thème sombre est obligatoire (automatique, clair ou sombre).
+Il vient du dépôt d'OpenContact : ses jetons (`styles/tokens/`), ses polices,
+ses icônes, et les règles de son kit (`design/`). Les écrans, la navigation
+et l'UX qu'on construit avec, eux, sont propres à Opn-Link.
+
+- Les couleurs passent toujours par les jetons (`var(--…)`), jamais en dur.
+  Le teal est pour ce qui se touche, le bleu marine seulement pour la
+  sélection et les barres de titre.
+- Une ligne cochée dans une liste ne change pas de couleur : c'est sa case
+  qui se coche.
+- Des reliefs nets : biseaux, ombres dures, coins droits (0 ou 2 px), traits
+  de 1 px. Pas de flou, pas de dégradé.
+- Les boutons ont le relief 98. Un seul bouton principal par écran, rempli
+  d'accent. Un geste qui détruit est rouge, nommé, à part et en dernier.
+- Trois polices et pas d'autre : Silkscreen pour les titres (à 8, 16 ou
+  24 px seulement), IBM Plex Mono pour les données (dates, compteurs),
+  Public Sans pour le texte.
+- Les tailles de texte sont en `rem`, pour suivre le réglage du navigateur.
+  Seule la police pixel reste en `px`.
+- Les icônes viennent de pixelarticons. Pas d'emoji.
+- Les objets réagissent tout de suite. Seuls les passages d'un état à un
+  autre glissent, et vite. `prefers-reduced-motion` coupe tout mouvement.
+- Le thème sombre est obligatoire : un anthracite aux traits clairs, pas une
+  inversion. Le thème se règle sur automatique, clair ou sombre.
 
 ## Téléphone et ordinateur
 

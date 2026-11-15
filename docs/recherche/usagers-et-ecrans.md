@@ -4,7 +4,10 @@ Recherche faite le 15 novembre 2026, après le refus des premières maquettes.
 Le mainteneur : « Chaque concept a son design et sa navigation et son ux/ui.
 Donc veille à être original et à penser au bien des users, rendre simple et
 efficace l'appli, sans oublier les différents types d'interfaces car tout le
-monde n'a pas la même. Renseigne-toi. »
+monde n'a pas la même. Renseigne-toi. » Puis : « Juste que opn link utilise
+le même matériel design 98 utilitaire. » Le matériel (jetons, polices,
+icônes, kit) reste donc celui d'OpenContact. Ce sont les écrans, la
+navigation et l'UX qui sont à inventer.
 
 Les chiffres viennent d'enquêtes publiques quand il y en a. Quand une source
 est un article de presse ou un éditeur, c'est dit. Les liens sont à la fin.
@@ -121,7 +124,8 @@ est un article de presse ou un éditeur, c'est dit. Les liens sont à la fin.
 - Deux polices gratuites sont faites pour être lues par tous. Luciole a été
   dessinée en France pour les malvoyants, qui l'ont préférée dans trois tests
   de lecture (sources secondaires). Atkinson Hyperlegible vient du Braille
-  Institute.
+  Institute. Opn-Link garde les polices du matériel « Utilitaire 98 » : ces
+  deux-là ne servent que si un test de lecture montre un problème.
 - Google a testé une hiérarchie plus marquée (taille, couleur, forme) dans
   Material 3 Expressive : le bouton principal était trouvé jusqu'à quatre fois
   plus vite, et les plus âgés le trouvaient aussi vite que les jeunes. C'est

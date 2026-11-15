@@ -57,8 +57,9 @@ formation, puis un espace commun au centre, aux formateurs et aux apprenants.
 - L'apprenant choisit ce qu'il partage et peut arrêter quand il veut.
 - Libre et gratuit, sous licence MIT ou Apache-2.0. Le but est de faire un
   outil utile et de se faire connaître, pas de gagner de l'argent.
-- Un design, une navigation et une UX propres à Opn-Link, pensés pour ses
-  usagers et leurs écrans. D'OpenContact, on garde les règles sur les données,
+- Le matériel de design « Utilitaire 98 » d'OpenContact, avec des écrans,
+  une navigation et une UX propres à Opn-Link, pensés pour ses usagers et
+  leurs écrans. D'OpenContact, on garde aussi les règles sur les données,
   l'accessibilité, les tests et la façon de livrer
   ([exigences.md](exigences.md)).
 
@@ -393,4 +394,4 @@ exactement les mêmes octets (voir [architecture.md](architecture.md), partie
 | Le QR qui porte les données dans l'image | L'appel sans réseau |
 | La synchro entre ses appareils, la phrase de secours | La même chose |
 | Le transport : relais Nostr, liaison directe, QR hors ligne | Le même |
-| Le style « Utilitaire 98 » | Non : Opn-Link a son propre design (15 novembre 2026) |
+| Le style « Utilitaire 98 » | Le même matériel (jetons, polices, icônes, kit), avec des écrans et une navigation propres à Opn-Link |

@@ -5,9 +5,10 @@ maquettes avant de coder. Les règles générales, reprises d'OpenContact, sont
 dans [exigences.md](exigences.md). Ce fichier ajoute ce qui est propre à
 Opn-Link.
 
-Le même jour, les premières maquettes, faites avec le style et les habitudes
-d'OpenContact, ont été refusées : Opn-Link aura son propre design, sa
-navigation et son UX. La partie « Ce que font les autres » reste valable. Les
+Le même jour, les premières maquettes ont été refusées : elles reprenaient
+l'interface d'OpenContact. Opn-Link garde le matériel « Utilitaire 98 », mais
+ses écrans, sa navigation et son UX sont à inventer pour lui. La partie
+« Ce que font les autres » reste valable. Les
 règles plus bas qui recopient le dessin d'OpenContact (une même app pour
 tous, quatre onglets, le scanner au milieu de la barre, l'onglet qui change
 de couleur) seront revues avec la direction choisie

@@ -8,8 +8,10 @@ décisions sont dans [carnet.md](carnet.md) et reportées dans
 ## À choisir avant les maquettes
 
 Le mainteneur a refusé les premières maquettes le 15 novembre 2026 : elles
-reprenaient le style et l'UX d'OpenContact. La recherche faite le même jour
-est dans [recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md).
+reprenaient l'interface d'OpenContact. Le matériel « Utilitaire 98 » reste ;
+ce sont les écrans, la navigation et l'UX qui sont à choisir. La recherche
+faite le même jour est dans
+[recherche/usagers-et-ecrans.md](recherche/usagers-et-ecrans.md).
 
 ### Les interfaces
 
@@ -35,9 +37,9 @@ cœur dessous, et chacun ne voit que les gestes de son rôle.
   QR, et le nombre de présents qui monte, comme l'écran d'attente de Wooclap
   ou de Kahoot que les apprenants connaissent. On y voit combien sont là,
   jamais qui manque : la liste des absents reste sur l'appareil du formateur.
-- L'apparence vient de la signalétique : de grands caractères, des contrastes
-  nets, peu de couleurs, des pictogrammes toujours avec leur mot, une couleur
-  par classe. Le texte en Luciole.
+- Avec le matériel 98 : chaque chose à faire est une fenêtre, avec la classe
+  dans sa barre de titre et son bouton principal en bas. L'écran de la salle
+  est une seule grande fenêtre, avec le code en très grand.
 - Pour : le moins de décisions possible, lisible de loin et par ceux qui
   lisent mal. Contre : moins de vue d'ensemble, que le formateur et le centre
   retrouvent dans leurs interfaces.
@@ -47,7 +49,8 @@ cœur dessous, et chacun ne voit que les gestes de son rôle.
 - Chaque classe est une conversation, comme un groupe d'annonces WhatsApp.
   Les annonces, les documents à signer et l'appel y arrivent comme des
   messages, avec leur bouton. Les messages privés aux formateurs sont à côté.
-- L'apparence d'une messagerie sobre : des bulles et des cartes d'action.
+- Avec le matériel 98 : le fil est une fenêtre, et chaque annonce, document
+  ou appel une carte en relief avec son bouton.
 - Pour : rien à apprendre, et ça remplace le groupe WhatsApp de la classe,
   sans numéro de téléphone et avec des heures calmes. Contre : une action
   importante peut se perdre sous les messages, et Opn-Link devient une
@@ -58,8 +61,8 @@ cœur dessous, et chacun ne voit que les gestes de son rôle.
 - L'app s'ouvre sur la semaine. Chaque demi-journée dit où l'on est (au
   centre, en entreprise) et ce qui s'y passe : l'appel, un document à rendre
   vendredi.
-- L'apparence d'un agenda calme : la date en grand, le matin et l'après-midi
-  bien séparés, une couleur par classe.
+- Avec le matériel 98 : la semaine est une grille de cases, le matin et
+  l'après-midi séparés, et la demi-journée en cours en sélection marine.
 - Pour : on voit venir, et ça suit le rythme de l'alternance. Contre : il faut
   savoir quels jours l'apprenant est au centre, ce que la première version ne
   gère pas, et les messages trouvent mal leur place dans un agenda.
@@ -71,9 +74,9 @@ l'écran de la présence dans les trois directions et comparer les images.
 
 ### Ce qu'on garde d'OpenContact
 
-Proposé : les règles sur les données et la vie privée, l'accessibilité, les
-tests et la façon de livrer. Le design, la navigation et l'UX sont propres à
-Opn-Link.
+Décidé le 15 novembre 2026 : le matériel de design « Utilitaire 98 ».
+Proposé : aussi les règles sur les données et la vie privée, l'accessibilité,
+les tests et la façon de livrer.
 
 ## À mesurer sur place
 
