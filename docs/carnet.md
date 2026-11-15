@@ -151,3 +151,23 @@ l'espace de vie ».
 - Signaler un message : plus tard.
 - On retrouve ses classes sur plusieurs appareils dès la première version.
 - Les mots à l'écran : formateur, apprenant, centre.
+
+### L'UX, et ce qui était à la base
+
+- Le mainteneur veut des exigences d'UX et de design comme dans
+  OpenContact, « afin de rendre l'app intuitive, simple, et efficace sans
+  trop en faire ». Elles font partie de la maquette. Elles sont dans
+  [ux.md](ux.md).
+- Il veut aussi que tout ce qui était à la base soit fait : « la signature
+  des docs et l'envoi, la présence etc. ». La première version contient donc
+  aussi la présence, les documents à signer, l'envoi de documents et la
+  documentation partagée. Il ne reste en version 2 que les appels et les
+  visios.
+- Il demande de regarder comment font les concurrents. La recherche sur
+  Edusign, SoWeSign, Google Classroom, Pronote, Yousign et WhatsApp est
+  résumée dans [ux.md](ux.md), partie « Ce que font les autres ».
+- La présence se signe d'un geste, avec la clé de l'appareil. Les documents
+  se signent d'un geste et d'un dessin au doigt.
+- À la fin de la formation, le chef ferme la classe. Tout s'efface chez les
+  apprenants et les formateurs, et le centre garde ce que la loi lui demande
+  (les feuilles de présence et les documents signés, de 5 à 10 ans).

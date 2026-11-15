@@ -9,8 +9,8 @@ ce qui est déjà décidé. Le détail est dans `docs/`.
 - On discute avant d'agir. Rien ne se code, ne se lance ou ne se publie sans
   le feu vert du mainteneur.
 - Avant de proposer quelque chose, relire `docs/projet.md`,
-  `docs/exigences.md`, `docs/architecture.md`, `docs/questions-ouvertes.md`
-  et `docs/carnet.md`.
+  `docs/exigences.md`, `docs/ux.md`, `docs/architecture.md`,
+  `docs/questions-ouvertes.md` et `docs/carnet.md`.
 - On ne décide pas à la place du mainteneur. Une question qu'il n'a pas
   tranchée va dans `docs/questions-ouvertes.md`, avec une recommandation.
 - Une décision prise est notée dans `docs/carnet.md` avec sa date, puis
@@ -56,6 +56,8 @@ Le détail et les dates sont dans `docs/carnet.md`.
 - Les mêmes exigences qu'OpenContact : le style, l'ergonomie,
   l'accessibilité, les tests et la façon de livrer. Elles sont résumées dans
   `docs/exigences.md`.
+- Une app intuitive, simple et efficace, sans trop en faire. Les exigences
+  d'UX et de design propres à Opn-Link sont dans `docs/ux.md`.
 - Le nom : Opn-Link à l'écran, `opn-link` pour le dépôt et le code.
 - Les mots à l'écran : formateur, apprenant, centre, classe. Jamais prof,
   élève ou école. La liste complète est dans `docs/projet.md`, partie 4.
@@ -79,6 +81,9 @@ Le détail et les dates sont dans `docs/carnet.md`.
 - La classe est un fil d'annonces où seuls les responsables écrivent. Chaque
   apprenant écrit en privé à un formateur ou au centre. Les apprenants ne
   s'écrivent pas entre eux dans Opn-Link.
+- La première version contient aussi ce qui était à la base : la présence,
+  les documents à signer, l'envoi de documents et la documentation partagée.
+  La présence se signe d'un geste, les documents d'un geste et d'un dessin.
 - Le contenu de la première version : `docs/projet.md`, partie 5.
 
 ## Les règles à ne jamais casser

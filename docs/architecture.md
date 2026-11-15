@@ -17,8 +17,8 @@ Concrètement :
 - un site où un apprenant rejoint sa classe depuis son téléphone, sans rien
   installer ;
 - le site et l'app ne se contredisent jamais, une ancienne version comprend
-  une nouvelle, et on peut ajouter l'émargement, les documents ou plusieurs
-  classes sans tout réécrire.
+  une nouvelle, et on peut ajouter des fonctions ou tout un centre sans tout
+  réécrire.
 
 ## Le principe
 
@@ -77,10 +77,13 @@ plus.
 On garde la règle d'OpenContact (son `CLAUDE.md`, partie 0) :
 
 - tout ce qui peut marcher dans un navigateur est sur le site. C'est le cas
-  de toute la première version ;
+  de presque toute la première version. Sur le site, le centre exporte ses
+  feuilles de présence et ses documents signés en fichiers, qu'il range
+  lui-même ;
 - l'app ajoute ce qu'un navigateur ne fait pas de façon sûre : prévenir quand
-  un message arrive, garder des données pendant des années (l'émargement
-  demandera 5 à 10 ans d'archives), les gros fichiers, les exports ;
+  un message arrive, garder des données pendant des années (les feuilles de
+  présence et les documents signés, de 5 à 10 ans), les gros fichiers, les
+  exports ;
 - le site marche sans l'app ;
 - ce qui n'existe que dans l'app n'apparaît pas sur le site, même grisé.
 
@@ -176,21 +179,23 @@ vie, écrite dans le contrat.
 
 | Donnée | Durée |
 |---|---|
-| Une annonce | jusqu'à ce qu'un responsable la retire |
-| Un message privé | tant que la classe existe |
-| Les autres (demandes, suivi, fin d'une classe) | à fixer, voir [questions-ouvertes.md](questions-ouvertes.md) |
+| Une annonce | jusqu'à ce qu'un responsable la retire, au plus jusqu'à la fermeture de la classe |
+| Un message privé, une demande, le suivi, la documentation | jusqu'à la fermeture de la classe |
+| Une feuille de présence, un document signé | chez le centre (ou le chef), de 5 à 10 ans ; chez les autres, jusqu'à la fermeture de la classe |
 
 Les relais ne gardent rien plus de 30 jours. Ce qui dure plus longtemps vit
-sur les appareils. Comment un apprenant qui arrive en cours d'année reçoit les
-annonces plus anciennes : à régler au prototype.
+sur les appareils, et les archives du centre vivent dans son app pour
+ordinateur et dans les fichiers qu'il exporte. Comment un apprenant qui
+arrive en cours d'année reçoit les annonces plus anciennes : à régler au
+prototype.
 
 ## Évolutivité
 
-- Le cœur est découpé par fonction : la classe, les messages, les demandes,
-  le suivi, puis l'émargement, les documents et la doc partagée. Chaque
+- Le cœur est découpé par fonction : la classe, les annonces, les messages,
+  la présence, les documents, les demandes, la documentation, le suivi. Chaque
   fonction peut être cachée derrière un interrupteur, comme avec
-  `ui/perimetre.js` dans OpenContact. On peut ainsi construire et tester la
-  version 2 sans la montrer.
+  `ui/perimetre.js` dans OpenContact. On peut ainsi construire et tester une
+  fonction sans la montrer.
 - Le transport est séparé du reste. Aujourd'hui, ce sont les relais Nostr.
   Plus tard, on pourra passer en direct sur le Wi-Fi de la classe, ou faire
   de l'app du formateur un relais pour sa classe, sans toucher aux règles.
@@ -219,6 +224,11 @@ annonces plus anciennes : à régler au prototype.
 - Avant 15 ans, il faut l'accord des parents. Ce qui part sur des relais
   publics est presque impossible à effacer.
 - Le fichier WebAssembly peut être lourd au premier chargement. À mesurer.
+- Le scan du QR par la caméra, depuis le site sur iPhone et sur de vieux
+  Android, surtout quand le site est ajouté à l'écran d'accueil. À tester tôt.
+- La feuille de présence exportée doit être acceptée par les financeurs. La
+  recherche conseille de la faire valider par deux ou trois OPCO et un
+  certificateur Qualiopi avant qu'un centre compte dessus pour être payé.
 - Publier chez Apple coûte 99 $ par an, pour signer l'app macOS et publier
   sur iOS. La signature de l'app Windows est gratuite pour un projet sous
   licence libre, avec la SignPath Foundation. Linux ne coûte rien. En

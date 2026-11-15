@@ -3,19 +3,26 @@
 Ce qui reste à décider. Chaque question a une recommandation, mais c'est le
 mainteneur qui tranche. Une fois tranchée, la question part d'ici : la
 décision est notée dans [carnet.md](carnet.md) avec sa date, et reportée dans
-[projet.md](projet.md) ou [architecture.md](architecture.md).
+[projet.md](projet.md), [ux.md](ux.md) ou [architecture.md](architecture.md).
 
 ## Le produit
 
-### Que devient une classe à la fin de la formation ?
+### Retards et départs : que montre la feuille de présence ?
 
-Les messages privés restent tant que la classe existe. Il faut donc un moment
-où elle s'arrête, et savoir ce qui reste après. C'est aussi là que se règle la
-durée des demandes et du suivi.
+Certains financeurs demandent le nombre d'heures faites par demi-journée. Un
+apprenant peut arriver en retard ou partir plus tôt.
 
-Recommandation : le chef ferme la classe. Les annonces, les messages, les
-demandes et le suivi s'effacent alors de tous les appareils. Avant, le centre
-peut exporter ce qu'il doit garder (le tableau de bord, les documents reçus).
+Recommandation : la feuille montre l'heure de chaque signature. Avant de
+clore l'appel, le formateur peut noter un retard ou un départ, et ce qu'il
+note reste visible dans le dossier de preuve.
+
+### Prévenir l'employeur d'une absence ?
+
+En apprentissage, la pratique est de signaler les absences à l'employeur. La
+recherche dit qu'une telle fonction serait utile.
+
+Recommandation : plus tard. Elle ajoute un rôle de plus (l'entreprise) et la
+première version est déjà grande.
 
 ### Combien de classes au plus ?
 
@@ -33,7 +40,8 @@ dizaine semble un bon point de départ.
 La recherche propose une même identité pour OpenContact, le lab IA et
 Opn-Link, sous la forme d'une clé Nostr. Mais OpenContact utilise déjà P-256
 pour sa boîte aux lettres, Ed25519 pour ses appareils et secp256k1 pour
-Nostr. Changer plus tard coûterait une migration.
+Nostr. Changer plus tard coûterait une migration. C'est aussi cette clé qui
+signera la présence et les documents.
 
 Recommandation : trancher avec un petit prototype, au tout début du code, en
 restant compatible avec la boîte aux lettres d'OpenContact.
@@ -56,7 +64,10 @@ son propre dépôt.
 - Vérifier que le nom est libre ailleurs : nom de domaine, INPI. Des noms
   proches comme « OpenLink » existent déjà.
 - Trouver un formateur et une classe pour tester tôt. Le Wi-Fi d'un vrai
-  centre et la limite des relais publics ne se mesurent que sur place.
+  centre, la limite des relais publics et le scan du QR ne se mesurent que
+  sur place.
+- Faire valider la feuille de présence exportée par deux ou trois OPCO et un
+  certificateur Qualiopi avant qu'un centre compte dessus pour être payé.
 - Ajouter les fichiers de licence (MIT et Apache-2.0) avec le premier commit
   de code.
 - Quand on fera le lien avec OpenContact, écrire dans son `CLAUDE.md` et son
