@@ -10,7 +10,10 @@ ce qui est déjà décidé. Le détail est dans `docs/`.
   le feu vert du mainteneur.
 - Avant de proposer quelque chose, relire `docs/projet.md`,
   `docs/exigences.md`, `docs/ux.md`, `docs/architecture.md`,
-  `docs/questions-ouvertes.md` et `docs/carnet.md`.
+  `docs/mesures.md`, `docs/questions-ouvertes.md` et `docs/carnet.md`.
+- Ce qui dépend d'un service public (relais, OpenTimestamps) se mesure avant
+  d'être décidé. Les sondes sont dans `mesures/`, et se relancent depuis
+  l'environnement cloud « OpenContact et Opn-Link ».
 - On ne décide pas à la place du mainteneur. Une question qu'il n'a pas
   tranchée va dans `docs/questions-ouvertes.md`, avec une recommandation.
 - Une décision prise est notée dans `docs/carnet.md` avec sa date, puis
@@ -66,8 +69,12 @@ Le détail et les dates sont dans `docs/carnet.md`.
   vraiment différemment. Il a une valeur par défaut, et seul le chef le voit.
 - Les clés : P-256 comme OpenContact, et des clés jetables pour les relais
   (`docs/architecture.md`, partie « Les clés »).
-- Toutes les questions de produit ont été tranchées le 15 novembre 2026. Ce
-  qui reste se mesure (`docs/questions-ouvertes.md`).
+- Toutes les questions de produit ont été tranchées le 15 novembre 2026, et
+  ce qui pouvait se mesurer à distance a été mesuré le même jour
+  (`docs/mesures.md`). Ce qui reste se mesure sur place
+  (`docs/questions-ouvertes.md`).
+- Nostr est écrit à la main avec k256 : rust-nostr pèse 1,2 Mo de trop
+  (mesuré).
 - Le but : un outil utile, libre et gratuit. Pas pour gagner de l'argent.
 - La licence : MIT ou Apache-2.0, comme Rust et Tauri.
 - Une app en Rust qui marche aussi sur le web, avec le même cœur partout. La

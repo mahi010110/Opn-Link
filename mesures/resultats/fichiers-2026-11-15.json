@@ -1,0 +1,142 @@
+[
+  {
+    "serveur": "https://blossom.primal.net",
+    "preflight": {
+      "statut": 200,
+      "origine": "*",
+      "methodes": "GET, PUT, DELETE",
+      "entetes": "Authorization, *"
+    },
+    "essais": [
+      {
+        "octets": 600000,
+        "depot": {
+          "statut": 415,
+          "ms": 1218,
+          "raison": null,
+          "origine": null,
+          "methodes": null,
+          "entetes": null,
+          "reponse": "upload rejected: unsupported media type application/octet-stream"
+        }
+      },
+      {
+        "octets": 2000000,
+        "depot": {
+          "statut": 415,
+          "ms": 982,
+          "raison": null,
+          "origine": null,
+          "methodes": null,
+          "entetes": null,
+          "reponse": "upload rejected: unsupported media type application/octet-stream"
+        }
+      }
+    ]
+  },
+  {
+    "serveur": "https://cdn.nostrcheck.me",
+    "preflight": {
+      "statut": 204,
+      "origine": "*",
+      "methodes": "GET,HEAD,PUT,POST,DELETE,OPTIONS",
+      "entetes": "Authorization,Content-Type,X-Cashu,X-Lightning,X-Lightning-Amount,X-Content-Length,X-Content-Type,X-Sha-256,X-Content-Transform,*"
+    },
+    "essais": [
+      {
+        "octets": 600000,
+        "depot": {
+          "statut": 400,
+          "ms": 2286,
+          "raison": "file type not detected or not allowed, mime: application/octet-stream",
+          "origine": "*",
+          "methodes": null,
+          "entetes": null,
+          "reponse": "{\"status\":\"error\",\"message\":\"file type not detected or not allowed, mime: application/octet-stream\"}"
+        }
+      },
+      {
+        "octets": 2000000,
+        "depot": {
+          "statut": 400,
+          "ms": 1404,
+          "raison": "file type not detected or not allowed, mime: application/octet-stream",
+          "origine": "*",
+          "methodes": null,
+          "entetes": null,
+          "reponse": "{\"status\":\"error\",\"message\":\"file type not detected or not allowed, mime: application/octet-stream\"}"
+        }
+      }
+    ]
+  },
+  {
+    "serveur": "https://cdn.satellite.earth",
+    "preflight": {
+      "statut": 204,
+      "origine": "https://opn-link.github.io",
+      "methodes": "GET, POST, PUT, DELETE, HEAD, OPTIONS",
+      "entetes": "authorization,content-type,x-sha-256"
+    },
+    "essais": [
+      {
+        "octets": 600000,
+        "depot": {
+          "statut": 401,
+          "ms": 4458,
+          "raison": "Permission denied: blossom.upload required",
+          "origine": "https://opn-link.github.io",
+          "methodes": null,
+          "entetes": null,
+          "reponse": "{\"message\":\"Permission denied: blossom.upload required\"}"
+        }
+      },
+      {
+        "octets": 2000000,
+        "depot": {
+          "statut": 401,
+          "ms": 12177,
+          "raison": "Permission denied: blossom.upload required",
+          "origine": "https://opn-link.github.io",
+          "methodes": null,
+          "entetes": null,
+          "reponse": "{\"message\":\"Permission denied: blossom.upload required\"}"
+        }
+      }
+    ]
+  },
+  {
+    "serveur": "https://blossom.band",
+    "preflight": {
+      "statut": 204,
+      "origine": "*",
+      "methodes": "GET,HEAD,POST,PUT,DELETE,OPTIONS",
+      "entetes": "Authorization,Accept,Range,Cache-Control,If-Modified-Since,Content-Disposition,Content-Encoding,Content-Language,Content-Type,Content-Length,Expires,x-nb-no-redirect,x-nb-bypass-cache,x-content-type,x-content-length,x-sha-256,Referer"
+    },
+    "essais": [
+      {
+        "octets": 600000,
+        "depot": {
+          "statut": 415,
+          "ms": 1049,
+          "raison": "File type not allowed, unsupported. Please check https://nostr.build for supported file types and paid options",
+          "origine": "*",
+          "methodes": null,
+          "entetes": null,
+          "reponse": "File type not allowed, unsupported. Please check https://nostr.build for supported file types and paid options"
+        }
+      },
+      {
+        "octets": 2000000,
+        "depot": {
+          "statut": 415,
+          "ms": 260,
+          "raison": "File type not allowed, unsupported. Please check https://nostr.build for supported file types and paid options",
+          "origine": "*",
+          "methodes": null,
+          "entetes": null,
+          "reponse": "File type not allowed, unsupported. Please check https://nostr.build for supported file types and paid options"
+        }
+      }
+    ]
+  }
+]

@@ -93,6 +93,7 @@ test les gardent.
 |---|---|---|
 | Rejoindre une classe | apprenant | scanner le QR, écrire son prénom et son nom : moins d'une minute, rien à installer |
 | Signer sa présence | apprenant | 2 gestes après l'ouverture : « Signer ma présence », viser le QR |
+| Signer sa présence sans caméra | apprenant | taper les 6 chiffres affichés sous le QR |
 | Faire l'appel | formateur | 2 gestes : « Lancer l'appel », puis « Clore et signer ». La liste se remplit toute seule |
 | Signer un document | apprenant | ouvrir le document, « Signer », dessiner, « Valider » |
 | Publier une annonce | formateur | écrire, « Publier » |
@@ -119,7 +120,8 @@ test les gardent.
    « Recevoir » d'OpenContact.
 5. La présence se signe d'un geste, avec la clé de l'appareil. Pas de dessin,
    pas de compte, ni Bluetooth ni localisation. Si la caméra ne marche pas,
-   l'apprenant signe sur l'appareil du formateur.
+   l'apprenant tape le code de 6 chiffres affiché sous le QR, qui change en
+   même temps que lui. Sans téléphone, il signe sur l'appareil du formateur.
 6. L'appel marche même sans réseau dans la salle. Le QR du formateur contient
    tout ce qu'il faut pour signer. Un apprenant sans réseau montre au
    formateur un QR qui contient sa signature, avant la clôture.
@@ -154,6 +156,9 @@ test les gardent.
     deux onglets, Aujourd'hui et Moi.
 17. Un justificatif médical est annoncé comme tel avant l'envoi : l'apprenant
     sait qu'il ira seulement aux responsables.
+18. Au premier passage, le site propose une seule fois de s'ajouter à l'écran
+    d'accueil, avec la raison en une phrase : sans ça, le téléphone efface les
+    données après 7 jours sans visite.
 
 ## Sans trop en faire
 

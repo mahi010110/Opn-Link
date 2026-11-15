@@ -1,0 +1,39 @@
+[package]
+name = "taille-coeur"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+aes-gcm = "0.11.1"
+getrandom = { version = "0.4.3", features = ["wasm_js"] }
+hkdf = "0.13.0"
+js-sys = { version = "0.3.107", optional = true }
+k256 = { version = "0.14.0", default-features = false, features = ["schnorr", "arithmetic"], optional = true }
+lopdf = { version = "0.47.0", optional = true }
+nostr = { version = "0.45.7", default-features = false, features = ["std", "os-rng"], optional = true }
+p256 = { version = "0.14.0", features = ["ecdh", "ecdsa"] }
+pbkdf2 = "0.13.0"
+qrcode = { version = "0.14.1", default-features = false, optional = true }
+rqrr = { version = "0.11.0", optional = true }
+sha2 = "0.11.1"
+universal-time = { version = "0.3", optional = true }
+wasm-bindgen = "0.2.130"
+
+[features]
+nostr = ["dep:nostr", "dep:js-sys", "dep:universal-time"]
+lopdf = ["dep:lopdf"]
+qrcode = ["dep:qrcode"]
+rqrr = ["dep:rqrr"]
+js-sys = ["dep:js-sys"]
+universal-time = ["dep:universal-time"]
+k256 = ["dep:k256"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,8 @@
+node_modules/
+target/
+pdf/*.pem
+pdf/*.der
+pdf/*.p12
+pdf/*.cms
+pdf/*.bin
+pdf/*.pdf

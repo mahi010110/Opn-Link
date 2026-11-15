@@ -1,32 +1,28 @@
 # Questions ouvertes
 
-Le 15 novembre 2026, toutes les questions de produit ont été tranchées. Les
+Le 15 novembre 2026, toutes les questions de produit ont été tranchées, et ce
+qui pouvait se mesurer à distance a été mesuré ([mesures.md](mesures.md)). Les
 décisions sont dans [carnet.md](carnet.md) et reportées dans
 [projet.md](projet.md), [ux.md](ux.md) et [architecture.md](architecture.md).
 
-Ce qui reste ne se décide pas : ça se mesure. Aucun de ces points ne change
-les écrans, donc les maquettes peuvent commencer. Ils changent le code, et se
-mesurent au début du code, ou avant si le mainteneur le veut.
+## À mesurer sur place
 
-## À mesurer
+Rien de tout ça ne change les écrans. Ça change le code, et ça se mesure avec
+un vrai centre.
 
-- Le nombre maximum de classes. Chaque classe ajoute des abonnements sur les
-  relais. Une dizaine semble un bon point de départ.
-- Les relais : lesquels portent vraiment les messages et la boîte aux
-  lettres, en Europe d'abord. OpenContact a déjà les sondes pour ça.
-- La limite des relais quand tous les téléphones d'un centre sortent par la
-  même adresse Internet.
-- Le Wi-Fi d'un vrai centre : ce qu'il bloque.
-- Le scan du QR par la caméra, depuis le site, sur iPhone et sur de vieux
-  Android, aussi quand le site est ajouté à l'écran d'accueil.
-- Le poids du site avec le cœur en WebAssembly, au premier chargement.
-- `rust-nostr` dans le navigateur.
-- Les serveurs Blossom publics : lesquels acceptent un fichier sans compte, et
-  combien de temps ils le gardent.
-- OpenTimestamps depuis le navigateur : l'accès à ses serveurs, et le délai
-  avant que la preuve soit complète.
-- La signature PAdES d'un PDF, et la lecture des cases de signature d'un PDF
-  existant, en Rust et en WebAssembly.
+- Le Wi-Fi d'un vrai centre : ce qu'il bloque, et si deux appareils peuvent se
+  parler en direct.
+- Trente vrais téléphones dans une salle, derrière la box du centre.
+- La caméra de vrais iPhone et de vieux Android, avec le site ajouté à
+  l'écran d'accueil ou non.
+- La vitesse de lecture d'un QR sur un vieux téléphone.
+
+## À fixer au prototype
+
+- Le nombre maximum de classes. Les relais acceptent de 20 à 200 abonnements
+  par connexion, et un seul abonnement peut suivre plusieurs classes : la
+  limite viendra plutôt du volume de messages. Une dizaine semble un bon point
+  de départ.
 
 ## À faire
 
@@ -39,6 +35,9 @@ mesurent au début du code, ou avant si le mainteneur le veut.
 - Trouver un formateur et une classe pour tester tôt.
 - Faire valider la feuille de présence exportée par deux ou trois OPCO et un
   certificateur Qualiopi avant qu'un centre compte dessus pour être payé.
+- Signaler aux auteurs d'underskrift le bug de la signature ECDSA, si le
+  mainteneur le veut.
+- Remesurer les relais de temps en temps avec `mesures/sonde-relais.mjs`.
 - Ajouter les fichiers de licence (MIT et Apache-2.0) avec le premier commit
   de code.
 - Quand on fera le lien avec OpenContact, écrire dans son `CLAUDE.md` et son

@@ -7,7 +7,8 @@ Le nom a été choisi le 15 novembre 2026 et s'écrit « Opn-Link » à l'écran
 Les autres noms envisagés au départ : Préau, Liaison, Relais, OpenPromo,
 Le Fil.
 
-Rien n'est codé. Ce fichier dit ce qui est décidé, et
+Rien n'est codé. Ce fichier dit ce qui est décidé,
+[mesures.md](mesures.md) ce qui a été mesuré, et
 [questions-ouvertes.md](questions-ouvertes.md) ce qui reste à mesurer. Les
 règles de qualité, reprises d'OpenContact, sont dans
 [exigences.md](exigences.md), et celles de l'UX et du design dans
@@ -93,6 +94,8 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
 1. **Rejoindre une classe**
    - Une classe se rejoint avec un code ou un QR code, comme les groupes
      d'OpenContact.
+   - Le site propose alors de s'ajouter à l'écran d'accueil du téléphone.
+     Sans ça, Safari efface ses données après 7 jours sans visite.
    - Un formateur ou le centre peut créer une classe. Il donne son nom, celui
      du centre, et les horaires du matin et de l'après-midi. Celui qui la crée
      en est le chef.
@@ -137,9 +140,11 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
    - L'apprenant signe en visant le QR, d'un seul geste, avec la clé de son
      appareil. La signature est liée à cette demi-journée et ne peut pas
      resservir. Il n'y a rien à dessiner.
-   - Un apprenant sans smartphone, sans téléphone autorisé, ou dont la caméra
-     ne marche pas, signe sur l'appareil du formateur. Un apprenant sans
-     réseau montre au formateur un QR qui contient sa signature.
+   - Si la caméra ne marche pas, l'apprenant tape le code de 6 chiffres
+     affiché sous le QR, qui change en même temps que lui. Un apprenant sans
+     smartphone ou sans téléphone autorisé signe sur l'appareil du formateur.
+     Un apprenant sans réseau montre au formateur un QR qui contient sa
+     signature.
    - Avant de clore, le formateur voit qui manque, et peut noter un retard ou
      un départ. La feuille montre l'heure de chaque signature.
    - Le formateur clôt l'appel et contresigne. Chaque case vide devient
@@ -184,10 +189,11 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
      stage, signe en dehors d'Opn-Link.
    - Chaque document signé a son dossier de preuve : l'empreinte du
      document, l'heure, l'identité, le journal.
-   - Les petits fichiers passent par les relais. Les gros passent par des
-     serveurs publics gratuits du même genre que les relais (Blossom), chiffrés.
-     À défaut, on colle un lien vers l'endroit où le centre range déjà ses
-     fichiers (Drive, Moodle…).
+   - Jusqu'à 1 Mo, un fichier passe par les relais, en morceaux, et les
+     photos sont compressées avant l'envoi. Quand les deux appareils sont
+     connectés en même temps, il passe en direct, sans limite. Au-delà, on
+     colle un lien vers l'endroit où le centre range déjà ses fichiers
+     (Drive, Moodle…).
 8. **Les demandes suivies**
    - Un formateur ou le centre demande quelque chose à un apprenant, à
      plusieurs, ou à toute la classe. Pour chaque apprenant, on voit si la
@@ -298,8 +304,11 @@ lien vers une salle Jitsi.
   en arrière-plan.
 - Les relais gardent les messages 30 jours au plus. Ce qui dure plus
   longtemps est gardé sur les appareils.
-- Seuls les petits fichiers passent par les relais : environ 64 Ko par
-  message, et 500 Ko environ par envoi découpé en morceaux.
+- Un message de relais fait au plus 60 Ko. Un fichier passe en morceaux
+  jusqu'à 1 Mo, au-delà il faut un lien (mesuré, voir
+  [mesures.md](mesures.md)).
+- Sur iPhone, la caméra d'un site ajouté à l'écran d'accueil a des bugs
+  connus. Le code de secours sous le QR est là pour ça.
 - Les appels peuvent échouer sans serveur relais, surtout quand les deux
   personnes sont en 4G.
 - Une visio de toute la classe en direct entre appareils ne marche pas

@@ -222,6 +222,18 @@ signé tienne lors d'un contrôle. Voici comment Opn-Link le fait.
   d'identité, les preuves OpenTimestamps) et une notice qui explique comment
   tout vérifier.
 
+Ce que les mesures ont montré :
+
+- un navigateur peut déposer l'empreinte chez OpenTimestamps, mais pas
+  relire la preuve complète. C'est l'app pour ordinateur qui complète les
+  preuves, en général dans l'heure qui suit. Celui qui vérifie peut aussi le
+  faire lui-même avec l'outil `ots` ;
+- le sceau PAdES se fait avec la bibliothèque underskrift et notre propre
+  signataire. Le sien, en version 0.1.4, hache deux fois l'empreinte et rend
+  une signature fausse. Le nôtre signe l'empreinte telle quelle, et c'est
+  aussi lui qui permet de garder la clé dans le trousseau du système ou dans
+  le navigateur.
+
 ## Ce qui ne passe pas par le fil de la classe
 
 - Le tuteur ne reçoit pas le code de la classe, qui ouvrirait les annonces.
@@ -235,16 +247,42 @@ signé tienne lors d'un contrôle. Voici comment Opn-Link le fait.
 
 ## Les gros fichiers
 
-- Au-dessus de 500 Ko environ, le fichier est chiffré, puis déposé sur un
-  serveur public gratuit qui suit le protocole Blossom et le range sous son
-  empreinte. La clé part avec le message, par les relais. Le serveur ne voit
-  que du bruit.
-- Comme les relais d'OpenContact, ces serveurs sont mesurés avant d'être
-  retenus : un serveur qui répond ne garde pas forcément les fichiers. Un
-  serveur qui refuse ou perd un fichier est écarté, sur l'appareil qui l'a
-  constaté.
-- À défaut, on colle un lien vers l'espace où le centre range déjà ses
-  fichiers.
+Les serveurs Blossom gratuits ont été mesurés le 15 novembre 2026 : tous
+refusent un fichier chiffré ([mesures.md](mesures.md)). Un fichier passe donc
+ainsi :
+
+- jusqu'à 1 Mo, chiffré, en morceaux de 45 Ko par les relais, répartis entre
+  plusieurs relais. Les photos sont compressées avant l'envoi. Un fichier de
+  1 Mo a fait l'aller-retour en 2 à 20 secondes sur trois relais sur quatre ;
+- quand les deux appareils sont connectés en même temps, en direct, sans
+  limite de taille ;
+- au-delà, un lien vers l'espace où le centre range déjà ses fichiers.
+
+Un relais a refusé toutes nos signatures juste après un envoi de 1 Mo. C'est
+pour ça que les morceaux se répartissent, et que l'app écarte un relais qui
+refuse.
+
+## Les relais par défaut
+
+Mesurés quatre fois le 15 novembre 2026 ([mesures.md](mesures.md)) :
+
+1. nostr.sathoarder.com (France) ;
+2. nos.lol (Allemagne) ;
+3. nostr-relay.corb.net (États-Unis), en secours ;
+4. nostr-01.yakihonne.com (Singapour), en secours.
+
+Tout est chiffré de bout en bout, les relais ne voient que du bruit. Comme
+dans OpenContact, l'utilisateur peut changer la liste, et l'app écarte
+d'elle-même, sur l'appareil, un relais qui refuse ses messages. La liste se
+remesure avec `mesures/sonde-relais.mjs`.
+
+## Nostr, écrit à la main
+
+La bibliothèque rust-nostr se compile pour le navigateur, mais elle ajoute
+1,2 Mo au site, surtout des tables Unicode dont Opn-Link n'a pas besoin
+(mesuré). Opn-Link n'utilise que trois choses de Nostr : signer un événement,
+l'envoyer à un relais, lire ceux qui portent une étiquette. Il les écrit
+lui-même, avec la bibliothèque k256, pour 22 Ko de plus.
 
 ## Le moins de données possible
 
@@ -259,7 +297,7 @@ vie, écrite dans le contrat.
 | Une feuille de présence, un document signé | chez le centre (ou le chef), de 5 à 10 ans ; chez les autres, jusqu'à la fermeture de la classe |
 | Un justificatif médical | au plus 7 jours sur les relais, effacé du téléphone de l'apprenant une fois reçu ; chez les responsables, jusqu'à la fermeture de la classe |
 | L'adresse du tuteur | jusqu'à la fermeture de la classe |
-| Un gros fichier sur un serveur Blossom | jusqu'à la fermeture de la classe, puis supprimé quand le serveur le permet |
+| Un fichier en morceaux sur les relais | 30 jours au plus sur les relais ; sur les appareils, jusqu'à la fermeture de la classe |
 | Une classe | fermée par le chef, ou toute seule après 6 mois sans activité ; ensuite, 30 jours pour télécharger ses documents, puis tout s'efface |
 
 Les relais ne gardent rien plus de 30 jours. Ce qui dure plus longtemps vit
@@ -302,21 +340,23 @@ prototype.
   les appareils.
 - Avant 15 ans, il faut l'accord des parents. Ce qui part sur des relais
   publics est presque impossible à effacer.
-- Le fichier WebAssembly peut être lourd au premier chargement. À mesurer.
-- Le scan du QR par la caméra, depuis le site sur iPhone et sur de vieux
-  Android, surtout quand le site est ajouté à l'écran d'accueil. À tester tôt.
+- Le poids du site : 186 Ko compressés de WebAssembly pour un apprenant, 486
+  Ko pour un responsable qui travaille sur les PDF (mesuré).
+- La caméra d'un site ajouté à l'écran d'accueil d'un iPhone a des bugs
+  connus jusqu'en 2025. Un code de 6 chiffres sous le QR sert de secours. À
+  vérifier sur de vrais iPhone et de vieux Android.
 - La feuille de présence exportée doit être acceptée par les financeurs. La
   recherche conseille de la faire valider par deux ou trois OPCO et un
   certificateur Qualiopi avant qu'un centre compte dessus pour être payé.
 - Les justificatifs médicaux passent par les relais, chiffrés, par choix du
   mainteneur. La loi sur l'hébergement des données de santé (HDS) n'est pas
   tranchée pour des relais qui ne voient que du chiffré.
-- OpenTimestamps depuis le navigateur : l'accès à ses serveurs, et le délai
-  avant que la preuve soit complète. À vérifier.
-- La signature PAdES d'un PDF, et la lecture des cases de signature d'un PDF
-  existant, en Rust et en WebAssembly. À vérifier au prototype.
-- Les serveurs Blossom publics : combien acceptent un fichier sans compte, et
-  le gardent assez longtemps. À mesurer.
+- Un relais peut bloquer quelques minutes toute une adresse après un gros
+  envoi (mesuré sur nostr.data.haus). Derrière la box d'un centre, c'est tout
+  le centre qui serait bloqué sur ce relais : d'où les morceaux répartis, et le
+  relais écarté dès qu'il refuse.
+- La bibliothèque underskrift (0.1.4) signe mal en ECDSA : on lui donne notre
+  propre signataire. Le bug peut être signalé à ses auteurs.
 - Publier chez Apple coûte 99 $ par an, pour signer l'app macOS et publier
   sur iOS. La signature de l'app Windows est gratuite pour un projet sous
   licence libre, avec la SignPath Foundation. Linux ne coûte rien. En
@@ -331,11 +371,12 @@ prototype.
 | App pour ordinateur | Tauri 2, comme le lab IA et l'app native d'OpenContact |
 | Cœur sur le web | compilation en WebAssembly (`wasm-bindgen`) |
 | Chiffrement | RustCrypto (`p256`, `aes-gcm`, `hkdf`, `pbkdf2`, `sha2`, `ed25519-dalek`) |
-| Relais Nostr | `rust-nostr`, qui annonce marcher en natif et dans le navigateur (à vérifier) |
+| Relais Nostr | écrit à la main avec `k256` ; `rust-nostr` ajoute 1,2 Mo au site (mesuré) |
 | Stockage | SQLite (`rusqlite`) dans l'app, IndexedDB dans le navigateur |
-| PDF | `lopdf` pour lire un PDF, trouver ses cases de signature et ajouter une page ; la signature PAdES est à vérifier |
+| PDF | `lopdf` pour lire un PDF, trouver ses cases de signature et ajouter une page ; `underskrift` avec notre signataire pour le sceau PAdES (mesuré) |
 | Date des feuilles | OpenTimestamps, un registre public gratuit |
-| Gros fichiers | serveurs Blossom publics, mesurés comme les relais |
+| Gros fichiers | en morceaux par les relais jusqu'à 1 Mo, en direct entre deux appareils, sinon un lien |
+| QR | `qrcode` pour les créer, `rqrr` pour les lire |
 | Mail à l'entreprise | un lien `mailto:` |
 | Interface | HTML, CSS et TypeScript, avec le style du kit d'OpenContact. Avec ou sans React : au prototype |
 | Tests | `cargo test` en natif, `wasm-bindgen-test` dans un navigateur, Playwright sur Chromium, WebKit et Firefox |

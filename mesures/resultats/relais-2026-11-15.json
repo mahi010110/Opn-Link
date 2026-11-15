@@ -1,0 +1,458 @@
+[
+  {
+    "hote": "nostr-relay.corb.net",
+    "nip11": {
+      "logiciel": "https://git.sr.ht/~gheartsfield/nostr-rs-relay",
+      "version": "0.9.0",
+      "limites": {
+        "payment_required": false,
+        "restricted_writes": false
+      },
+      "retention": null,
+      "pays_annonces": null
+    },
+    "lieu": {
+      "ip": "64.98.64.59",
+      "pays": "US",
+      "ville": "Aurora"
+    },
+    "connexion": {
+      "ok": true,
+      "ms": 547
+    },
+    "ecriture": {
+      "ok": true,
+      "message": "",
+      "ms": 310
+    },
+    "garde": {
+      "relu": true,
+      "eose": true,
+      "message": ""
+    },
+    "notices": [],
+    "rafale": {
+      "envoyes": 20,
+      "acceptes": 20,
+      "refus": []
+    },
+    "tailles": [
+      {
+        "octets": 8000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 32000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 60000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 100000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 200000,
+        "ok": true,
+        "message": ""
+      }
+    ],
+    "classe": {
+      "telephones": 30,
+      "connectes": 30,
+      "signatures_acceptees": 30,
+      "erreurs": [],
+      "refus": []
+    }
+  },
+  {
+    "hote": "nostr.sathoarder.com",
+    "nip11": {
+      "logiciel": "git+https://github.com/hoytech/strfry.git",
+      "version": "0.9.6-26-gc0dec7c",
+      "limites": null,
+      "retention": null,
+      "pays_annonces": null
+    },
+    "lieu": {
+      "ip": "87.119.220.6",
+      "pays": "FR",
+      "ville": "Strasbourg"
+    },
+    "connexion": {
+      "ok": true,
+      "ms": 633
+    },
+    "ecriture": {
+      "ok": true,
+      "message": "",
+      "ms": 177
+    },
+    "garde": {
+      "relu": true,
+      "eose": true,
+      "message": ""
+    },
+    "notices": [],
+    "rafale": {
+      "envoyes": 20,
+      "acceptes": 20,
+      "refus": []
+    },
+    "tailles": [
+      {
+        "octets": 8000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 32000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 60000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 100000,
+        "ok": false,
+        "message": "invalid: event too large: 100408"
+      }
+    ],
+    "classe": {
+      "telephones": 30,
+      "connectes": 30,
+      "signatures_acceptees": 30,
+      "erreurs": [],
+      "refus": []
+    }
+  },
+  {
+    "hote": "nos.lol",
+    "nip11": {
+      "logiciel": "git+https://github.com/hoytech/strfry.git",
+      "version": "1.1.3-1-gab7f394",
+      "limites": {
+        "max_limit": 500,
+        "max_message_length": 131072,
+        "max_subscriptions": 200
+      },
+      "retention": null,
+      "pays_annonces": null
+    },
+    "lieu": {
+      "ip": "142.132.206.70",
+      "pays": "DE",
+      "ville": "Falkenstein"
+    },
+    "connexion": {
+      "ok": true,
+      "ms": 645
+    },
+    "ecriture": {
+      "ok": true,
+      "message": "",
+      "ms": 172
+    },
+    "garde": {
+      "relu": true,
+      "eose": true,
+      "message": ""
+    },
+    "notices": [],
+    "rafale": {
+      "envoyes": 20,
+      "acceptes": 20,
+      "refus": []
+    },
+    "tailles": [
+      {
+        "octets": 8000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 32000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 60000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 100000,
+        "ok": false,
+        "message": "invalid: event too large: 100408"
+      }
+    ],
+    "classe": {
+      "telephones": 30,
+      "connectes": 30,
+      "signatures_acceptees": 30,
+      "erreurs": [],
+      "refus": []
+    }
+  },
+  {
+    "hote": "bucket.coracle.social",
+    "nip11": {
+      "logiciel": "https://github.com/coracle-social/bucket",
+      "version": null,
+      "limites": null,
+      "retention": null,
+      "pays_annonces": null
+    },
+    "lieu": {
+      "ip": "216.24.57.18",
+      "pays": "US",
+      "ville": ""
+    },
+    "connexion": {
+      "ok": true,
+      "ms": 601
+    },
+    "ecriture": {
+      "ok": true,
+      "message": "",
+      "ms": 87
+    },
+    "garde": {
+      "relu": true,
+      "eose": true,
+      "message": ""
+    },
+    "notices": [],
+    "rafale": {
+      "envoyes": 20,
+      "acceptes": 20,
+      "refus": []
+    },
+    "tailles": [
+      {
+        "octets": 8000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 32000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 60000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 100000,
+        "ok": false,
+        "message": "pas de réponse"
+      }
+    ],
+    "classe": {
+      "telephones": 30,
+      "connectes": 30,
+      "signatures_acceptees": 30,
+      "erreurs": [],
+      "refus": []
+    }
+  },
+  {
+    "hote": "relay.froth.zone",
+    "nip11": {
+      "logiciel": "https://git.sr.ht/~gheartsfield/nostr-rs-relay",
+      "version": "0.10.0",
+      "limites": {
+        "payment_required": false,
+        "restricted_writes": false
+      },
+      "retention": null,
+      "pays_annonces": null
+    },
+    "lieu": {
+      "ip": "95.216.99.249",
+      "pays": "FI",
+      "ville": "Helsinki"
+    },
+    "connexion": {
+      "ok": true,
+      "ms": 1027
+    },
+    "ecriture": {
+      "ok": false,
+      "message": "error: relay experienced an error trying to publish the latest event",
+      "ms": 136
+    },
+    "garde": {
+      "relu": false,
+      "eose": true,
+      "message": ""
+    },
+    "notices": [],
+    "rafale": {
+      "envoyes": 20,
+      "acceptes": 0,
+      "refus": [
+        "error: relay experienced an error trying to publish the latest event"
+      ]
+    },
+    "tailles": [
+      {
+        "octets": 8000,
+        "ok": false,
+        "message": "error: relay experienced an error trying to publish the latest event"
+      }
+    ],
+    "classe": {
+      "telephones": 30,
+      "connectes": 30,
+      "signatures_acceptees": 0,
+      "erreurs": [],
+      "refus": [
+        "error: relay experienced an error trying to publish the latest event"
+      ]
+    }
+  },
+  {
+    "hote": "nostr-01.yakihonne.com",
+    "nip11": {
+      "logiciel": "git+https://github.com/hoytech/strfry.git",
+      "version": "0.9.6-8-g013d611",
+      "limites": null,
+      "retention": null,
+      "pays_annonces": null
+    },
+    "lieu": {
+      "ip": "45.77.255.109",
+      "pays": "SG",
+      "ville": "Singapore"
+    },
+    "connexion": {
+      "ok": true,
+      "ms": 993
+    },
+    "ecriture": {
+      "ok": true,
+      "message": "",
+      "ms": 224
+    },
+    "garde": {
+      "relu": true,
+      "eose": true,
+      "message": ""
+    },
+    "notices": [],
+    "rafale": {
+      "envoyes": 20,
+      "acceptes": 20,
+      "refus": []
+    },
+    "tailles": [
+      {
+        "octets": 8000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 32000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 60000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 100000,
+        "ok": false,
+        "message": "invalid: event too large: 100408"
+      }
+    ],
+    "classe": {
+      "telephones": 30,
+      "connectes": 30,
+      "signatures_acceptees": 30,
+      "erreurs": [],
+      "refus": []
+    }
+  },
+  {
+    "hote": "nostr.data.haus",
+    "nip11": {
+      "logiciel": "git+https://github.com/hoytech/strfry.git",
+      "version": "1.1.3",
+      "limites": {
+        "max_limit": 500,
+        "max_message_length": 131072,
+        "max_subscriptions": 20
+      },
+      "retention": null,
+      "pays_annonces": null
+    },
+    "lieu": {
+      "ip": "5.75.228.192",
+      "pays": "DE",
+      "ville": "Falkenstein"
+    },
+    "connexion": {
+      "ok": true,
+      "ms": 1057
+    },
+    "ecriture": {
+      "ok": true,
+      "message": "",
+      "ms": 432
+    },
+    "garde": {
+      "relu": false,
+      "eose": false,
+      "message": "pas de EOSE"
+    },
+    "notices": [],
+    "rafale": {
+      "envoyes": 20,
+      "acceptes": 20,
+      "refus": []
+    },
+    "tailles": [
+      {
+        "octets": 8000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 32000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 60000,
+        "ok": true,
+        "message": ""
+      },
+      {
+        "octets": 100000,
+        "ok": false,
+        "message": "invalid: event too large: 100408"
+      }
+    ],
+    "classe": {
+      "telephones": 30,
+      "connectes": 30,
+      "signatures_acceptees": 30,
+      "erreurs": [],
+      "refus": []
+    }
+  }
+]

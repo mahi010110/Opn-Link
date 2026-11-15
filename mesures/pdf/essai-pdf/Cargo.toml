@@ -1,0 +1,10 @@
+[package]
+name = "essai-pdf"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lopdf = "0.47.0"
+p256 = { version = "0.13", features = ["ecdsa", "pkcs8"] }
+tokio = { version = "1.54.1", features = ["rt", "macros"] }
+underskrift = "0.1.4"

@@ -1,0 +1,60 @@
+[
+  {
+    "hote": "nostr-relay.corb.net",
+    "morceaux": 23,
+    "envoi": {
+      "acceptes": 23,
+      "ms": 1891,
+      "refus": []
+    },
+    "lecture": {
+      "recus": 23,
+      "ms": 123,
+      "identique": true
+    }
+  },
+  {
+    "hote": "nostr.sathoarder.com",
+    "morceaux": 23,
+    "envoi": {
+      "acceptes": 23,
+      "ms": 20159,
+      "refus": []
+    },
+    "lecture": {
+      "recus": 23,
+      "ms": 907,
+      "identique": true
+    }
+  },
+  {
+    "hote": "nos.lol",
+    "morceaux": 23,
+    "envoi": {
+      "acceptes": 23,
+      "ms": 6537,
+      "refus": []
+    },
+    "lecture": {
+      "recus": 23,
+      "ms": 830,
+      "identique": true
+    }
+  },
+  {
+    "hote": "nostr.data.haus",
+    "morceaux": 23,
+    "envoi": {
+      "acceptes": 20,
+      "ms": 39111,
+      "refus": [
+        "pas de réponse"
+      ]
+    },
+    "lecture": {
+      "recus": 0,
+      "ms": 8001,
+      "identique": false
+    }
+  }
+]

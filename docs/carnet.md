@@ -240,3 +240,34 @@ la doc et la recherche, et a posé une vingtaine de questions.
   tableur ; l'app est en français, prête à être traduite ; les relais en
   Europe passent d'abord ; pas de lien direct avec EDOF, Kairos ou Chorus
   Pro ; le style vient du dépôt d'OpenContact par un script.
+
+### Les mesures, avant les maquettes
+
+Le mainteneur : « Mesure d'abord, je veux tout savoir avant les maquettes. »
+Un environnement « OpenContact et Opn-Link » a été créé pour ouvrir seulement
+les adresses à mesurer. Les sondes sont dans `mesures/`, les résultats dans
+[mesures.md](mesures.md).
+
+- Les relais par défaut : nostr.sathoarder.com (France) et nos.lol
+  (Allemagne), puis nostr-relay.corb.net (États-Unis) et
+  nostr-01.yakihonne.com (Singapour) en secours. Choisi par le mainteneur,
+  sur les mesures.
+- Les gros fichiers : les serveurs Blossom gratuits refusent tous un fichier
+  chiffré. Le mainteneur a demandé s'il existait autre chose, puis a laissé le
+  choix. Choisi : jusqu'à 1 Mo par les relais en morceaux (mesuré), en direct
+  quand les deux appareils sont connectés, au-delà un lien. Les hébergeurs
+  gratuits sans compte (0x0.st, catbox) sont écartés : ils sont tenus par des
+  particuliers.
+- L'iPhone : la caméra d'un site ajouté à l'écran d'accueil a des bugs
+  connus, et sans cet ajout Safari efface les données après 7 jours sans
+  visite. Le mainteneur a laissé le choix (« honnêtement je sais pas »).
+  Choisi : proposer l'ajout à l'écran d'accueil, et un code de 6 chiffres
+  sous le QR comme secours.
+- Nostr est écrit à la main avec k256, parce que rust-nostr ajoute 1,2 Mo au
+  site (mesuré). C'est un choix technique, dans la ligne de « les meilleurs ».
+- OpenTimestamps : le navigateur dépose l'empreinte, l'app pour ordinateur
+  complète la preuve. La première preuve d'essai était complète en moins de
+  1 h 10.
+- Le sceau PAdES marche avec underskrift et notre propre signataire. La
+  version 0.1.4 d'underskrift signe mal en ECDSA (vérifié avec pyHanko et
+  OpenSSL).

@@ -18,6 +18,9 @@ produit sont tranchées. Les maquettes viennent ensuite.
   d'OpenContact
 - [docs/architecture.md](docs/architecture.md) : une app en Rust qui marche
   aussi sur le web
+- [docs/mesures.md](docs/mesures.md) : les relais, les fichiers, l'horodatage,
+  le poids du site, les QR et les PDF, mesurés avant les maquettes (les sondes
+  sont dans [mesures/](mesures/))
 - [docs/questions-ouvertes.md](docs/questions-ouvertes.md) : ce qui reste à
   décider
 - [docs/carnet.md](docs/carnet.md) : les décisions prises, avec leur date

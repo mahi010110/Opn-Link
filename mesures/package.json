@@ -1,0 +1,12 @@
+{
+  "name": "opn-link-mesures",
+  "private": true,
+  "type": "module",
+  "description": "Sondes des services publics dont dépend Opn-Link",
+  "dependencies": {
+    "https-proxy-agent": "7.0.6",
+    "nostr-tools": "2.10.4",
+    "undici": "6.21.0",
+    "ws": "8.18.0"
+  }
+}
