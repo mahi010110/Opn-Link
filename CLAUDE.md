@@ -63,9 +63,10 @@ Le détail et les dates sont dans `docs/carnet.md`.
   dans son dépôt par un script, jamais recopiés à la main (15 novembre 2026).
 - Les écrans, la navigation et l'UX sont propres à Opn-Link, pensés pour ses
   usagers et pour leurs différents écrans. Rien n'est repris de l'interface
-  d'OpenContact, qui est en refonte. Le concept directeur : « une chose à la
-  fois, au bon moment ». La conception est confiée à Fable 5, à partir de
-  `docs/brief-conception.md` (15 novembre 2026).
+  d'OpenContact, qui est en refonte. Le concept : « la réponse d'abord »,
+  qui élargit « une chose à la fois, au bon moment ». Il est dans
+  `docs/conception.md`, avec la navigation. La conception est confiée à
+  Fable 5, à partir de `docs/brief-conception.md` (15 novembre 2026).
 - D'OpenContact, on ne garde que ce matériel. Les règles d'Opn-Link sur les
   données, l'accessibilité, les tests et la façon de livrer sont à repenser
   pour lui ; `docs/exigences.md` garde celles d'OpenContact comme point de

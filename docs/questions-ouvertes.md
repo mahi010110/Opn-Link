@@ -14,11 +14,13 @@ que Fable 5 doit savoir pour concevoir l'app est dans
 [brief-conception.md](brief-conception.md). Les trois directions explorées
 avant ce choix y sont résumées, partie 10.
 
-### L'étape 1 de Fable 5
+### La conception de Fable 5
 
-Le concept et la navigation proposés sont dans
-[conception.md](conception.md). Les questions qui attendent l'avis du
-mainteneur y sont en partie 10, chacune avec une recommandation.
+Le concept, « la réponse d'abord », est accepté (15 novembre 2026). Il est
+dans [conception.md](conception.md), avec la navigation. Les questions 2 à 7
+de sa partie 10 attendent l'avis du mainteneur, chacune avec une
+recommandation. Les maquettes de [../maquettes/](../maquettes/) suivent ces
+recommandations et ne sont pas validées.
 
 ### Le ton
 

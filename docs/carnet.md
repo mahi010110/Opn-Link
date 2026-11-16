@@ -312,3 +312,18 @@ refusés.
 - Le brief de conception pour Fable 5 est dans
   [brief-conception.md](brief-conception.md). Les explorations restent sur la
   branche de travail, comme essais.
+
+### La conception de Fable 5
+
+- Fable 5 propose d'élargir le concept directeur : « la réponse d'abord ».
+  Chaque interface s'ouvre sur la réponse à la question de sa personne. Le
+  détail, la navigation et les pistes écartées sont dans
+  [conception.md](conception.md).
+- Le mainteneur : « Ok pour le concept. » Les autres questions de
+  [conception.md](conception.md), partie 10, restent ouvertes.
+- Il donne son feu vert pour copier le matériel, dessiner et faire les
+  captures sur la branche de travail : « Rien sur main sans mon accord. »
+- Les maquettes des moments clés sont faites les 15 et 16 novembre, dans
+  `maquettes/`, sur la branche `claude/design-navigation-concept-4c4fzs`.
+  Elles attendent l'avis du mainteneur.
+
