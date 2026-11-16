@@ -2,9 +2,48 @@
 
 Proposé par Fable 5 le 16 novembre 2026, une fois les maquettes et les
 règles validées. Le mainteneur a donné son feu vert le même jour (« En
-attendant tu peux commencer toi même »). Le travail se fait sur la branche
-`claude/design-navigation-concept-4c4fzs`, et n'arrive sur `main` qu'avec
-son accord.
+attendant tu peux commencer toi même »). Le travail se fait sur une branche,
+et n'arrive sur `main` qu'avec son accord.
+
+## Reprendre le travail
+
+Pour une nouvelle discussion, dans un conteneur neuf.
+
+1. Partir de `main`, et travailler sur la branche que donne la session.
+2. Préparer les outils. Le script de démarrage de l'environnement « OpenContact
+   et Opn-Link » le fait tout seul, s'il est enregistré. Sinon, depuis le
+   dossier qui contient `opn-link` et `Open-Contact` :
+
+   ```sh
+   rustup target add wasm32-unknown-unknown
+   cargo install wasm-bindgen-cli --version 0.2.130 --locked
+   (cd opn-link/maquettes && npm install && npm run style)
+   (cd opn-link/site && npm install)
+   ```
+
+   `npm run style` prend le matériel dans le dépôt d'OpenContact posé à côté.
+   Si son clone est trop court pour la version voulue (`VERSION_OC` dans
+   `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
+   --depth=1 origin <version>`.
+3. Vérifier que tout passe, comme le 16 novembre 2026 :
+   - `cd coeur && cargo test` : 38 tests ;
+   - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
+     Chromium ;
+   - `cd ../site && npm run construire && npm run appel` : le scénario,
+     sans aucun échec ;
+   - `node outils/planches.mjs` : les captures en planches, à regarder.
+4. Reprendre la suite, dans l'ordre de « Reste à faire » plus bas. Les
+   questions qui attendent le mainteneur sont dans
+   [questions-ouvertes.md](questions-ouvertes.md), partie « Le prototype ».
+
+Deux choses à savoir :
+
+- Pousser sur `main` demande l'accord explicite du mainteneur, à chaque
+  fois. La session le bloque sinon.
+- Seul Chromium est installé. Le pilote Chrome de l'environnement n'a pas la
+  version de Chromium : les tests du cœur dans le navigateur passent par
+  `coeur/outils/navigateur.mjs`, et télécharger un autre pilote a été
+  refusé.
 
 Le but est de confirmer les outils de [architecture.md](architecture.md),
 partie « Les outils envisagés », sur le moment qui compte le plus :

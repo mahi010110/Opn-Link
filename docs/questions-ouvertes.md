@@ -9,8 +9,7 @@ décisions sont dans [carnet.md](carnet.md) et reportées dans
 
 Le cadrage, la conception, les maquettes et les règles sont validés. Le
 prototype de l'appel a commencé le 16 novembre 2026, avec le feu vert du
-mainteneur, sur la branche `claude/design-navigation-concept-4c4fzs`. Le
-plan et l'avancée sont dans [prototype.md](prototype.md).
+mainteneur. Le plan et l'avancée sont dans [prototype.md](prototype.md).
 
 ### Les choix du cœur
 

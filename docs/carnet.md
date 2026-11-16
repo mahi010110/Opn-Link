@@ -424,3 +424,6 @@ refusés.
 - Les captures ont montré deux défauts, corrigés : les lignes de la liste
   du formateur dessinées comme des boutons, et « Après-midi » affiché à
   9 h.
+- Le mainteneur continue dans une autre discussion. Le prototype est mis sur
+  `main` avec son accord, et [prototype.md](prototype.md) dit comment le
+  reprendre dans un conteneur neuf.

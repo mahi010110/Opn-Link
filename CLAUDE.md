@@ -9,12 +9,15 @@ Le 16 novembre 2026 : le cadrage, la conception, les 71 maquettes et les
 règles sont faits et validés.
 
 Le prototype de l'appel a commencé le même jour, avec le feu vert du
-mainteneur, sur la branche `claude/design-navigation-concept-4c4fzs`. Le cœur
-en Rust est dans `coeur/`, avec ses tests. Le site est dans `site/` : l'appel
-s'y joue de bout en bout à six appareils. `docs/prototype.md` dit ce qui est
-fait, ce qui reste et comment lancer les tests. Les formats sont dans
-`docs/contrat.md`. Ce qui reste ouvert est dans `docs/questions-ouvertes.md`,
-et ce qui s'est décidé jour après jour dans `docs/carnet.md`.
+mainteneur. Le cœur en Rust est dans `coeur/`, avec ses tests. Le site est
+dans `site/` : l'appel s'y joue de bout en bout à six appareils. Les formats
+sont dans `docs/contrat.md`. Ce qui reste ouvert est dans
+`docs/questions-ouvertes.md`, et ce qui s'est décidé jour après jour dans
+`docs/carnet.md`.
+
+Pour reprendre dans une nouvelle discussion, lire d'abord
+`docs/prototype.md`, partie « Reprendre le travail » : préparer les outils,
+vérifier que tout passe, puis la suite, dans l'ordre.
 
 ## Comment on travaille
 
