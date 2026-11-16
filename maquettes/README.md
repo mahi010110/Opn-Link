@@ -113,10 +113,6 @@ La tablette, deux fenêtres debout et trois couchée : `tablette-appel` (le
 formateur pendant l'appel), `tablette-cours` (après l'appel, avec une
 conversation), `tablette-bureau` (le centre, à l'accueil).
 
-Les 52 premiers écrans sont validés. Les 19 suivants, à partir de
-`apprenant-sans-classe`, de `cours-messages` et de `tablette-appel`,
-attendent l'avis du mainteneur.
-
 ## Ce qui n'est pas encore dessiné
 
 La liste est dans [../docs/conception.md](../docs/conception.md), partie 11.

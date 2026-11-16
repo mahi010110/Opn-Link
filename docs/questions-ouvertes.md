@@ -23,9 +23,8 @@ Les maquettes de [../maquettes/](../maquettes/) sont validées (« Tout est
 bon pour moi », 16 novembre 2026). Ce qui reste à essayer avant de coder
 ces écrans est en partie 11 de [conception.md](conception.md).
 
-Les écrans qui restaient sont dessinés depuis : 19 de plus, sur la branche
-`claude/design-navigation-concept-4c4fzs`. Ils attendent l'avis du
-mainteneur.
+Les écrans qui restaient sont dessinés et validés depuis : 71 écrans en
+tout (16 novembre 2026).
 
 ### Le ton
 
@@ -35,15 +34,10 @@ parlent déjà ainsi.
 
 ### Quel appareil signe la présence
 
-Relier un autre appareil ouvre une porte : un apprenant peut relier le
-téléphone d'un camarade, qui signerait à sa place. Le formateur le voit
-quand il compare le compte de l'écran au nombre de têtes, mais la feuille ne
-le dit pas.
-
-Recommandation : un seul appareil signe la présence, le téléphone qu'un
-responsable a accepté. Un appareil relié lit, écrit et signe les documents,
-mais pas la présence. Reprendre sa place avec la phrase de secours donne ce
-droit au nouveau téléphone, et l'ancien le perd.
+Tranché le 16 novembre 2026, comme recommandé : un seul appareil signe la
+présence, le téléphone qu'un responsable a accepté. Le détail est dans
+[projet.md](projet.md), partie 5, et [architecture.md](architecture.md),
+partie « La preuve d'une présence ou d'une signature ».
 
 ### Les règles d'Opn-Link
 

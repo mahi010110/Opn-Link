@@ -17,7 +17,7 @@ validés, et les règles aussi.
   savoir pour concevoir l'app, son design et sa navigation
 - [docs/conception.md](docs/conception.md) : le concept, « la réponse
   d'abord », et la navigation de chaque interface
-- [maquettes/](maquettes/) : les 52 écrans validés, en HTML
+- [maquettes/](maquettes/) : les 71 écrans validés, en HTML
 - [docs/regles.md](docs/regles.md) : les règles d'Opn-Link, chacune avec la
   façon de la vérifier
 - [docs/ux.md](docs/ux.md) : les exigences d'UX et de design, et ce que font

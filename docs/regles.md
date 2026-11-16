@@ -165,8 +165,9 @@ La référence est le RGAA, qui suit le WCAG 2.2 au niveau AA.
   sort par le vrai bouton.
 - Les gestes de chaque moment sont comptés par un scénario, face au tableau
   de [conception.md](conception.md), partie 11.
-- Chaque écran est capturé en 390 × 844, en 360 × 640, en 1280 × 800 et sur
-  l'écran de la salle, en clair et en sombre, puis à 200 % en 360 px.
+- Chaque écran est capturé en 390 × 844, en 360 × 640, à la tablette
+  (820 × 1180 et 1180 × 820), en 1280 × 800 et sur l'écran de la salle, en
+  clair et en sombre, puis à 200 % en 360 px.
 - Un contrôle neuf se prouve : on casse exprès ce qu'il garde, et il doit
   échouer.
 - Ce qui dépend d'un vrai appareil ou d'un vrai lieu s'essaie sur place

@@ -378,8 +378,7 @@ refusés.
   `maquettes/`, sur la branche `claude/design-navigation-concept-4c4fzs`.
   Relier un appareil, la phrase de secours, les messages et les supports du
   formateur, nommer un adjoint, passer la main, les états d'attente et
-  d'erreur, la tablette. Ils attendent l'avis du mainteneur, et ne sont pas
-  sur `main`.
+  d'erreur, la tablette.
 - Ce que ce dessin a changé est dans [conception.md](conception.md),
   partie 11.
 - Une question s'ouvre : quel appareil signe la présence, quand un apprenant
@@ -388,3 +387,14 @@ refusés.
 - Dans un écran validé, « invité le 9 sept. » s'accordait avec le tuteur.
   Corrigé en « lien envoyé le 9 sept. » : aucun mot ne s'accorde avec la
   personne.
+- Devant ces 19 écrans et la question de l'appareil qui signe, le
+  mainteneur : « Totalement d'accord avec toi sur tout, tout est bon. » Les
+  71 écrans sont validés.
+- Décidé : un seul appareil signe la présence, le téléphone qu'un
+  responsable a accepté. Un appareil relié lit, écrit et signe les
+  documents, mais pas la présence. Reprendre sa place avec la phrase de
+  secours retire l'ancien téléphone. Le code pour relier un appareil vaut
+  cinq minutes. Reporté dans [projet.md](projet.md), partie 5, et dans
+  [architecture.md](architecture.md).
+- La règle des captures, dans [regles.md](regles.md), partie 4, compte
+  maintenant la tablette, debout et couchée.

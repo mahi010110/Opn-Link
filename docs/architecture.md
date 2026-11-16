@@ -205,7 +205,9 @@ signé tienne lors d'un contrôle. Voici comment Opn-Link le fait.
 
 - Qui a signé : la clé de l'appareil de l'apprenant. Quand le centre le
   demande, le formateur a validé cette clé en face à face, pièce d'identité à
-  l'appui, et sa validation est signée.
+  l'appui, et sa validation est signée. Un seul appareil par apprenant signe
+  la présence : celui qu'un responsable a accepté. Un appareil relié n'a pas
+  ce droit, et la phrase de secours le fait passer au nouveau téléphone.
 - Quand : la signature contient le code du QR, qui change toutes les quelques
   secondes et que l'appareil du formateur a affiché à un moment connu. À la
   clôture, l'empreinte de la feuille part vers OpenTimestamps, un registre

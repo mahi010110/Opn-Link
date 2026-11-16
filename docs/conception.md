@@ -594,8 +594,8 @@ la semaine se lit en rangs (un jour par rang), les boutons se replient.
 
 ### Les écrans qui restaient
 
-Dessinés le 16 novembre 2026, sur la branche de travail : 19 écrans de plus,
-soit 71. Ils attendent l'avis du mainteneur.
+Dessinés le 16 novembre 2026 : 19 écrans de plus, soit 71. Validés le même
+jour (« Totalement d'accord avec toi sur tout, tout est bon »).
 
 - L'apprenant sans classe, en attente d'être accepté, et devant une annonce
   écrite par une version plus récente.
@@ -639,9 +639,10 @@ soit 71. Ils attendent l'avis du mainteneur.
 - Une erreur a sa pièce : un pictogramme et une phrase en rouge sous le
   champ, et le champ bordé de rouge.
 
-Deux choix de ces écrans ne sont pas dans [projet.md](projet.md), et se
-valident avec eux : reprendre sa place retire l'ancien téléphone, et le
-code pour relier un appareil vaut cinq minutes.
+Trois choix sont venus avec ces écrans, validés avec eux et reportés dans
+[projet.md](projet.md), partie 5 : reprendre sa place retire l'ancien
+téléphone, le code pour relier un appareil vaut cinq minutes, et un seul
+appareil signe la présence.
 
 ### Ce qui reste à essayer avant de coder ces écrans
 

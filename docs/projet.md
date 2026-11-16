@@ -250,6 +250,15 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
     - On retrouve ses classes sur l'app de l'ordinateur et sur le site du
       téléphone. Les deux se synchronisent, avec une phrase de secours, comme
       dans OpenContact.
+    - Pour relier un appareil, le téléphone montre un QR et un code, valables
+      cinq minutes. Rien n'est relié sans un oui sur le téléphone, et les deux
+      écrans montrent le même nombre.
+    - Un seul appareil signe la présence : le téléphone qu'un responsable a
+      accepté. Un appareil relié lit, écrit et signe les documents, mais pas
+      la présence. Sinon, un apprenant pourrait relier le téléphone d'un
+      camarade, qui signerait à sa place.
+    - Reprendre sa place avec la phrase de secours donne ce droit au nouveau
+      téléphone. L'ancien perd sa place.
 14. **Fermer la classe**
     - À la fin de la formation, le chef ferme la classe. Chacun est prévenu
       et a 30 jours pour télécharger ses propres documents (sa convention,
