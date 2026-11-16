@@ -43,6 +43,9 @@ Recommandation : partir de [exigences.md](exigences.md) et des six règles du
 sans prévenir, le hors ligne, pas de serveur), et réécrire le reste avec la
 conception de Fable 5, pour les cinq interfaces.
 
+La proposition est dans [regles.md](regles.md) (16 novembre 2026). Elle
+attend l'avis du mainteneur, avec quatre questions en partie 7.
+
 ## À mesurer sur place
 
 Rien de tout ça ne change les écrans. Ça change le code, et ça se mesure avec
