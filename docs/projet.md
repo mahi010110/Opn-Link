@@ -83,6 +83,9 @@ produit.
 | la liste d'une demi-journée, signée et exportée | feuille de présence | feuille d'émargement |
 | les supports de cours partagés | documentation | ressources, cours |
 
+L'app tutoie l'apprenant, le formateur et le centre. Elle vouvoie le tuteur,
+qui la découvre dans un e-mail.
+
 ## 5. La première version
 
 Elle vise d'abord les centres de formation et le post-bac (CFA, BTS, BUT…),

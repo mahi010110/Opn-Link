@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'apprenant, un code d'appel qui a changé · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="tel">
+<header class="barre maintenant"><h1 class="barre-titre">Présence</h1><span class="mono">matin · Awa Diallo</span></header>
+<main class="page">
+  <div class="viseur" data-decor>
+    <div class="viseur-salle"><img src="../images/qr-appel.svg" alt=""></div>
+    <i class="viseur-coin hg"></i><i class="viseur-coin hd"></i><i class="viseur-coin bg"></i><i class="viseur-coin bd"></i>
+    <p class="viseur-mot">Vise le QR de la salle</p>
+  </div>
+  <section class="bloc">
+    <p class="etiquette">Ou tape les 6 chiffres</p>
+    <div class="code6 faux" aria-label="Le code de l'appel" aria-describedby="erreur"><span>4</span><span>8</span><span>2</span><span>9</span><span>1</span><span>7</span></div>
+    <p class="erreur" id="erreur"><i data-ic="info-box"></i><span>Ce code a changé. Regarde l’écran de la salle et retape les 6 chiffres.</span></p>
+  </section>
+  <div class="chiffres" aria-label="Chiffres">
+    <button class="btn">1</button><button class="btn">2</button><button class="btn">3</button>
+    <button class="btn">4</button><button class="btn">5</button><button class="btn">6</button>
+    <button class="btn">7</button><button class="btn">8</button><button class="btn">9</button>
+    <span class="btn vide"></span><button class="btn">0</button><button class="btn" aria-label="Effacer"><i data-ic="delete" data-t="ic-24"></i></button>
+  </div>
+</main>
+<footer class="bas">
+  <div class="gestes"><a class="btn retour" href="#"><i data-ic="arrow-left" data-t="ic-20"></i>Retour</a></div>
+  <p class="faits"><span>Tout est parti</span></p>
+</footer>
+<script src="../maquette.js"></script>
+</body>
+</html>

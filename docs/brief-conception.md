@@ -465,8 +465,8 @@ inspiré de la signalétique, avec la police Luciole, qui sortait du matériel.
 ## 12. Ce qui reste ouvert
 
 - Le ton : tutoyer partout, comme OpenContact, ou vouvoyer le tuteur et le
-  centre ? La question et une recommandation sont dans
-  [questions-ouvertes.md](questions-ouvertes.md).
+  centre ? Tranché le 16 novembre 2026 : tutoyer l'apprenant, le formateur
+  et le centre, vouvoyer le tuteur.
 - Les règles d'Opn-Link sur les données, l'accessibilité, les tests et la
   façon de livrer sont à repenser (décision du 15 novembre 2026). Propose
   celles qui servent ta conception. Fait le 16 novembre 2026 : elles sont

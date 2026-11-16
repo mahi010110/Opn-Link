@@ -54,7 +54,7 @@ const photographier = async (definition, chemin, echelle) => {
 };
 
 if (revue) {
-  const forme = /^(.+?)-(petit-tel|tel|ordi|grande-salle|salle)-(clair|sombre|texte\d+)\.png$/;
+  const forme = /^(.+?)-(petit-tel|tel|tablette-couchee|tablette|ordi|grande-salle|salle)-(clair|sombre|texte\d+)\.png$/;
   const fichiers = readdirSync(CAPTURES).filter((f) => { const m = f.match(forme); return m && !f.startsWith('revue-') && `${m[2]}-${m[3]}` === revue; }).sort();
   const large = !revue.includes('tel');
   await photographier(

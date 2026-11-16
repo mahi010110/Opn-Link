@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La tablette du formateur, après l'appel · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="tab">
+<div class="plan" style="--deux: minmax(0, 1fr) minmax(0, 1fr); --trois: 15rem minmax(0, 1fr) minmax(0, 1fr)">
+
+  <section class="fen cote si-trois">
+    <header class="barre"><h2 class="barre-titre">Mes cours</h2></header>
+    <div class="fen-corps serre">
+      <a class="rangee ici" href="#"><div><b>BTS SIO 2</b><span class="mono">maintenant · Centre Exemple</span></div></a>
+      <a class="rangee" href="#"><div><b>BTS SIO 1</b><span class="mono">aujourd’hui, 13&nbsp;h&nbsp;30 · Centre Exemple</span></div></a>
+      <a class="rangee" href="#"><div><b>Bac pro CIEL 2</b><span class="mono">mer. 18, 9&nbsp;h · CFA Modèle</span></div></a>
+      <a class="rangee" href="#"><div><b>Titre pro TSSR</b><span class="mono">jeu. 19, 9&nbsp;h · Institut Essai</span></div></a>
+      <a class="rangee" href="#"><div><b>Titre pro DWWM</b><span class="mono">ven. 20, 13&nbsp;h&nbsp;30 · Institut Essai</span></div></a>
+    </div>
+    <div class="cote-bas"><button class="btn"><i data-ic="plus"></i>Créer une classe</button></div>
+  </section>
+
+  <section class="fen">
+    <header class="barre"><h1 class="barre-titre">Centre Exemple</h1><span class="mono">mar. 17 nov. · 9&nbsp;h&nbsp;14</span></header>
+    <nav class="menu" aria-label="Entrées">
+      <a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes cours</a><a href="#">Moi</a>
+    </nav>
+    <div class="page">
+      <section class="reponse">
+        <i data-ic="checkbox-on" data-t="ic-32"></i>
+        <div>
+          <h2 class="tres-gros">Clos et signé</h2>
+          <p class="mono">BTS SIO 2 · 9&nbsp;h&nbsp;12 · 22 présents, 2 absents</p>
+        </div>
+      </section>
+      <div class="liste">
+        <div class="rangee"><i data-ic="calendar" data-t="ic-20"></i><div><b>Prochain cours&nbsp;: lundi 23, matin</b><span class="mono">les apprenants le voient</span></div><button class="btn">Changer</button></div>
+      </div>
+      <section class="bloc">
+        <p class="etiquette">À suivre</p>
+        <div class="liste">
+          <div class="rangee"><div><b>Inès Roux</b><span class="mono">absence ce matin</span></div><button class="btn"><i data-ic="mail"></i>Prévenir l’entreprise</button></div>
+          <div class="rangee"><div><b>Noah Petit</b><span class="mono">absence ce matin</span></div><button class="btn"><i data-ic="mail"></i>Prévenir l’entreprise</button></div>
+          <div class="rangee"><div><b>Attestation de responsabilité civile</b><span class="mono">5 sans réponse · avant ven. 20 nov.</span></div><button class="btn">Relancer</button></div>
+          <a class="rangee ici" href="#" aria-current="true"><div><b>Yanis Haddad t’a écrit</b><span class="mono">lun. 16 nov. · 17&nbsp;h&nbsp;22</span></div><i data-ic="chevron-right"></i></a>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="fen">
+    <header class="barre"><h2 class="barre-titre">Yanis Haddad</h2><span class="mono">BTS SIO 2</span></header>
+    <div class="page">
+  <div class="liste">
+    <div class="rangee"><div><b>Sa semaine</b><span class="mono">aucune absence</span></div><div class="dix" data-cases="f f|f v|e e|e e|e e" style="flex: 0 0 9rem"></div></div>
+  </div>
+  <p class="bulle">Bonjour, l’entreprise n’a pas encore signé ma convention. Je peux l’envoyer lundi&nbsp;?<span class="mono">lun. 16 nov. · 17&nbsp;h&nbsp;22</span></p>
+  <div style="flex:1"></div>
+  <label class="champ-nom">Ton message
+    <textarea class="champ" rows="3">Oui, lundi. Envoie-la dans la demande « Convention de stage »&nbsp;: elle arrive aussi au centre.</textarea>
+  </label>
+    </div>
+  </section>
+</div>
+<footer class="bas">
+  <div class="gestes"><a class="btn retour" href="#"><i data-ic="arrow-left" data-t="ic-20"></i>Retour</a><button class="touche"><i data-ic="send" data-t="ic-24"></i><span>Envoyer</span></button></div>
+  <p class="faits"><span>Feuille déposée au registre public · 9&nbsp;h&nbsp;13</span></p>
+</footer>
+<script src="../maquette.js"></script>
+</body>
+</html>

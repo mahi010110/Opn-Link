@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La tablette du formateur, pendant l'appel · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="tab">
+<div class="plan" style="--deux: minmax(0, 1fr) minmax(0, 1fr); --trois: 15rem minmax(0, 1fr) minmax(0, 1fr)">
+
+  <section class="fen cote si-trois">
+    <header class="barre"><h2 class="barre-titre">Mes cours</h2></header>
+    <div class="fen-corps serre">
+      <a class="rangee ici" href="#"><div><b>BTS SIO 2</b><span class="mono">maintenant · Centre Exemple</span></div></a>
+      <a class="rangee" href="#"><div><b>BTS SIO 1</b><span class="mono">aujourd’hui, 13&nbsp;h&nbsp;30 · Centre Exemple</span></div></a>
+      <a class="rangee" href="#"><div><b>Bac pro CIEL 2</b><span class="mono">mer. 18, 9&nbsp;h · CFA Modèle</span></div></a>
+      <a class="rangee" href="#"><div><b>Titre pro TSSR</b><span class="mono">jeu. 19, 9&nbsp;h · Institut Essai</span></div></a>
+      <a class="rangee" href="#"><div><b>Titre pro DWWM</b><span class="mono">ven. 20, 13&nbsp;h&nbsp;30 · Institut Essai</span></div></a>
+    </div>
+    <div class="cote-bas"><button class="btn"><i data-ic="plus"></i>Créer une classe</button></div>
+  </section>
+
+  <section class="fen">
+    <header class="barre maintenant"><h1 class="barre-titre">Centre Exemple</h1><span class="mono">mar. 17 nov. · 9&nbsp;h&nbsp;06</span></header>
+    <nav class="menu" aria-label="Entrées">
+      <a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes cours</a><a href="#">Moi</a>
+    </nav>
+    <div class="page">
+      <section class="bloc">
+        <div>
+          <h2 class="tres-gros">22 sur 24</h2>
+          <p class="mono">BTS SIO 2 · l’appel est ouvert</p>
+        </div>
+        <div class="paves" data-fait="22" data-total="24"></div>
+      </section>
+      <section class="bloc">
+        <p class="etiquette">Pas encore signé</p>
+        <div class="liste">
+          <a class="rangee ici" href="#" aria-current="true"><div><b>Inès Roux</b></div><i data-ic="chevron-right"></i></a>
+          <a class="rangee" href="#"><div><b>Noah Petit</b></div><i data-ic="chevron-right"></i></a>
+        </div>
+      </section>
+      <section class="bloc">
+        <p class="etiquette">Ont signé</p>
+        <div class="liste">
+          <a class="rangee faite" href="#"><div><b>Léa Martin</b></div><span class="mono">9:02</span></a>
+          <a class="rangee faite" href="#"><div><b>Yanis Haddad</b></div><span class="mono">9:02</span></a>
+          <a class="rangee faite" href="#"><div><b>Chloé Bernard</b></div><span class="mono">9:02</span></a>
+          <a class="rangee faite" href="#"><div><b>Mathis Leroy</b></div><span class="mono">9:01</span></a>
+          <a class="rangee faite" href="#"><div><b>Sofia Mendes</b></div><span class="mono">9:01</span></a>
+          <a class="rangee faite" href="#"><div><b>Lucas Moreau</b></div><span class="mono">9:01</span></a>
+          <a class="rangee faite" href="#"><div><b>Aya Traoré</b></div><span class="mono">9:01</span></a>
+          <a class="rangee faite" href="#"><div><b>Hugo Fontaine</b></div><span class="mono">9:00</span></a>
+          <a class="rangee faite" href="#"><div><b>Emma Dubois</b></div><span class="mono">9:00</span></a>
+          <a class="rangee faite" href="#"><div><b>Nathan Faure</b></div><span class="mono">9:00</span></a>
+          <a class="rangee faite" href="#"><div><b>Jade Lambert</b></div><span class="mono">8:59</span></a>
+          <a class="rangee faite" href="#"><div><b>Adam Koné</b></div><span class="mono">8:59</span></a>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="fen">
+    <header class="barre maintenant"><h2 class="barre-titre">Inès Roux</h2><span class="mono">pas encore signé</span></header>
+    <div class="page">
+      <div class="liste">
+        <a class="rangee" href="#"><i data-ic="smartphone" data-t="ic-24"></i><div><b>Signer sur ma tablette</b><span class="mono">sans téléphone</span></div><i data-ic="chevron-right"></i></a>
+        <a class="rangee" href="#"><i data-ic="qr-code" data-t="ic-24"></i><div><b>Lire son QR</b><span class="mono">sans réseau</span></div><i data-ic="chevron-right"></i></a>
+        <a class="rangee" href="#"><i data-ic="clock" data-t="ic-24"></i><div><b>Noter un retard</b><span class="mono">l’heure s’écrit sur la feuille</span></div><i data-ic="chevron-right"></i></a>
+      </div>
+    </div>
+  </section>
+</div>
+<footer class="bas">
+  <div class="gestes"><a class="btn retour" href="#"><i data-ic="arrow-left" data-t="ic-20"></i>Retour</a><button class="touche"><i data-ic="check" data-t="ic-24"></i><span>Clore et signer<small>22 présents · 2 absents</small></span></button></div>
+  <p class="faits"><span>Ton ordinateur montre le QR à la salle</span></p>
+</footer>
+<script src="../maquette.js"></script>
+</body>
+</html>

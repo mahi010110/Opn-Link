@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'apprenant, taper sa phrase de secours · maquette Opn-Link</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="tel">
+<header class="barre"><h1 class="barre-titre">Reprendre</h1></header>
+<main class="page">
+  <div class="bloc">
+    <label class="champ-nom">Ta phrase de secours&nbsp;: les 12 mots, dans l’ordre
+      <textarea class="champ code faux" rows="4" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="erreur">pomme rivière lundi cahier tigre sable violon niege lampe route jardin étoile</textarea>
+    </label>
+    <p class="erreur" id="erreur"><i data-ic="info-box"></i><span>Le 8<sup>e</sup> mot, « niege », n’est pas dans la liste. Corrige-le.</span></p>
+  </div>
+  <p class="mono">12 mots sur 12</p>
+</main>
+<footer class="bas">
+  <div class="gestes"><a class="btn retour" href="#"><i data-ic="arrow-left" data-t="ic-20"></i>Retour</a><button class="touche attend" disabled><span>Reprendre ma place</span></button></div>
+  <p class="faits"><span>Ta phrase ne quitte pas ce téléphone</span></p>
+</footer>
+<script src="../maquette.js"></script>
+</body>
+</html>

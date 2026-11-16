@@ -1401,3 +1401,119 @@ body.salle {
     font-size: var(--text-12);
   }
 }
+
+/* ---------- une erreur : sous le champ, en mots ---------- */
+
+.erreur {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--text-13);
+  font-weight: var(--weight-semibold);
+  line-height: 1.4;
+  color: var(--red);
+}
+.erreur .ic {
+  margin-top: 1px;
+}
+.champ.faux,
+.code6.faux span,
+.fichier.faux {
+  border-color: var(--red);
+}
+.champ.code {
+  font-family: var(--font-mono);
+}
+
+/* Ce qui ne peut pas se lire maintenant : en trame, le texte sur son fond plein. */
+.note.pas-maintenant {
+  align-items: flex-start;
+  background: var(--dither-strong-img), var(--surface-chrome);
+  background-size: var(--dither-size), auto;
+  box-shadow: none;
+}
+.note.pas-maintenant > * {
+  padding: 2px 8px;
+  background: var(--surface-chrome);
+}
+
+/* Les douze mots de la phrase de secours, numérotés. */
+.mots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+  counter-reset: mot;
+  overflow: hidden;
+}
+.mots li {
+  counter-increment: mot;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: -1px;
+  padding: 9px 12px;
+  font-family: var(--font-mono);
+  font-size: var(--text-16);
+  font-weight: var(--weight-semibold);
+  border-bottom: 1px dotted var(--border-frame);
+}
+.mots li::before {
+  content: counter(mot);
+  flex: none;
+  width: 1.25rem;
+  text-align: right;
+  font-size: var(--text-12);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+}
+.choix label .mono {
+  display: block;
+}
+
+/* ---------- la tablette : deux fenêtres côte à côte, trois quand elle est couchée ---------- */
+
+body.tab {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+.tab > .plan {
+  flex: 1;
+  grid-template-columns: var(--deux);
+}
+.tab .si-trois {
+  display: none;
+}
+@media (min-width: 901px) {
+  .tab > .plan {
+    grid-template-columns: var(--trois);
+  }
+  .tab .si-trois {
+    display: flex;
+  }
+}
+/* Une colonne trop longue défile dans sa fenêtre. */
+.tab .cote > .fen-corps {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* Une ligne n'est choisie que si la fenêtre qu'elle ouvre est à côté. */
+@media (min-width: 901px) {
+  .tab .rangee.ici-si-trois {
+    color: var(--select-text);
+    background: var(--select-bg);
+  }
+  .tab .rangee.ici-si-trois .mono {
+    color: inherit;
+  }
+}
+/* La touche garde sa place, en bas, sans s'étirer sur toute la largeur. */
+.tab > .bas .gestes {
+  justify-content: space-between;
+}
+.tab > .bas .touche {
+  flex: 0 1 24rem;
+}

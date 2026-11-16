@@ -20,17 +20,30 @@ Le concept, « la réponse d'abord », est accepté (15 novembre 2026). Il est
 dans [conception.md](conception.md), avec la navigation. Les six
 recommandations de sa partie 10 sont retenues (« Go », 16 novembre 2026).
 Les maquettes de [../maquettes/](../maquettes/) sont validées (« Tout est
-bon pour moi », 16 novembre 2026). Ce qui reste à dessiner et à essayer
-avant de coder ces écrans est en partie 11 de
-[conception.md](conception.md).
+bon pour moi », 16 novembre 2026). Ce qui reste à essayer avant de coder
+ces écrans est en partie 11 de [conception.md](conception.md).
+
+Les écrans qui restaient sont dessinés depuis : 19 de plus, sur la branche
+`claude/design-navigation-concept-4c4fzs`. Ils attendent l'avis du
+mainteneur.
 
 ### Le ton
 
-Tutoyer partout, comme OpenContact, ou vouvoyer certains usagers ?
+Retenu le 16 novembre 2026 (« Ok super, go ») : l'app tutoie l'apprenant,
+le formateur et le centre, et vouvoie le tuteur. Les maquettes validées
+parlent déjà ainsi.
 
-Recommandation : tutoyer l'apprenant, le formateur et le centre, comme entre
-collègues d'un même centre, et vouvoyer le tuteur, qui ne connaît pas l'app
-et la découvre dans un e-mail.
+### Quel appareil signe la présence
+
+Relier un autre appareil ouvre une porte : un apprenant peut relier le
+téléphone d'un camarade, qui signerait à sa place. Le formateur le voit
+quand il compare le compte de l'écran au nombre de têtes, mais la feuille ne
+le dit pas.
+
+Recommandation : un seul appareil signe la présence, le téléphone qu'un
+responsable a accepté. Un appareil relié lit, écrit et signe les documents,
+mais pas la présence. Reprendre sa place avec la phrase de secours donne ce
+droit au nouveau téléphone, et l'ancien le perd.
 
 ### Les règles d'Opn-Link
 

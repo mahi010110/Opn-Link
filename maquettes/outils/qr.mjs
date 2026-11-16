@@ -13,6 +13,7 @@ const QR = {
     'OPS1.A3kR8wQ1zX7mT2vN9bY4cL6pD0sF5hJ8gE2uK7oW1iR3tY9qX5zV8nM0bC4lA6jH2fG7dS1aP9oI3uY5tR8eW0qZ2xC4vB6nM9kL1jH3gF5dS7aP0oI2uY4tR6eW8qZ1xC3vB5nM7kL9jH0gF2dS4aP6oI8uY0tR3e',
   'qr-classe':
     'https://opn-link.github.io/#c=RJ4KP7MX2DW8QHN.k3Rw9xQ2mZ7vT1bN4cY8hL0pD6sF5gJ2aE9uK1oW3iR7tY5qX8zV0nM4bC6lA6jH2fG7dS1aP9oI3uY5tR8eW0qZ2xC4vB6nM9kL1jH3gF5dS7aP0oI2uY4',
+  'qr-relier': 'https://opn-link.github.io/#r=T6HVD3KQ8ZN2RMX.p7Wq2xR9mK4vT1bN8cY3hL6dS0fG5jA2eU9oI1iR7tY',
 };
 
 for (const [nom, contenu] of Object.entries(QR)) {

@@ -151,8 +151,8 @@ qui compte est en Public Sans ou en mono.
   montre déjà le nom de la classe et du centre, et demande le prénom et le
   nom. « Rejoindre », puis un responsable accepte.
 - Ensuite, par l'icône ou par le site : l'écran du jour.
-- Sans classe : « Viser le QR de ma classe », « Taper le code de ma
-  classe », « J'ai une phrase de secours ».
+- Sans classe : « Viser le QR de ma classe », « Taper un code » (celui de
+  la classe, ou celui d'un autre appareil), « J'ai une phrase de secours ».
 
 #### L'écran du jour, de haut en bas
 
@@ -493,7 +493,7 @@ point, qui change un moment.
 ## 9. Les trois points ouverts du brief
 
 - Le ton. Tutoyer l'apprenant, le formateur et le centre. Vouvoyer le
-  tuteur, comme le recommande [questions-ouvertes.md](questions-ouvertes.md).
+  tuteur. Retenu le 16 novembre 2026.
   L'écran de la salle parle à un groupe : « Visez le QR ».
 - Les annonces plus anciennes. Quand un responsable accepte un apprenant
   arrivé en cours d'année, son appareil lui envoie les annonces encore
@@ -592,6 +592,57 @@ la semaine se lit en rangs (un jour par rang), les boutons se replient.
 - Dans la maquette, la semaine passe en rangs avec `?texte=200`. Dans
   l'app, elle le fera quand une heure ne tient plus dans sa case.
 
+### Les écrans qui restaient
+
+Dessinés le 16 novembre 2026, sur la branche de travail : 19 écrans de plus,
+soit 71. Ils attendent l'avis du mainteneur.
+
+- L'apprenant sans classe, en attente d'être accepté, et devant une annonce
+  écrite par une version plus récente.
+- Relier un autre appareil, noter sa phrase de secours, reprendre sa place
+  sur un téléphone neuf.
+- Deux erreurs de tous les jours : le code de l'appel qui a changé, le code
+  d'une classe mal tapé.
+- Chez le formateur : ses messages, répondre, ajouter un support, un support
+  trop lourd, nommer un adjoint, passer la main.
+- La tablette, debout (820 × 1180) et couchée (1180 × 820) : le formateur
+  pendant et après l'appel, le centre à l'accueil.
+
+#### Ce que ce dessin a changé
+
+- Sans classe, la deuxième entrée devient « Taper un code ». Le même champ
+  reconnaît le code d'une classe et celui d'un autre appareil. Le premier
+  jour, l'apprenant ne voit pas cet écran : le QR de la salle ouvre
+  « Rejoindre ».
+- Relier un appareil se fait à deux écrans. Le téléphone montre un QR et un
+  code, l'autre appareil demande, et rien ne passe sans un oui sur le
+  téléphone. Les deux écrans montrent le même nombre : un voisin qui a lu
+  le code ne peut pas se glisser à la place.
+- La phrase de secours est due une fois. Elle attend sous « Ensuite »
+  jusqu'à « C'est noté ».
+- Reprendre sa place montre d'abord ce qui revient, et dit que l'ancien
+  téléphone perd la place.
+- Une annonce d'une version plus récente reste à sa place, en trame. Mettre
+  à jour est ce qui est dû : c'est la touche.
+- En attente, l'apprenant n'a pas de touche. La barre est en trame, et « Ce
+  n'est pas ma classe » sert de sortie.
+- Les messages du formateur rangent en haut ceux qui attendent une réponse,
+  le plus ancien d'abord, pour toutes ses classes.
+- Dans une conversation, le formateur voit la semaine de l'apprenant, sans
+  ouvrir un troisième niveau.
+- Un adjoint se nomme par une invitation, que le chef accepte ensuite dans
+  « À suivre ».
+- À la tablette, l'écran d'entrée reste à gauche et la fenêtre ouverte est à
+  droite. La touche reste seule, en bas à droite : elle porte le geste de la
+  fenêtre ouverte, sinon ce qui est dû. Une ligne n'est marquée comme
+  choisie que si la fenêtre qu'elle ouvre est à côté.
+- Une erreur a sa pièce : un pictogramme et une phrase en rouge sous le
+  champ, et le champ bordé de rouge.
+
+Deux choix de ces écrans ne sont pas dans [projet.md](projet.md), et se
+valident avec eux : reprendre sa place retire l'ancien téléphone, et le
+code pour relier un appareil vaut cinq minutes.
+
 ### Ce qui reste à essayer avant de coder ces écrans
 
 - Sur un vrai iPhone : le passage des données de Safari à l'icône (partie
@@ -607,13 +658,10 @@ la semaine se lit en rangs (un jour par rang), les boutons se replient.
 ### Ce qui n'est pas encore dessiné
 
 - Le passage de Safari à l'icône sur iPhone, qui attend l'essai sur un vrai
-  iPhone.
-- Relier un autre appareil, et la phrase de secours.
-- Chez le formateur : ses messages, ajouter un support à la documentation,
-  nommer un adjoint, passer la main.
-- Les états d'attente et d'erreur : « un responsable va t'accepter », « mets
-  à jour Opn-Link pour lire ce message ».
-- La tablette : deux fenêtres côte à côte.
+  iPhone. « Taper un code » pourrait y servir : Safari montre un code,
+  l'icône le reçoit.
+- Les petites fenêtres qui suivent un écran dessiné : retirer un appareil
+  relié, corriger son nom, la fiche d'un adjoint.
 
 ## Sources
 

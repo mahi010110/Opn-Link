@@ -86,6 +86,8 @@ Le détail et les dates sont dans `docs/carnet.md`.
 - Les mots à l'écran : formateur, apprenant, centre, tuteur, classe. Jamais
   prof, élève ou école. La liste complète est dans `docs/projet.md`,
   partie 4.
+- Le ton : l'app tutoie l'apprenant, le formateur et le centre, et vouvoie
+  le tuteur (16 novembre 2026).
 - Peu de réglages : un réglage existe seulement quand les centres font
   vraiment différemment. Il a une valeur par défaut, et seul le chef le voit.
 - Les clés : P-256 comme OpenContact, et des clés jetables pour les relais

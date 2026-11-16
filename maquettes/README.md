@@ -23,8 +23,8 @@ npm run planches
 - `npm run qr` refait les QR de `images/`.
 - `npm run captures` photographie chaque écran dans `captures/`, en clair et
   en sombre. La classe du `<body>` dit pour quel écran la maquette est
-  faite : `tel` (390 × 844 et 360 × 640), `ordi` (1280 × 800), `salle`
-  (1280 × 800 et 1920 × 1080). Il s'arrête en erreur si une page plante, si
+  faite : `tel` (390 × 844 et 360 × 640), `tab` (820 × 1180 et 1180 × 820),
+  `ordi` (1280 × 800), `salle` (1280 × 800 et 1920 × 1080). Il s'arrête en erreur si une page plante, si
   un fichier manque, si quelque chose sort de l'écran ou de sa boîte, ou si
   le bas de l'écran sort de la fenêtre.
 - `node outils/captures.mjs --texte=200` refait les écrans de téléphone à
@@ -71,6 +71,13 @@ L'apprenant, au téléphone :
 | `apprenant-documentation` | les supports de la classe |
 | `apprenant-moi` | son nom, ses appareils, sa phrase de secours, le thème |
 | `apprenant-suivi` | répondre au questionnaire de suivi |
+| `apprenant-sans-classe`, `apprenant-code-classe` | ouvrir l'app sans classe, taper un code qui ne marche pas |
+| `apprenant-attente` | attendre qu'un responsable accepte |
+| `apprenant-code-faux` | taper un code d'appel qui a changé |
+| `apprenant-mise-a-jour` | une annonce écrite par une version plus récente |
+| `apprenant-relier`, `apprenant-relier-oui` | relier un autre appareil |
+| `apprenant-phrase` | noter sa phrase de secours |
+| `apprenant-reprendre`, `apprenant-reprendre-apercu` | reprendre sa place sur un téléphone neuf |
 
 Le formateur :
 
@@ -87,6 +94,9 @@ Le formateur :
 | `cours-signer-ici`, `cours-identite` | faire signer sur son téléphone, vérifier une identité |
 | `cours-membres`, `cours-reglages`, `cours-tuteur` | les membres, les réglages du chef, inviter un tuteur |
 | `cours-fermer` | fermer la classe |
+| `cours-messages`, `cours-message` | ses messages, répondre à un apprenant |
+| `cours-support`, `cours-support-lourd` | ajouter un support, trop lourd ou non |
+| `cours-adjoint`, `cours-passer` | nommer un adjoint, passer la main |
 
 L'écran de la salle : `salle-rejoindre`, `salle-appel`, `salle-bande`
 (l'appel réduit au-dessus des diapositives), `salle-ensemble` (signer un
@@ -98,6 +108,14 @@ signature), `bureau-apprenant`, `bureau-archives`.
 
 Le tuteur : `tuteur-mail` (le mail préparé par l'app), `tuteur-absent`,
 `tuteur-present`.
+
+La tablette, deux fenêtres debout et trois couchée : `tablette-appel` (le
+formateur pendant l'appel), `tablette-cours` (après l'appel, avec une
+conversation), `tablette-bureau` (le centre, à l'accueil).
+
+Les 52 premiers écrans sont validés. Les 19 suivants, à partir de
+`apprenant-sans-classe`, de `cours-messages` et de `tablette-appel`,
+attendent l'avis du mainteneur.
 
 ## Ce qui n'est pas encore dessiné
 

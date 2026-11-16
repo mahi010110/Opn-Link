@@ -11,12 +11,14 @@ const SORTIE = join(MAQUETTES, 'captures');
 const TAILLES = {
   tel: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
   'petit-tel': { viewport: { width: 360, height: 640 }, isMobile: true, hasTouch: true },
+  tablette: { viewport: { width: 820, height: 1180 }, isMobile: true, hasTouch: true },
+  'tablette-couchee': { viewport: { width: 1180, height: 820 }, isMobile: true, hasTouch: true },
   ordi: { viewport: { width: 1280, height: 800 } },
   salle: { viewport: { width: 1280, height: 800 } },
   'grande-salle': { viewport: { width: 1920, height: 1080 } },
 };
 // La classe du <body> dit pour quel écran la maquette est faite.
-const TAILLES_PAR_CLASSE = { tel: ['tel', 'petit-tel'], ordi: ['ordi'], salle: ['salle', 'grande-salle'] };
+const TAILLES_PAR_CLASSE = { tel: ['tel', 'petit-tel'], tab: ['tablette', 'tablette-couchee'], ordi: ['ordi'], salle: ['salle', 'grande-salle'] };
 
 // node outils/captures.mjs [écran] [--texte=200] : un seul écran, ou le texte agrandi sur le petit téléphone.
 const seul = process.argv.slice(2).find((a) => !a.startsWith('--'));
@@ -49,7 +51,7 @@ for (const ecran of ecrans) {
   const classe = readFileSync(join(MAQUETTES, 'ecrans', `${ecran}.html`), 'utf8').match(/<body class="(\w+)/)?.[1];
   let tailles = TAILLES_PAR_CLASSE[classe];
   if (!tailles) {
-    erreurs.push(`${ecran} : <body class="tel", "ordi" ou "salle"> manque`);
+    erreurs.push(`${ecran} : <body class="tel", "tab", "ordi" ou "salle"> manque`);
     continue;
   }
   if (texte) tailles = tailles.includes('petit-tel') ? ['petit-tel'] : [];

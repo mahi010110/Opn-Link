@@ -366,3 +366,25 @@ refusés.
 - En reportant les règles, sept lignes des anciennes règles ont été reprises
   parce que la proposition les avait oubliées. La liste est dans
   [regles.md](regles.md), partie 8.
+
+## 16 novembre 2026 : la suite des maquettes
+
+- Devant ce qui restait ouvert, le ton et les écrans pas encore dessinés,
+  le mainteneur : « Ok super, go. »
+- Retenu : l'app tutoie l'apprenant, le formateur et le centre, et vouvoie
+  le tuteur. C'était la recommandation, et les maquettes validées parlent
+  déjà ainsi.
+- Fable 5 dessine les écrans qui restaient : 19 de plus, soit 71, dans
+  `maquettes/`, sur la branche `claude/design-navigation-concept-4c4fzs`.
+  Relier un appareil, la phrase de secours, les messages et les supports du
+  formateur, nommer un adjoint, passer la main, les états d'attente et
+  d'erreur, la tablette. Ils attendent l'avis du mainteneur, et ne sont pas
+  sur `main`.
+- Ce que ce dessin a changé est dans [conception.md](conception.md),
+  partie 11.
+- Une question s'ouvre : quel appareil signe la présence, quand un apprenant
+  en a relié plusieurs. Elle est dans
+  [questions-ouvertes.md](questions-ouvertes.md), avec une recommandation.
+- Dans un écran validé, « invité le 9 sept. » s'accordait avec le tuteur.
+  Corrigé en « lien envoyé le 9 sept. » : aucun mot ne s'accorde avec la
+  personne.
