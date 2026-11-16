@@ -192,11 +192,34 @@ données possible ». Pour l'appel :
 - la feuille vit chez le centre, ou chez le chef, de 5 à 10 ans. Chez les
   autres, jusqu'à la fermeture de la classe.
 
+## L'événement Nostr
+
+- La sorte 8571, celle de la boîte aux lettres d'OpenContact, gardée par six
+  relais sur sept (mesuré).
+- Les étiquettes : `["x", <étiquette de la boîte>]` et
+  `["expiration", <secondes>]` (NIP-40).
+- Le contenu : une lettre `OPB1.`.
+- Une clé jetable secp256k1 par événement, qui signe l'identifiant calculé
+  comme NIP-01 le demande (`coeur/src/nostr.rs`).
+
+## Les lettres du prototype
+
+Le prototype fait passer ces lettres, en JSON, scellées dans la boîte du
+destinataire. Elles ne sont pas encore figées.
+
+| Lettre | De qui, à qui | Ce qu'elle porte |
+|---|---|---|
+| `appel` | le formateur, à ses propres appareils | le journal à l'ouverture et le secret, pour que l'écran de la salle montre le QR |
+| `presence` | l'apprenant, au formateur | sa présence `OPS1.` |
+| `recu`, `refus` | le formateur, à l'apprenant | l'heure de réception et qui l'a reçue, ou le code de l'erreur |
+| `compte`, `clos`, `reouvert` | le formateur, à ses propres appareils | ce que la salle affiche : le compte, la clôture, son annulation |
+
+Les clés de stockage du prototype commencent par `opl_proto_`. Elles
+disparaîtront avec lui.
+
 ## Ce qui n'est pas encore écrit
 
 - Les clés de stockage, dans le navigateur et dans l'app pour ordinateur.
-- Les événements Nostr : la sorte, les étiquettes, l'expiration.
-- L'annonce « l'appel est ouvert » sur le fil de la classe, et la réponse
-  du formateur à une présence : reçue, ou refusée avec sa raison.
+- L'annonce « l'appel est ouvert » sur le fil de la classe.
 - Tout ce qui n'est pas l'appel : les annonces, les messages, les documents,
   les demandes.

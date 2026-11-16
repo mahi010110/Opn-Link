@@ -380,5 +380,5 @@ prototype.
 | Gros fichiers | en morceaux par les relais jusqu'à 1 Mo, en direct entre deux appareils, sinon un lien |
 | QR | `qrcode` pour les créer, `rqrr` pour les lire |
 | Mail à l'entreprise | un lien `mailto:` |
-| Interface | HTML, CSS et TypeScript, avec le style du kit d'OpenContact. Avec ou sans React : au prototype |
+| Interface | HTML, CSS et TypeScript, avec le style du kit d'OpenContact. Sans React au prototype : 6 Ko compressés pour trois interfaces |
 | Tests | `cargo test` en natif, `wasm-bindgen-test` dans un navigateur ouvert par Playwright (essayé au prototype, dans Chromium), Playwright sur Chromium, WebKit et Firefox |

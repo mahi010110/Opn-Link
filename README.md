@@ -26,6 +26,7 @@ validés, et les règles aussi.
   aussi sur le web
 - [docs/prototype.md](docs/prototype.md) : le prototype de l'appel, en cours
 - [coeur/](coeur/) : le cœur en Rust, avec ses tests
+- [site/](site/) : le site, et l'appel joué à six appareils par Playwright
 - [docs/contrat.md](docs/contrat.md) : les formats, à l'octet près, avec leurs
   vecteurs de test
 - [docs/mesures.md](docs/mesures.md) : les relais, les fichiers, l'horodatage,

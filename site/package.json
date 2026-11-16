@@ -1,0 +1,16 @@
+{
+  "name": "opn-link-site",
+  "private": true,
+  "type": "module",
+  "description": "Le site d'Opn-Link : le prototype de l'appel",
+  "scripts": {
+    "construire": "node outils/construire.mjs",
+    "relais": "node outils/relais.mjs",
+    "appel": "node tests/appel.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "nostr-tools": "2.10.4",
+    "ws": "8.18.0"
+  }
+}

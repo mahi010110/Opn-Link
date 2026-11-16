@@ -118,6 +118,18 @@ pub fn cle_de_la_presence(presence: &str) -> Result<String, Erreur> {
     Ok(Presence::lire(presence)?.cle.texte())
 }
 
+/// Un événement Nostr prêt à partir, signé d'une clé jetable. Les heures sont en secondes, comme Nostr.
+#[wasm_bindgen]
+pub fn evenement_nostr(etiquette: &str, expiration_s: f64, contenu: &str, maintenant_s: f64) -> Result<String, Erreur> {
+    crate::nostr::evenement(etiquette, heure(expiration_s), contenu, heure(maintenant_s))
+}
+
+/// Le dessin d'un QR, en SVG.
+#[wasm_bindgen]
+pub fn svg_du_qr(texte: &str) -> Result<String, Erreur> {
+    crate::dessin::svg_du_qr(texte)
+}
+
 #[wasm_bindgen]
 pub fn verifier_journal(journal: &str) -> Result<String, Erreur> {
     feuille::verifier_journal(journal)
@@ -247,6 +259,19 @@ impl Appel {
 
     pub fn close(&self) -> bool {
         self.feuille.close()
+    }
+
+    pub fn cloture_a(&self) -> Option<f64> {
+        self.feuille.cloture_a().map(|h| h as f64)
+    }
+
+    pub fn date(&self) -> String {
+        self.feuille.date().to_owned()
+    }
+
+    /// `matin` ou `apres-midi`.
+    pub fn demi(&self) -> String {
+        self.feuille.demi().texte().to_owned()
     }
 
     pub fn definitive(&self, maintenant: f64) -> bool {

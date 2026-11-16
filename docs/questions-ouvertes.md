@@ -21,6 +21,14 @@ et décrits dans [contrat.md](contrat.md).
 Recommandation : les garder pour le prototype, et mesurer dans une vraie
 salle le temps qu'il faut pour taper le code, avant de figer la minute.
 
+### React ou pas
+
+Le prototype a écrit trois interfaces en TypeScript, sans React : 6 Ko
+compressés, et le code reste lisible.
+
+Recommandation : rester sans React tant que les écrans restent aussi
+simples, et revoir la question quand viendront les grilles du centre.
+
 ### Figer les formats
 
 Les formats du contrat sont en version 1, mais en brouillon. Une fois figés,

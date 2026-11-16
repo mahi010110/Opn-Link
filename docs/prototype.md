@@ -19,28 +19,62 @@ Fait le 16 novembre 2026 :
   QR qui change avec son code de six chiffres, la présence signée, et la
   feuille tenue en journal, avec la clôture, son annulation et les
   corrections ;
-- 35 tests, dont l'appel d'un mardi matin joué avec une horloge qu'on
+- 38 tests, dont l'appel d'un mardi matin joué avec une horloge qu'on
   avance, et les vecteurs du contrat. Ils tournent en Rust et, compilés en
   WebAssembly, dans Chromium ;
+- le peu de Nostr qu'il faut (un événement signé d'une clé jetable) et le
+  dessin d'un QR, dans le cœur ;
 - trois vérifications cassées exprès font bien échouer les tests, en Rust
   comme dans le navigateur ;
 - ce que le cœur expose au navigateur (`coeur/src/web.rs`) ;
 - [contrat.md](contrat.md), brouillon, avec ses vecteurs ;
-- les fichiers de licence.
+- les fichiers de licence ;
+- le site, dans `site/` : l'écran de la salle, le téléphone de l'apprenant
+  et celui du formateur, branchés sur le cœur, en TypeScript, sans React,
+  avec les pièces des maquettes ;
+- un petit relais Nostr local pour les tests (`site/outils/relais.mjs`), qui
+  vérifie chaque événement comme un vrai relais ;
+- l'appel joué par Playwright (`site/tests/appel.mjs`) avec six appareils :
+  l'ordinateur du formateur, son téléphone, et quatre apprenants. Léa signe,
+  Yanis se trompe de code puis signe, Inès n'a pas de réseau et tend son QR,
+  Noah est absent. Le formateur clôt. Les captures sont dans
+  `site/captures/`, en planches.
 
-Reste à faire, dans l'ordre :
+Ce que le scénario vérifie, en plus du parcours :
 
-1. le petit relais Nostr local pour les tests ;
-2. les trois interfaces branchées sur le cœur ;
-3. l'appel joué par Playwright à quatre appareils, avec et sans réseau ;
-4. les captures, montrées au mainteneur.
+- la salle ne montre aucun nom, à chaque étape ;
+- un code faux est refusé avec une phrase, pas un code technique ;
+- la feuille close se vérifie seule ;
+- le relais accepte chaque événement signé par le cœur ;
+- aucun nom ne passe en clair sur le relais ;
+- les appareils ne contactent aucune autre adresse ;
+- le premier chargement tient sous 300 Ko.
 
-Ce qui est déjà mesuré :
+Ce qui est mesuré :
 
-- le cœur de l'appel pèse 84 Ko compressés, et 6 Ko de JavaScript autour,
-  sans la création ni la lecture des QR ;
-- le QR de la salle porte 26 caractères, celui d'un apprenant sans réseau
-  172.
+- le cœur pèse 116 Ko compressés, avec Nostr et le dessin des QR ;
+- le premier chargement chez un apprenant fait 230 Ko compressés, dont 88
+  Ko de polices : sous le plafond de 300 Ko ;
+- l'interface pèse 6 Ko compressés, sans React ;
+- le QR de la salle porte 26 caractères et fait 25 × 25 cases, au lieu des
+  37 × 37 prévus : il se lira de plus loin. Celui d'un apprenant sans réseau
+  porte 172 caractères.
+
+Ce que les captures ont montré, et qui est corrigé : les lignes de la liste
+du formateur étaient centrées et encadrées comme des boutons, et l'heure de
+l'après-midi était mal lue, ce qui affichait « Après-midi » à 9 h.
+
+Reste à faire :
+
+1. lire un QR avec la caméra (`rqrr` et `getUserMedia`), essayé avec la
+   caméra simulée de Chromium ;
+2. annoncer l'appel ouvert sur le fil de la classe, pour que la barre de
+   l'apprenant passe au marine ;
+3. les relais publics, plusieurs à la fois ;
+4. le texte agrandi à 200 %, la tablette et l'ordinateur du formateur ;
+5. WebKit et Firefox ;
+6. rejoindre une classe, à la place de la configuration posée par les
+   tests.
 
 ## Lancer les tests
 
@@ -54,6 +88,16 @@ Le second passe par `coeur/outils/navigateur.mjs` : le pilote Chrome de
 l'environnement cloud n'a pas la même version que Chromium, alors le script
 fait ouvrir la page des tests par Playwright. `NAVIGATEUR=firefox` ou
 `NAVIGATEUR=webkit` choisit un autre moteur, une fois installé.
+
+L'appel joué à six appareils :
+
+```sh
+cd maquettes && npm install && npm run style    # le matériel, une fois
+cd ../site && npm install
+npm run construire                              # le cœur, l'interface, et leur poids
+npm run appel                                   # le scénario et ses captures
+node outils/planches.mjs                        # les captures en planches
+```
 
 ## Ce qu'il fait : l'appel, de bout en bout
 
@@ -108,7 +152,8 @@ et attendent l'avis du mainteneur
   une idée : 186 Ko pour le cœur seul.
 - Les largeurs de 600 et 901 px, où l'on passe à deux puis à trois
   fenêtres.
-- L'interface en TypeScript, avec React ou sans.
+- L'interface en TypeScript, avec React ou sans. Sans, elle pèse 6 Ko
+  compressés pour trois interfaces : React n'a pas été nécessaire.
 - La durée de validité du code de 6 chiffres, vue à l'écran. Le temps qu'il
   faut pour le taper dans une vraie salle se mesure sur place.
 

@@ -416,3 +416,11 @@ refusés.
   toutes les dix secondes, le code tapé bon une minute, le secret révélé à
   la clôture. Ils attendent l'avis du mainteneur
   ([questions-ouvertes.md](questions-ouvertes.md)).
+- Le site du prototype est dans `site/` : l'écran de la salle, le
+  téléphone de l'apprenant et celui du formateur, en TypeScript, sans
+  React. L'appel s'y joue de bout en bout, par Playwright, avec six
+  appareils et un relais local. Le premier chargement fait 230 Ko
+  compressés, polices comprises.
+- Les captures ont montré deux défauts, corrigés : les lignes de la liste
+  du formateur dessinées comme des boutons, et « Après-midi » affiché à
+  9 h.

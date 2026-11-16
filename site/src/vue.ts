@@ -1,0 +1,52 @@
+// Ce que partagent les écrans : écrire une page, les icônes, les heures, les gestes.
+
+const echappes: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+export const esc = (t: string): string => t.replace(/[&<>"']/g, (c) => echappes[c]);
+
+export const ic = (nom: string, taille = ''): string =>
+  `<span class="ic ${taille}" aria-hidden="true" style="-webkit-mask-image:url(kit/assets/icons/${nom}.svg);mask-image:url(kit/assets/icons/${nom}.svg)"></span>`;
+
+const espace = ' ';
+export const heure = (ms: number): string => {
+  const d = new Date(ms);
+  return `${d.getHours()}${espace}h${espace}${String(d.getMinutes()).padStart(2, '0')}`;
+};
+export const heureCourte = (ms: number): string => {
+  const d = new Date(ms);
+  return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
+export const jour = (ms: number): string =>
+  new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(ms));
+export const dateIso = (ms: number): string => {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+export const horaire = (h: string): string => h.replace(':00', '').replace(':', `${espace}h${espace}`).replace(/^(\d+)$/, `$1${espace}h`);
+
+/// Le matin ou l'après-midi, d'après les horaires de l'après-midi (« 13:30-17:00 »).
+/// L'appel de l'après-midi peut se lancer une heure avant son début.
+export const demiJournee = (ms: number, apresMidi: string): 'matin' | 'apres-midi' => {
+  const d = new Date(ms);
+  const [h, m] = apresMidi.split('-')[0].split(':').map(Number);
+  return d.getHours() * 60 + d.getMinutes() < h * 60 + m - 60 ? 'matin' : 'apres-midi';
+};
+
+type Geste = (cible: HTMLElement) => void;
+let gestes: Record<string, Geste> = {};
+
+document.addEventListener('click', (e) => {
+  const cible = (e.target as Element).closest<HTMLElement>('[data-geste]');
+  if (cible && !cible.hasAttribute('disabled')) gestes[cible.dataset.geste!]?.(cible);
+});
+
+/// Écrit un écran. Le titre de la page suit, et le focus va au titre de l'écran.
+export function afficher(classe: string, titre: string, html: string, nouveauxGestes: Record<string, Geste>, garderFocus = false): void {
+  gestes = nouveauxGestes;
+  document.body.className = classe;
+  document.body.innerHTML = html;
+  document.title = `${titre} · Opn-Link`;
+  if (!garderFocus) document.querySelector<HTMLElement>('h1, h2')?.focus({ preventScroll: true });
+}
+
+export const paves = (fait: number, total: number): string =>
+  `<div class="paves" role="img" aria-label="${fait} sur ${total}">${Array.from({ length: total }, (_, n) => `<span class="pave${n < fait ? ' fait' : ''}"></span>`).join('')}</div>`;

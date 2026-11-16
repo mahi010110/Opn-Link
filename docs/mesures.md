@@ -121,10 +121,15 @@ Ce qu'on en tire :
   (signer, envoyer, lire), avec k256 ;
 - le travail sur les PDF ne se charge que chez les responsables.
 
-Mesuré ensuite sur le prototype (16 novembre 2026) : le cœur de l'appel,
-avec ce qu'il expose au navigateur, pèse 84 Ko compressés, et 6 Ko de
-JavaScript autour. Il ne contient pas encore la création ni la lecture des
-QR, ni Nostr.
+Mesuré ensuite sur le prototype (16 novembre 2026) :
+
+- le cœur de l'appel, avec ce qu'il expose au navigateur, la signature des
+  événements Nostr et le dessin des QR, pèse 116 Ko compressés, et 6 Ko de
+  JavaScript autour ;
+- le premier chargement chez un apprenant, mesuré dans Chromium, fait 230
+  Ko compressés, dont 88 Ko de polices : sous le plafond de 300 Ko
+  ([regles.md](regles.md), partie 7). La lecture des QR par la caméra n'y
+  est pas encore.
 
 ## Les QR codes
 
