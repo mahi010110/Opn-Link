@@ -1,0 +1,16 @@
+{
+  "name": "opn-link-maquettes",
+  "private": true,
+  "type": "module",
+  "description": "Les maquettes d'Opn-Link, avec le matériel « Utilitaire 98 »",
+  "scripts": {
+    "style": "node outils/prendre-style.mjs",
+    "qr": "node outils/qr.mjs",
+    "captures": "node outils/captures.mjs",
+    "planches": "node outils/planches.mjs"
+  },
+  "devDependencies": {
+    "pixelarticons": "2.4.2",
+    "qrcode": "1.5.4"
+  }
+}

@@ -1,8 +1,14 @@
-# La conception, étape 1 : le concept et la navigation
+# La conception : le concept, la navigation, les maquettes
 
 Proposé par Fable 5 le 15 novembre 2026, à partir du
-[brief](brief-conception.md). Rien n'est décidé ici : le mainteneur dit ce
-qu'il garde, et les maquettes viennent après son avis.
+[brief](brief-conception.md).
+
+- Le concept, « la réponse d'abord », est accepté par le mainteneur le 15
+  novembre 2026 (« Ok pour le concept »).
+- Les questions 2 à 7 de la partie 10 attendent son avis. Les maquettes
+  suivent mes recommandations.
+- Les maquettes des moments clés sont dans [../maquettes/](../maquettes/),
+  et ce qu'elles ont changé est en partie 11. Elles ne sont pas validées.
 
 ## 1. Le concept : la réponse d'abord
 
@@ -35,13 +41,16 @@ capture.
   interfaces.
 - Sur l'écran d'entrée, il n'existe que pour ce que la personne doit faire
   maintenant : signer sa présence, signer un document, lancer l'appel, clore.
-- Le geste fait, la touche reste enfoncée, avec l'heure : « Présent ·
-  9 h 02 ». L'apprenant garde sous les yeux la preuve qu'il a signé.
+- Le geste fait, la case de la demi-journée s'enfonce, avec l'heure, et
+  l'écran dit « Présent · 9 h 02 · reçu par Awa Diallo ». L'apprenant garde
+  sous les yeux la preuve qu'il a signé.
 - Quand rien n'est dû, il n'y a pas de touche. Karim n'a rien à lire : il
   regarde le bas de l'écran.
 - S'il y a plusieurs choses dues, la touche porte la première, puis passe à
   la suivante. L'ordre : l'appel ouvert, ce qui est en retard, l'échéance la
-  plus proche.
+  plus proche. Les autres se lisent sous « Ensuite », sans compteur.
+- Une touche en trame attend quelque chose : « Signer », tant que le
+  document n'est pas lu jusqu'au bout.
 - Dans une fenêtre ouverte pour faire quelque chose, la touche est le geste
   qui la termine : « Publier », « Envoyer », « Valider ».
 - Les boutons qui mènent ailleurs gardent leur relief 98, sans jamais être
@@ -197,10 +206,11 @@ l'écran du jour, où la touche est enfoncée.
   une erreur », qui écrit au formateur qui a clos l'appel.
 - « Écouter » sur chaque annonce : le téléphone la lit à voix haute, avec la
   voix française qu'il a déjà. Pour Karim, et pour ceux qui lisent mal.
-- L'écran d'accueil de l'iPhone : c'est la touche qui le demande, une fois,
-  juste après la première présence signée, avec la raison et la date. Elle
-  le redemande une seule fois, à la dernière demi-journée avant plus de sept
-  jours sans cours.
+- L'écran d'accueil de l'iPhone : l'app le demande une fois, juste après la
+  première présence signée, avec la raison. Elle le redemande une seule
+  fois, à la dernière demi-journée avant plus de sept jours sans cours. Sur
+  iPhone, l'ajout se fait dans Safari : l'écran montre les trois pas, sans
+  touche. Sur Android, la touche « Installer » le fait.
 - « Mes documents » et « Documentation » se ressemblent trop pour quelqu'un
   qui lit mal. Ils ne sont jamais côte à côte : la documentation est dans
   « Classe ».
@@ -398,7 +408,7 @@ l'onglet.
 | Le centre et ses preuves | des graphiques | « À compléter », et deux dates |
 | Le soir et le week-end | un réglage | les heures de la classe |
 | Sans réseau | un message d'erreur | la ligne de faits, et le QR qui s'affiche seul |
-| L'iPhone | une bannière au premier lancement | la touche, après la première signature, avec la date |
+| L'iPhone | une bannière au premier lancement | demandé une fois, après la première signature, avec la raison |
 | La première minute | un accueil et un tutoriel | le QR ouvre « Rejoindre », la classe déjà affichée |
 | La fin | un e-mail | la classe se ferme en salle, le dernier jour |
 
@@ -511,6 +521,85 @@ point, qui change un moment.
 Après l'avis du mainteneur : les maquettes des moments clés, en captures, au
 téléphone (390 × 844 et 360 × 640), à l'ordinateur, sur l'écran de la salle,
 en clair et en sombre.
+
+## 11. L'étape 2 : les maquettes
+
+Faites les 15 et 16 novembre 2026, dans [../maquettes/](../maquettes/) :
+33 écrans, capturés en clair et en sombre, au téléphone (390 × 844 et
+360 × 640), à l'ordinateur (1280 × 800) et sur l'écran de la salle
+(1280 × 800 et 1920 × 1080). La liste des écrans est dans
+[../maquettes/README.md](../maquettes/README.md).
+
+### Ce que le dessin a changé
+
+- La barre de titre dit le lieu : « Au centre », « En entreprise », ou le
+  nom du centre chez le formateur, qui en a trois. Elle est marine quand
+  l'appel est ouvert, et en trame en entreprise. La date est à sa droite.
+- La réponse est un titre posé sur la page, sans cadre : « L'appel est
+  ouvert », « Présent », « En règle », « Clos et signé », « Complet
+  jusqu'au vendredi 13 novembre ».
+- La trame ne passe jamais derrière un texte : dans une barre en trame, le
+  titre a son fond plein.
+- Chez le centre, « Complet jusqu'au » compte les feuilles et les absences.
+  Un document pas signé est dans la liste de ce qui manque, sans faire
+  reculer la date.
+- Dans la colonne des classes, une date en retard est écrite plus fort que
+  les autres.
+- Après « Clore et signer », le formateur a trente secondes pour annuler.
+  L'empreinte de la feuille part au registre public après ce délai.
+
+### Les gestes, comptés sur les maquettes
+
+| Moment | Objectif | Sur la maquette |
+|---|---|---|
+| Rejoindre une classe | moins d'une minute | viser le QR, 2 champs, « Rejoindre » |
+| Signer sa présence | 2 gestes | 2 : « Signer ma présence », viser |
+| Signer sans caméra | 6 chiffres | 6 chiffres, sur le même écran |
+| Signer sans réseau | montrer un QR | 0 geste de plus |
+| Lancer l'appel | 1 geste | 1 |
+| Voir qui manque | sans que la salle le voie | 0 : la liste est l'écran d'entrée du téléphone |
+| Clore et signer | 1 geste | 1 |
+| Signer un document | ouvrir, lire, signer, dessiner, valider | « Lire et signer », lire, « Signer », dessiner, « Valider » |
+| Répondre à une demande | ouvrir, joindre, envoyer | 3 |
+| Justifier une absence | motif et justificatif | le motif, joindre, « Envoyer aux responsables » |
+| Lire une annonce | sans la chercher | 0 |
+| Publier une annonce | écrire, publier | « Classe », écrire, « Publier » |
+| Relancer | 1 geste depuis l'entrée | 1 |
+| Prévenir l'entreprise | 1 geste | 1 |
+| Exporter | 1 geste | 1 depuis la classe |
+| Voir les présences de son apprenti | sans app | 0 : l'objet du mail |
+
+### Le texte agrandi à 200 %
+
+Essayé sur tous les écrans de téléphone, à 360 px. Rien ne sort de l'écran.
+La barre de titre passe sur deux lignes, les quatre entrées sur deux rangs,
+la semaine se lit en rangs (un jour par rang), les boutons se replient.
+
+- Silkscreen ne grandit pas : c'est la règle du matériel. Le lieu, écrit
+  dans la barre, reste donc à 16 px.
+- Il faut faire défiler plus souvent. Sur l'écran « Signer », le 0 passe
+  sous le pli.
+- Dans la maquette, la semaine passe en rangs avec `?texte=200`. Dans
+  l'app, elle le fera quand une heure ne tient plus dans sa case.
+
+### Ce qui reste à essayer avant de coder ces écrans
+
+- Sur un vrai iPhone : le passage des données de Safari à l'icône (partie
+  8, point 1). L'écran `apprenant-iphone` montre la demande, pas ce
+  passage.
+- Dans une vraie salle : le temps qu'il faut pour taper six chiffres lus de
+  loin. Le code doit rester valable ce temps-là, même si le QR change plus
+  vite.
+- Le test des cinq secondes, sur les cinq écrans d'entrée, avec quelqu'un
+  qui ne connaît pas l'app.
+- WebKit et Firefox : les captures sont faites avec Chromium seulement.
+
+### Ce qui n'est pas encore dessiné
+
+Messages, Mes documents, Moi, la documentation, les membres et les réglages
+de la classe, créer une classe, accepter les apprenants, vérifier une
+identité, signer sur le téléphone du formateur, la preuve d'une signature
+chez le centre, les archives, le questionnaire de suivi.
 
 ## Sources
 

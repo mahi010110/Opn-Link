@@ -1,0 +1,1229 @@
+/* Les pièces d'Opn-Link, faites avec le matériel « Utilitaire 98 » d'OpenContact
+   (ses jetons, ses polices, ses icônes, dans kit/). Rien ne vient de son interface.
+   La grammaire est dans docs/conception.md, partie 3 : un état, un sens. */
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+h1,
+h2,
+h3,
+p,
+ol,
+ul {
+  margin: 0;
+}
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+}
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---------- les icônes ---------- */
+
+.ic {
+  display: inline-block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
+}
+.ic-12 { width: 12px; height: 12px; }
+.ic-20 { width: 20px; height: 20px; }
+.ic-24 { width: 24px; height: 24px; }
+.ic-32 { width: 32px; height: 32px; }
+.ic-48 { width: 48px; height: 48px; }
+
+/* ---------- le texte ---------- */
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.etiquette {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-11);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.etiquette a {
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--text-13);
+  font-weight: var(--weight-semibold);
+}
+.gros {
+  font-size: var(--text-20);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+.tres-gros {
+  font-size: var(--text-26);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+.lu {
+  font-size: var(--text-15);
+  line-height: var(--leading-body);
+}
+
+/* ---------- le téléphone : le haut, la page, le bas ---------- */
+
+body.tel {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+.page > * {
+  flex: none;
+}
+.bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* La barre de titre dit le moment : marine pour maintenant, trame pour pas maintenant. */
+.barre {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  min-height: 36px;
+  padding: 4px 12px;
+  background: var(--titlebar-bg);
+  color: var(--titlebar-text);
+  border-bottom: 1px solid var(--border-strong);
+}
+.barre.maintenant {
+  background: var(--titlebar-accent-bg);
+  color: var(--on-navy);
+}
+.barre.pas-maintenant {
+  background: var(--dither-strong-img), var(--titlebar-inactive-bg);
+  background-size: var(--dither-size), auto;
+  color: var(--text-body);
+}
+/* La trame ne passe jamais derrière un texte : le titre a son fond plein. */
+.barre.pas-maintenant > * {
+  background: var(--titlebar-inactive-bg);
+  box-shadow: 0 0 0 4px var(--titlebar-inactive-bg);
+}
+.barre-titre {
+  min-width: 0;
+  font-family: var(--font-pixel);
+  font-size: var(--pixel-16);
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.barre .mono {
+  margin-left: auto;
+  color: inherit;
+  text-align: right;
+}
+
+/* Les entrées : des mots, toujours à la même place. */
+.menu {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--surface-chrome);
+  border-bottom: 1px solid var(--border-strong);
+}
+.menu a {
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  min-height: var(--control-h-touch);
+  padding: 0 8px;
+  font-size: var(--text-14);
+  font-weight: var(--weight-semibold);
+  color: var(--text-body);
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: var(--bevel-up);
+  border-right: 1px solid var(--border-strong);
+}
+.menu a:last-child {
+  border-right: 0;
+}
+
+.bas {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 16px calc(8px + env(safe-area-inset-bottom));
+  background: var(--surface-chrome);
+  border-top: 1px solid var(--border-strong);
+}
+.gestes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+}
+.faits {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--text-11);
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.faits .attend {
+  color: var(--amber);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---------- les boutons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--control-h-touch);
+  padding: 0 14px;
+  font-size: var(--text-14);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  text-decoration: none;
+  color: var(--text-body);
+  background: var(--surface-chrome);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-1);
+  box-shadow: var(--bevel-up), var(--shadow-raised);
+  cursor: pointer;
+  min-width: 0;
+  text-align: left;
+}
+.btn.danger {
+  color: var(--red);
+}
+.btn.retour {
+  flex: 0 1 auto;
+  min-height: 48px;
+}
+.bas .btn {
+  background: var(--surface-window);
+}
+
+/* La touche : ce que tu dois faire maintenant. Une seule par écran, en bas. */
+.touche {
+  flex: 1 1 11rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 60px;
+  padding: 8px 14px;
+  font-size: 1.0625rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  text-align: left;
+  color: var(--on-accent);
+  background: var(--accent);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-1);
+  box-shadow: var(--bevel-up), var(--shadow-raised);
+  cursor: pointer;
+}
+.touche small {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+  font-weight: var(--weight-medium);
+}
+/* Faite, elle reste enfoncée. */
+.touche.faite {
+  color: var(--text-body);
+  background: var(--surface-chrome);
+  box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--ink) 22%, transparent);
+  transform: translate(2px, 2px);
+  cursor: default;
+}
+/* Pas encore : en trame, le texte sur son fond plein. */
+.touche.attend {
+  color: var(--text-muted);
+  background: var(--dither-strong-img), var(--surface-chrome);
+  background-size: var(--dither-size), auto;
+  box-shadow: none;
+  cursor: default;
+}
+.touche.attend > span {
+  padding: 2px 8px;
+  background: var(--surface-chrome);
+}
+
+/* ---------- les fenêtres ---------- */
+
+.fen {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-window);
+}
+.fen-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 14px 16px;
+}
+.fen-etat {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 12px;
+  background: var(--surface-chrome);
+  border-top: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+  color: var(--text-muted);
+}
+
+/* Une plaque enfoncée : ce qui est fait. */
+.plaque {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 14px;
+  background: var(--surface-chrome);
+  border: 1px solid var(--border-strong);
+  box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.plaque > div {
+  min-width: 0;
+}
+
+/* Une annonce, un message : ce qui se lit. */
+.note {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+}
+.note-gestes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.avis {
+  padding: 10px 12px;
+  font-size: var(--text-14);
+  line-height: var(--leading-ui);
+  color: var(--amber);
+  background: var(--amber-wash);
+  border: 1px solid var(--amber);
+}
+.avis b {
+  display: block;
+}
+
+/* ---------- la ligne : une case par demi-journée ---------- */
+
+.semaine {
+  display: grid;
+  grid-template-columns: 3.4rem repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  align-items: stretch;
+}
+.semaine .jour,
+.semaine .rang {
+  font-family: var(--font-mono);
+  font-size: var(--text-11);
+  line-height: 1.25;
+  color: var(--text-muted);
+}
+.semaine .jour {
+  text-align: center;
+  text-transform: uppercase;
+}
+.semaine .jour.ici {
+  color: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+.semaine .rang {
+  align-self: center;
+}
+.case {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-muted);
+  background: var(--surface-window);
+  border: 1px solid var(--border-frame);
+}
+.case.faite {
+  color: var(--text-body);
+  background: var(--surface-chrome);
+  border-color: var(--border-strong);
+  box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.case.maintenant {
+  color: var(--select-text);
+  background: var(--select-bg);
+  border-color: var(--border-strong);
+  font-weight: var(--weight-semibold);
+}
+.case.ailleurs {
+  background: var(--dither);
+}
+.case.ailleurs.ici {
+  border: 2px solid var(--select-bg);
+}
+.case.absent {
+  color: var(--red);
+  background: var(--red-wash);
+  border-color: var(--red);
+  font-weight: var(--weight-semibold);
+}
+.case.justifiee {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* Avec un texte très agrandi, la semaine se lit en rangs : un jour par rang. */
+.semaine.en-rangs {
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+}
+.semaine.en-rangs .jour {
+  align-self: center;
+  padding-right: 6px;
+  text-align: left;
+}
+
+/* La même ligne en petit : dix cases, deux par jour. */
+.dix {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+.dix > span {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+.dix .case {
+  min-height: 20px;
+  padding: 0;
+}
+
+/* ---------- les pavés : ce que la classe fait ensemble, sans noms ---------- */
+
+.paves {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 3px;
+  height: 14px;
+}
+.pave {
+  border: 1px solid var(--border-strong);
+}
+.pave.fait {
+  background: var(--text-body);
+}
+
+/* ---------- les listes ---------- */
+
+.liste {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+}
+.rangee {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 12px;
+  color: inherit;
+  text-decoration: none;
+  border-top: 1px dotted var(--border-frame);
+}
+.rangee:first-child {
+  border-top: 0;
+}
+.rangee > div {
+  flex: 1;
+  min-width: 0;
+}
+.rangee b {
+  display: block;
+  font-size: var(--text-15);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+}
+.rangee > .ic {
+  color: var(--text-muted);
+}
+.rangee > .btn {
+  flex: none;
+}
+.rangee.faite {
+  background: var(--surface-chrome);
+  color: var(--text-muted);
+}
+.rangee.faite b {
+  font-weight: var(--weight-medium);
+}
+
+/* ---------- les champs : en creux, là où l'on écrit ---------- */
+
+.champ {
+  width: 100%;
+  min-height: var(--control-h-touch);
+  padding: 10px 12px;
+  font-size: var(--text-16);
+  line-height: 1.4;
+  background: var(--surface-field);
+  border: 1px solid var(--border-field);
+  border-radius: 0;
+  box-shadow: var(--bevel-field);
+}
+.champ-nom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--text-13);
+  font-weight: var(--weight-semibold);
+}
+.faux-texte {
+  white-space: pre-wrap;
+}
+
+.choix {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+}
+.choix label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 12px;
+  font-size: var(--text-15);
+  font-weight: var(--weight-medium);
+  border-top: 1px dotted var(--border-frame);
+}
+.choix label:first-child {
+  border-top: 0;
+}
+.rond {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface-field);
+  box-shadow: var(--bevel-field);
+}
+.rond.coche::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ---------- signer sa présence : le viseur et les chiffres ---------- */
+
+.viseur {
+  position: relative;
+  flex: 1 !important;
+  min-height: 132px;
+  overflow: hidden;
+  background: var(--titlebar-bg);
+  border: 1px solid var(--border-strong);
+}
+.viseur-salle {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 16px);
+  height: 58%;
+  aspect-ratio: 1;
+  padding: 8px;
+  background: #fff;
+  transform: translate(-50%, -50%) rotate(-3deg);
+}
+.viseur-salle img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.viseur-coin {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--titlebar-text);
+}
+.viseur-coin.hg { left: 12%; top: 10px; border-right: 0; border-bottom: 0; }
+.viseur-coin.hd { right: 12%; top: 10px; border-left: 0; border-bottom: 0; }
+.viseur-coin.bg { left: 12%; bottom: 42px; border-right: 0; border-top: 0; }
+.viseur-coin.bd { right: 12%; bottom: 42px; border-left: 0; border-top: 0; }
+.viseur-mot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 6px 10px;
+  font-size: var(--text-14);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  color: var(--titlebar-text);
+  background: var(--titlebar-bg);
+}
+
+.code6 {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.code6 span {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 3.25rem;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: var(--weight-semibold);
+  background: var(--surface-field);
+  border: 1px solid var(--border-field);
+  box-shadow: var(--bevel-field);
+}
+.code6 span:nth-child(3) {
+  margin-right: 10px;
+}
+.code6 .ici {
+  outline: 2px solid var(--select-bg);
+  outline-offset: 1px;
+}
+.chiffres {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.chiffres .btn {
+  min-height: 48px;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  background: var(--surface-window);
+}
+.chiffres .vide {
+  visibility: hidden;
+}
+
+.qr {
+  align-self: center;
+  width: min(100%, 17rem);
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-raised);
+}
+.qr img {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+}
+
+/* ---------- lire et signer un document ---------- */
+
+.feuille {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 16px;
+  font-size: var(--text-14);
+  line-height: var(--leading-body);
+  background: var(--surface-field);
+  border: 1px solid var(--border-strong);
+}
+.feuille h3 {
+  font-size: var(--text-15);
+}
+.dessin {
+  position: relative;
+  flex: 1 !important;
+  min-height: 150px;
+  color: var(--text-body);
+  background: var(--surface-field);
+  border: 1px solid var(--border-field);
+  box-shadow: var(--bevel-field);
+}
+.dessin svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.dessin::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 26%;
+  border-top: 1px dotted var(--border-frame);
+}
+.fichier {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 12px;
+  background: var(--surface-chrome);
+  border: 1px solid var(--border-strong);
+  box-shadow: inset 2px 2px 0 color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.fichier > div {
+  flex: 1 1 6rem;
+  min-width: 0;
+}
+.fichier b {
+  display: block;
+  font-size: var(--text-14);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- une conversation ---------- */
+
+.bulle {
+  max-width: 86%;
+  padding: 8px 12px;
+  font-size: var(--text-15);
+  line-height: 1.45;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+}
+.bulle.moi {
+  align-self: flex-end;
+  background: var(--teal-wash);
+}
+.bulle .mono {
+  display: block;
+  margin-top: 2px;
+}
+
+/* ---------- l'ordinateur ---------- */
+
+body.ordi {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+.plan {
+  display: grid;
+  gap: 16px;
+  min-height: 0;
+  padding: 16px;
+}
+.plan > .fen {
+  min-height: 0;
+}
+.fen-corps.serre {
+  padding: 0;
+  gap: 0;
+}
+.defile {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+@media (min-width: 901px) and (pointer: fine) {
+  .ordi .btn {
+    min-height: var(--control-h);
+    padding: 0 12px;
+    font-size: var(--text-13);
+  }
+  .ordi .touche {
+    flex: none;
+    min-height: var(--control-h-lg);
+    font-size: var(--text-14);
+  }
+  .ordi .rangee {
+    min-height: 40px;
+    padding: 6px 12px;
+  }
+  .ordi .rangee b {
+    font-size: var(--text-14);
+  }
+}
+.rangee.ici {
+  color: var(--select-text);
+  background: var(--select-bg);
+}
+.rangee.ici .mono {
+  color: inherit;
+}
+.onglets {
+  display: flex;
+  gap: 2px;
+  padding: 8px 12px 0;
+  background: var(--surface-chrome);
+  border-bottom: 1px solid var(--border-strong);
+}
+.onglets a {
+  position: relative;
+  top: 1px;
+  padding: 6px 12px;
+  font-size: var(--text-13);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid var(--border-frame);
+  border-bottom-color: var(--border-strong);
+}
+.onglets a.ici {
+  color: var(--text-body);
+  background: var(--surface-window);
+  border-color: var(--border-strong);
+  border-bottom-color: var(--surface-window);
+}
+.chemin {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: var(--text-13);
+  background: var(--surface-chrome);
+  border-bottom: 1px solid var(--border-strong);
+}
+.chemin b {
+  font-weight: var(--weight-semibold);
+}
+.chemin > .ic {
+  color: var(--text-muted);
+}
+.chemin .touche,
+.chemin .btn {
+  margin-left: auto;
+}
+.chemin .btn + .touche,
+.chemin .touche + .btn {
+  margin-left: 0;
+}
+
+/* La grille : une ligne par apprenant, une colonne par chose demandée. */
+.grille {
+  display: grid;
+  gap: 2px 2px;
+  align-items: center;
+  padding: 12px;
+  font-size: var(--text-13);
+}
+.grille .tete {
+  align-self: end;
+  padding-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--text-11);
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-muted);
+}
+.grille .tete.ici {
+  color: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+.grille .tete.large {
+  text-align: left;
+  font-family: var(--font-ui);
+  font-size: var(--text-12);
+  font-weight: var(--weight-semibold);
+  color: var(--text-body);
+}
+.grille .nom {
+  padding-right: 12px;
+  white-space: nowrap;
+}
+.grille .case {
+  min-height: 22px;
+  font-size: var(--text-11);
+}
+.grille .compte {
+  padding-left: 10px;
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.grille .trou {
+  color: var(--red);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---------- l'écran de la salle ---------- */
+
+body.salle {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--surface-window);
+}
+.salle .barre {
+  min-height: 7vh;
+  padding: 0 3vw;
+}
+.salle .barre-titre {
+  font-size: var(--pixel-24);
+  line-height: 28px;
+}
+.salle .barre .mono {
+  font-size: 2.6vh;
+  font-weight: var(--weight-medium);
+}
+.salle-corps {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5vw;
+  padding: 4vh 4vw;
+}
+.salle-qr {
+  height: 62vh;
+  aspect-ratio: 1;
+  padding: 2.4vh;
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-modal);
+}
+.salle-qr img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.salle-mot {
+  font-size: 4.4vh;
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+}
+.salle-code {
+  margin: 1vh 0 0;
+  font-family: var(--font-mono);
+  font-size: 11.2vw;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.salle-titre {
+  font-size: 9vh;
+  font-weight: var(--weight-bold);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+}
+.salle-bas {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 3vw;
+  padding: 3vh 4vw 4vh;
+  background: var(--surface-chrome);
+  border-top: 1px solid var(--border-strong);
+}
+.salle-bas .paves {
+  height: 6vh;
+  gap: 0.5vw;
+}
+.salle-bas .pave {
+  border-width: 2px;
+}
+.salle-compte {
+  font-family: var(--font-mono);
+  font-size: 6vh;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ---------- la réponse, en tête de l'écran d'entrée ---------- */
+
+.reponse {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.reponse > .ic {
+  margin-top: 1px;
+}
+.reponse > div {
+  min-width: 0;
+}
+.lien-bloc {
+  color: inherit;
+  text-decoration: none;
+}
+.etiquette > .ic {
+  margin-left: auto;
+}
+
+/* Les pas qui se font en dehors de l'app, dans l'ordre. */
+.pas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0;
+}
+.pas li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--text-15);
+}
+.pas li > .mono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: var(--text-body);
+  border: 1px solid var(--border-strong);
+}
+.pas .ic {
+  vertical-align: -3px;
+}
+.gestes-rangee {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tete-appel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rangee > .mono {
+  flex: none;
+}
+.rangee {
+  flex-wrap: wrap;
+}
+.rangee > div {
+  flex: 1 1 7rem;
+}
+.rangee > .btn {
+  margin-left: auto;
+}
+
+/* ---------- l'ordinateur : la barre du haut, les colonnes ---------- */
+
+.ordi > .barre .btn {
+  min-height: 26px;
+  color: var(--text-body);
+  box-shadow: var(--bevel-up);
+}
+.ordi > .barre .mono {
+  margin-left: auto;
+}
+.ordi > .barre .mono + .btn {
+  margin-left: 8px;
+}
+.cote .etiquette {
+  padding: 12px 12px 4px;
+}
+.cote .rangee {
+  border-top: 0;
+}
+.cote .rangee > .mono {
+  text-align: right;
+}
+.cote-bas {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+.contenu {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+.outils {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 12px 0;
+}
+.manques {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-window);
+  border: 1px solid var(--border-strong);
+}
+.manques > div {
+  display: grid;
+  grid-template-columns: 7.5rem 6rem minmax(0, 1fr) 13.5rem;
+  align-items: center;
+  min-height: 48px;
+  border-top: 1px dotted var(--border-frame);
+}
+.manques > div:first-child {
+  border-top: 0;
+}
+.manques > div > * {
+  display: flex;
+  padding: 6px 12px;
+}
+.manques .quoi {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+.manques .quoi b {
+  font-size: var(--text-14);
+  font-weight: var(--weight-semibold);
+}
+.manques .mono.retard {
+  color: var(--red);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---------- la bande : l'appel réduit au-dessus des diapositives ---------- */
+
+.diapo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2vh;
+  padding: 0 8vw;
+  color: var(--text-muted);
+  background: var(--surface-field);
+}
+.diapo h2 {
+  font-size: 7vh;
+  line-height: 1.1;
+  color: var(--text-body);
+}
+.diapo p {
+  font-size: 3.6vh;
+}
+.bande {
+  position: absolute;
+  top: 3vh;
+  right: 2vw;
+  box-shadow: var(--shadow-modal);
+}
+.bande .fen-corps {
+  flex-direction: row;
+  align-items: center;
+  gap: 2vw;
+  padding: 1.6vh 1.4vw;
+}
+.bande .salle-code {
+  margin: 0;
+  font-size: 5.6vw;
+}
+.bande .salle-compte {
+  font-size: 4vh;
+}
+
+/* ---------- la page du tuteur ---------- */
+
+.tuteur-pied {
+  margin-top: auto;
+}
+.courrier {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-field);
+  border: 1px solid var(--border-strong);
+}
+.courrier > p {
+  overflow-wrap: anywhere;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-soft);
+  font-size: var(--text-14);
+  line-height: var(--leading-body);
+}
+.courrier > p:first-child {
+  border-top: 0;
+}
+.courrier .mono {
+  display: block;
+}
+.courrier .corps {
+  white-space: pre-line;
+}
+
+/* Dans la colonne des classes, une date en retard ressort : l'encre va à ce qui manque. */
+.cote .rangee > .mono.derriere {
+  color: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+.cote .rangee.ici > .mono.derriere {
+  color: inherit;
+}
+@media (min-width: 901px) and (pointer: fine) {
+  .ordi .rangee > div {
+    flex-basis: 6rem;
+  }
+}
+.rangee > .btn {
+  flex: 0 1 auto;
+}
