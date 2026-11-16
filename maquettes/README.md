@@ -31,6 +31,9 @@ npm run planches
   360 px avec le texte agrandi à 200 %.
 - `npm run planches` réunit les captures par moment dans `planches/`, avec
   leur légende. La liste est dans `outils/liste-planches.mjs`.
+- `node outils/planches.mjs --revue=petit-tel-clair` réunit toutes les
+  captures d'une taille et d'un thème sur une seule image, pour tout relire
+  d'un coup.
 
 Il faut Playwright et Chromium. `kit/`, `captures/` et `planches/` ne sont
 pas dans le dépôt : ils se refont avec ces commandes. Un écran s'ouvre aussi

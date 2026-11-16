@@ -398,3 +398,11 @@ refusés.
   [architecture.md](architecture.md).
 - La règle des captures, dans [regles.md](regles.md), partie 4, compte
   maintenant la tablette, debout et couchée.
+
+## 16 novembre 2026 : la suite
+
+- Fable 5 propose la prochaine étape : le prototype de l'appel, de bout en
+  bout. Le plan est dans [prototype.md](prototype.md). Il attend le feu vert
+  du mainteneur.
+- Le mainteneur passe à une nouvelle discussion. Le `CLAUDE.md` dit
+  maintenant où on en est, pour qu'elle reprenne à partir de là.

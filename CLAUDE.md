@@ -3,6 +3,16 @@
 Ce fichier est lu au début de chaque session. Il dit comment on travaille et
 ce qui est déjà décidé. Le détail est dans `docs/`.
 
+## Où on en est
+
+Le 16 novembre 2026 : le cadrage, la conception, les 71 maquettes et les
+règles sont faits et validés. Rien n'est codé.
+
+La prochaine étape est le prototype de l'appel, proposé dans
+`docs/prototype.md`. Il attend le feu vert du mainteneur avant toute ligne
+de code. Ce qui reste ouvert est dans `docs/questions-ouvertes.md`, et ce qui
+s'est décidé jour après jour dans `docs/carnet.md`.
+
 ## Comment on travaille
 
 - En français, en tutoyant, avec des réponses courtes et simples.

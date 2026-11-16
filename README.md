@@ -24,6 +24,8 @@ validés, et les règles aussi.
   les concurrents
 - [docs/architecture.md](docs/architecture.md) : une app en Rust qui marche
   aussi sur le web
+- [docs/prototype.md](docs/prototype.md) : la prochaine étape, le prototype
+  de l'appel, qui attend le feu vert du mainteneur
 - [docs/mesures.md](docs/mesures.md) : les relais, les fichiers, l'horodatage,
   le poids du site, les QR et les PDF, mesurés avant les maquettes (les sondes
   sont dans [mesures/](mesures/))

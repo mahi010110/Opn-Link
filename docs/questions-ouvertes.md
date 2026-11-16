@@ -5,6 +5,17 @@ qui pouvait se mesurer à distance a été mesuré ([mesures.md](mesures.md)). L
 décisions sont dans [carnet.md](carnet.md) et reportées dans
 [projet.md](projet.md), [ux.md](ux.md) et [architecture.md](architecture.md).
 
+## La prochaine étape : le prototype
+
+Le cadrage, la conception, les maquettes et les règles sont validés. Rien
+n'est codé.
+
+Recommandation : commencer par le prototype de l'appel, de bout en bout. Le
+cœur en Rust et ses tests d'abord, puis le même cœur dans le navigateur, puis
+l'écran de la salle, le téléphone de l'apprenant et celui du formateur. Le
+plan est dans [prototype.md](prototype.md). Il attend le feu vert du
+mainteneur.
+
 ## La conception
 
 Le 15 novembre 2026, le mainteneur a laissé le choix de la direction, et veut
