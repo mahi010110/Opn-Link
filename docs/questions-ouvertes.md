@@ -19,9 +19,10 @@ avant ce choix y sont résumées, partie 10.
 Le concept, « la réponse d'abord », est accepté (15 novembre 2026). Il est
 dans [conception.md](conception.md), avec la navigation. Les six
 recommandations de sa partie 10 sont retenues (« Go », 16 novembre 2026).
-Les maquettes sont dans [../maquettes/](../maquettes/), sur la branche de
-travail. Ce qui reste à essayer avant de coder ces écrans est en partie 11
-de [conception.md](conception.md).
+Les maquettes de [../maquettes/](../maquettes/) sont validées (« Tout est
+bon pour moi », 16 novembre 2026). Ce qui reste à dessiner et à essayer
+avant de coder ces écrans est en partie 11 de
+[conception.md](conception.md).
 
 ### Le ton
 

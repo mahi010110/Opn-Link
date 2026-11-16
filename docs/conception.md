@@ -9,7 +9,8 @@ Proposé par Fable 5 le 15 novembre 2026, à partir du
   recommandations de la partie 10, le mainteneur répond « Go ». Les
   recommandations sont retenues, et les écrans qui restaient sont dessinés.
 - Les maquettes sont dans [../maquettes/](../maquettes/), et ce qu'elles ont
-  changé est en partie 11. Rien n'est sur `main`.
+  changé est en partie 11. Le mainteneur les valide le 16 novembre 2026 :
+  « Tout est bon pour moi. »
 
 ## 1. Le concept : la réponse d'abord
 

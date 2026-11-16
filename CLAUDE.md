@@ -67,6 +67,9 @@ Le détail et les dates sont dans `docs/carnet.md`.
   qui élargit « une chose à la fois, au bon moment ». Il est dans
   `docs/conception.md`, avec la navigation. La conception est confiée à
   Fable 5, à partir de `docs/brief-conception.md` (15 novembre 2026).
+- Les maquettes de `maquettes/` sont validées : 52 écrans, pour les cinq
+  interfaces (16 novembre 2026). Un écran nouveau part d'elles et de
+  `maquettes/opn-link.css`.
 - D'OpenContact, on ne garde que ce matériel. Les règles d'Opn-Link sur les
   données, l'accessibilité, les tests et la façon de livrer sont à repenser
   pour lui ; `docs/exigences.md` garde celles d'OpenContact comme point de

@@ -342,4 +342,7 @@ refusés.
 - En dessinant : l'app ne connaît pas le genre de la personne, donc aucun mot
   ne s'accorde avec elle (« Présence signée », « une absence »,
   « formateur »).
+- Devant les 52 écrans, le mainteneur : « Tout est bon pour moi. » Les
+  maquettes sont validées. Les choix retenus sont reportés dans
+  [projet.md](projet.md), partie 5.
 

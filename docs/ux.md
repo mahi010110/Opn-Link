@@ -18,6 +18,9 @@ usagers et leurs écrans est dans
 concevoir l'app, le brief ([brief-conception.md](brief-conception.md)) passe
 avant ce fichier quand ils ne disent pas la même chose.
 
+La direction est choisie depuis : le concept, la navigation et les maquettes
+validées sont dans [conception.md](conception.md), qui passe avant ce fichier.
+
 ## Les interfaces
 
 Décidé le 15 novembre 2026 : une interface par personne, chacune pensée pour

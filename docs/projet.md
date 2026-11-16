@@ -128,6 +128,7 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
    - Une annonce peut joindre un document ou un lien. Son auteur peut la
      modifier, et elle montre alors « modifiée ».
    - Une annonce reste jusqu'à ce qu'un responsable la retire.
+   - « Écouter » lit une annonce à voix haute, avec la voix du téléphone.
 4. **Les messages privés**
    - Un apprenant écrit en privé à n'importe quel responsable de sa classe.
      Les responsables peuvent aussi s'écrire entre eux. Quand un apprenant
@@ -135,6 +136,9 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
    - Les apprenants ne s'écrivent pas entre eux dans Opn-Link. Ils le font
      dans OpenContact (partie 6).
    - Ni « vu » ni « en train d'écrire », comme dans OpenContact.
+   - Une annonce ou un message envoyé en dehors des heures de la classe
+     arrive à l'ouverture suivante, une heure avant le début du matin. Celui
+     qui écrit le voit avant d'envoyer. Il n'y a pas de réglage.
 5. **La présence**
    - Pour chaque demi-journée, le formateur lance l'appel. L'app propose la
      demi-journée en cours, avec les horaires de la classe, qu'on peut
@@ -150,6 +154,11 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
      signature.
    - Avant de clore, le formateur voit qui manque, et peut noter un retard ou
      un départ. La feuille montre l'heure de chaque signature.
+   - Le QR est sur l'écran de la salle, les noms sur le téléphone du
+     formateur. Un écran qui montre le QR ne montre jamais de noms.
+   - À la clôture, l'app propose le prochain cours, que le formateur peut
+     changer. Les jours au centre s'apprennent ainsi, sans calendrier à
+     saisir.
    - Le formateur clôt l'appel et contresigne. Chaque case vide devient
      « absent ». Après la clôture, plus rien n'entre, sauf une correction du
      formateur, qui reste visible.
@@ -190,6 +199,8 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
      centre contient déjà une case de signature, le dessin s'y pose aussi.
    - Le centre contresigne s'il le veut. L'entreprise, pour une convention de
      stage, signe en dehors d'Opn-Link.
+   - Un document peut se signer en classe, tous ensemble : l'écran de la
+     salle montre combien ont signé, sans dire qui.
    - Chaque document signé a son dossier de preuve : l'empreinte du
      document, l'heure, l'identité, le journal.
    - Jusqu'à 1 Mo, un fichier passe par les relais, en morceaux, et les
@@ -225,7 +236,10 @@ app pour ordinateur, pour les formateurs et le centre. C'est le même code. Les
       bloqué, sans nouvelles), ses absences, ce qu'il lui reste à signer ou à
       envoyer.
     - Les relances à faire, et un export du tableau en tableur.
-12. **L'écran « Aujourd'hui »**
+12. **L'écran d'entrée**
+    - Il répond à la question de chacun, et porte une seule touche pour ce
+      qu'il doit faire maintenant. Sa forme est dans
+      [conception.md](conception.md) : « la réponse d'abord ».
     - Ce qui attend : la présence à signer ou l'appel à clore, les documents
       à signer, les demandes, les nouvelles annonces, les messages non lus,
       les relances. Chez un tuteur, les absences de ses apprentis.
