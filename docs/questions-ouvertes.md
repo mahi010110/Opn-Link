@@ -5,16 +5,29 @@ qui pouvait se mesurer à distance a été mesuré ([mesures.md](mesures.md)). L
 décisions sont dans [carnet.md](carnet.md) et reportées dans
 [projet.md](projet.md), [ux.md](ux.md) et [architecture.md](architecture.md).
 
-## La prochaine étape : le prototype
+## Le prototype
 
-Le cadrage, la conception, les maquettes et les règles sont validés. Rien
-n'est codé.
+Le cadrage, la conception, les maquettes et les règles sont validés. Le
+prototype de l'appel a commencé le 16 novembre 2026, avec le feu vert du
+mainteneur, sur la branche `claude/design-navigation-concept-4c4fzs`. Le
+plan et l'avancée sont dans [prototype.md](prototype.md).
 
-Recommandation : commencer par le prototype de l'appel, de bout en bout. Le
-cœur en Rust et ses tests d'abord, puis le même cœur dans le navigateur, puis
-l'écran de la salle, le téléphone de l'apprenant et celui du formateur. Le
-plan est dans [prototype.md](prototype.md). Il attend le feu vert du
-mainteneur.
+### Les choix du cœur
+
+Le cœur a demandé des choix que la doc ne fixait pas. Ils sont listés dans
+[prototype.md](prototype.md), partie « Les choix du prototype, à valider »,
+et décrits dans [contrat.md](contrat.md).
+
+Recommandation : les garder pour le prototype, et mesurer dans une vraie
+salle le temps qu'il faut pour taper le code, avant de figer la minute.
+
+### Figer les formats
+
+Les formats du contrat sont en version 1, mais en brouillon. Une fois figés,
+ils ne changent plus de nom.
+
+Recommandation : les figer quand l'appel aura été joué dans une vraie
+classe, pas avant.
 
 ## La conception
 
@@ -93,8 +106,6 @@ un vrai centre.
 - Signaler aux auteurs d'underskrift le bug de la signature ECDSA, si le
   mainteneur le veut.
 - Remesurer les relais de temps en temps avec `mesures/sonde-relais.mjs`.
-- Ajouter les fichiers de licence (MIT et Apache-2.0) avec le premier commit
-  de code.
 - Quand on fera le lien avec OpenContact, écrire dans son `CLAUDE.md` et son
   `CONTRAT.md` les deux nouveautés : le résumé envoyé aux responsables, et
   l'amitié automatique entre apprenants d'une même classe.

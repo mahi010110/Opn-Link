@@ -7,7 +7,7 @@ apprenant peut leur écrire en privé, et les formateurs voient où en est
 chacun dans sa recherche de stage ou d'alternance. L'app est libre, gratuite,
 et marche sans serveur à payer.
 
-Rien n'est codé pour l'instant. Le cadrage est fini : toutes les questions de
+Le prototype de l'appel a commencé, dans `coeur/`. Le cadrage est fini : toutes les questions de
 produit sont tranchées. Le concept, la navigation et les maquettes sont
 validés, et les règles aussi.
 
@@ -24,8 +24,10 @@ validés, et les règles aussi.
   les concurrents
 - [docs/architecture.md](docs/architecture.md) : une app en Rust qui marche
   aussi sur le web
-- [docs/prototype.md](docs/prototype.md) : la prochaine étape, le prototype
-  de l'appel, qui attend le feu vert du mainteneur
+- [docs/prototype.md](docs/prototype.md) : le prototype de l'appel, en cours
+- [coeur/](coeur/) : le cœur en Rust, avec ses tests
+- [docs/contrat.md](docs/contrat.md) : les formats, à l'octet près, avec leurs
+  vecteurs de test
 - [docs/mesures.md](docs/mesures.md) : les relais, les fichiers, l'horodatage,
   le poids du site, les QR et les PDF, mesurés avant les maquettes (les sondes
   sont dans [mesures/](mesures/))
@@ -41,5 +43,5 @@ de la recherche de stage : le style « Utilitaire 98 ». Ses écrans, sa
 navigation et son UX sont pensés pour lui, pour les apprenants, les
 formateurs, le centre et les tuteurs, et pour leurs différents écrans.
 
-Licence : MIT ou Apache-2.0, comme Rust et Tauri. Les fichiers de licence
-arriveront avec le code.
+Licence : MIT ou Apache-2.0, comme Rust et Tauri
+([LICENSE-MIT](LICENSE-MIT), [LICENSE-APACHE](LICENSE-APACHE)).

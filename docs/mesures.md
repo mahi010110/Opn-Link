@@ -121,6 +121,11 @@ Ce qu'on en tire :
   (signer, envoyer, lire), avec k256 ;
 - le travail sur les PDF ne se charge que chez les responsables.
 
+Mesuré ensuite sur le prototype (16 novembre 2026) : le cœur de l'appel,
+avec ce qu'il expose au navigateur, pèse 84 Ko compressés, et 6 Ko de
+JavaScript autour. Il ne contient pas encore la création ni la lecture des
+QR, ni Nostr.
+
 ## Les QR codes
 
 Mesurés sur un ordinateur, avec une correction d'erreur moyenne et un contenu

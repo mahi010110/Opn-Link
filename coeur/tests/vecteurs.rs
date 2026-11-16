@@ -1,0 +1,90 @@
+//! Les vecteurs du contrat (docs/contrat.md). Ils ont été écrits une fois, avec la version 1
+//! des formats, et ne changent plus : une version future doit toujours les relire.
+
+use opn_core::*;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_test::wasm_bindgen_test as test;
+
+#[cfg(target_arch = "wasm32")]
+wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
+const CODE: &str = "RJ4KP 7MX2D W8QHN";
+const ETIQUETTE: &str = "opl-classe-48c4e5ebf83ef60682ad29918ce4ec5a";
+const SEANCE_MATIN: &str = "rMP92Y86dEqy";
+const SEANCE_APRES_MIDI: &str = "Y79LPiRW-lpH";
+const ENGAGEMENT: &str = "zOUhGpib3ZPJ26Y1QWRH2e_IvxgGIY32rMkwC5aNG8g";
+const CODES: [&str; 4] = ["218210", "490691", "673754", "055972"];
+const AWA_CLE: &str = "BAIX5hfwtkQ5KCePlpmeaaI6TywVK99tbN9m5bgCgtTtGUp968uXcS0t2jyoWqh2Wlb0X8dYWZZS8ol8ZTBuV5Q";
+const AWA_BOITE: &str = "BCYVk5Ks93UZ7EWglzEWh8fF3wXEXu7kXWNzG8yHdfechHqGgOXNaIBD4MfGlR2ZVrCuLWddHmBh-EXKnPWyOL8";
+const ETIQUETTE_BOITE_AWA: &str = "opl-boite-60afe90523c629e512718802beab7884";
+const LEA_CLE: &str = "BEYtuhrk_BqWi02s8gzdbb4frjSqlxUUpj00BcPRz9ODtYu7CMEzg0KMWFPHHEyFHhNLBWgh5Gj-Cpd6v0MT3eE";
+const LEA_CLE_COURTE: &str = "A0Ytuhrk_BqWi02s8gzdbb4frjSqlxUUpj00BcPRz9OD";
+const QR: &str = "OPL1.rMP92Y86dEqy.3.055972";
+const PRESENCE: &str = "OPS1.rMP92Y86dEqy.055972.3.1763366432000.A0Ytuhrk_BqWi02s8gzdbb4frjSqlxUUpj00BcPRz9OD.P4reyGxw0adVieERry-CYDT1qV8G7adtgL9lYF5eAPWBkzGptWdhLqRqYr1Oc0X4ugyudnLW96Fc_qGo4O6htg";
+const LETTRE: &str = include_str!("vecteurs/lettre-v1.txt");
+const FEUILLE: &str = include_str!("vecteurs/feuille-v1.txt");
+const EMPREINTE_FEUILLE: &str = "dbf1a4850aa7bf151b5208c11381da4a82002af7b2b5a2397e7a76ae9c873480";
+
+fn awa() -> CleAppareil {
+    CleAppareil::depuis_octets(&[0x11; 32], &[0x12; 32]).unwrap()
+}
+
+fn lea() -> CleAppareil {
+    CleAppareil::depuis_octets(&[0x21; 32], &[0x22; 32]).unwrap()
+}
+
+#[test]
+fn la_classe_et_ses_seances() {
+    let secrets = CodeDeClasse::lire(CODE).unwrap().secrets();
+    assert_eq!(secrets.etiquette(), ETIQUETTE);
+    assert_eq!(secrets.seance("2026-11-17", Demi::Matin).unwrap().texte(), SEANCE_MATIN);
+    assert_eq!(secrets.seance("2026-11-17", Demi::ApresMidi).unwrap().texte(), SEANCE_APRES_MIDI);
+}
+
+#[test]
+fn les_codes_du_qr() {
+    let secret = SecretDeSeance::depuis_octets([7u8; 32]);
+    assert_eq!(secret.engagement(), ENGAGEMENT);
+    for (f, code) in CODES.iter().enumerate() {
+        assert_eq!(&code_du_qr(&secret, f as u64), code);
+    }
+}
+
+#[test]
+fn les_cles_publiques() {
+    assert_eq!(awa().publique().texte(), AWA_CLE);
+    assert_eq!(awa().boite().texte(), AWA_BOITE);
+    assert_eq!(lea().publique().texte(), LEA_CLE);
+    assert_eq!(lea().publique().courte(), LEA_CLE_COURTE);
+    assert_eq!(etiquette_de_boite(&awa().boite()), ETIQUETTE_BOITE_AWA);
+}
+
+#[test]
+fn le_qr_et_la_presence() {
+    let qr = Qr::lire(QR).unwrap();
+    assert_eq!((qr.seance.texte(), qr.fenetre, qr.code.as_str()), (SEANCE_MATIN, 3, CODES[3]));
+    let presence = Presence::lire(PRESENCE).unwrap();
+    assert_eq!(presence.cle, lea().publique());
+    assert_eq!(presence.heure, 1_763_366_432_000);
+    assert_eq!(Presence::depuis_qr(&lea(), &qr, 1_763_366_432_000).unwrap().texte(), PRESENCE);
+}
+
+#[test]
+fn la_lettre() {
+    assert_eq!(awa().ouvrir(LETTRE.trim()).unwrap(), PRESENCE.as_bytes());
+    assert_eq!(lea().ouvrir(LETTRE.trim()), Err(Erreur::LettreIllisible));
+}
+
+#[test]
+fn la_feuille() {
+    assert_eq!(verifier_journal(FEUILLE), Ok(EMPREINTE_FEUILLE.into()));
+    let feuille = Feuille::relire(FEUILLE, None).unwrap();
+    assert!(feuille.close());
+    let etat = feuille.etat();
+    assert_eq!(
+        (etat[0].prenom.as_str(), etat[0].presence),
+        ("Léa", EtatPresence::Present { quand: 1_763_366_433_000, voie: Voie::Reseau })
+    );
+    assert_eq!(etat[1].prenom, "Yanis");
+    assert!(etat[1].corrige);
+}

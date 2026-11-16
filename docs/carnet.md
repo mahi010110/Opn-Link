@@ -406,3 +406,13 @@ refusés.
   du mainteneur.
 - Le mainteneur passe à une nouvelle discussion. Le `CLAUDE.md` dit
   maintenant où on en est, pour qu'elle reprenne à partir de là.
+- Le mainteneur, avant de changer de discussion : « En attendant tu peux
+  commencer toi même. » Le prototype commence, sur la branche de travail.
+- Fable 5 écrit le cœur de l'appel dans `coeur/`, avec 35 tests qui
+  tournent en Rust et, compilés en WebAssembly, dans Chromium. Le contrat
+  des formats est dans [contrat.md](contrat.md), en brouillon. Les fichiers
+  de licence sont ajoutés.
+- Le cœur a demandé des choix que la doc ne fixait pas : le QR qui change
+  toutes les dix secondes, le code tapé bon une minute, le secret révélé à
+  la clôture. Ils attendent l'avis du mainteneur
+  ([questions-ouvertes.md](questions-ouvertes.md)).

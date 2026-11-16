@@ -6,12 +6,14 @@ ce qui est déjà décidé. Le détail est dans `docs/`.
 ## Où on en est
 
 Le 16 novembre 2026 : le cadrage, la conception, les 71 maquettes et les
-règles sont faits et validés. Rien n'est codé.
+règles sont faits et validés.
 
-La prochaine étape est le prototype de l'appel, proposé dans
-`docs/prototype.md`. Il attend le feu vert du mainteneur avant toute ligne
-de code. Ce qui reste ouvert est dans `docs/questions-ouvertes.md`, et ce qui
-s'est décidé jour après jour dans `docs/carnet.md`.
+Le prototype de l'appel a commencé le même jour, avec le feu vert du
+mainteneur, sur la branche `claude/design-navigation-concept-4c4fzs`. Le cœur
+en Rust est dans `coeur/`, avec ses tests. `docs/prototype.md` dit ce qui est
+fait, ce qui reste et comment lancer les tests. Les formats sont dans
+`docs/contrat.md`. Ce qui reste ouvert est dans `docs/questions-ouvertes.md`,
+et ce qui s'est décidé jour après jour dans `docs/carnet.md`.
 
 ## Comment on travaille
 

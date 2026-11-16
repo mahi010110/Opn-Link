@@ -7,7 +7,8 @@ Le nom a été choisi le 15 novembre 2026 et s'écrit « Opn-Link » à l'écran
 Les autres noms envisagés au départ : Préau, Liaison, Relais, OpenPromo,
 Le Fil.
 
-Rien n'est codé. Ce fichier dit ce qui est décidé,
+Le prototype de l'appel a commencé ([prototype.md](prototype.md)). Ce
+fichier dit ce qui est décidé,
 [mesures.md](mesures.md) ce qui a été mesuré, et
 [questions-ouvertes.md](questions-ouvertes.md) ce qui reste à mesurer. Les
 règles sont dans [regles.md](regles.md), le concept et la navigation dans

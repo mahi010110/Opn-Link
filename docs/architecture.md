@@ -381,4 +381,4 @@ prototype.
 | QR | `qrcode` pour les créer, `rqrr` pour les lire |
 | Mail à l'entreprise | un lien `mailto:` |
 | Interface | HTML, CSS et TypeScript, avec le style du kit d'OpenContact. Avec ou sans React : au prototype |
-| Tests | `cargo test` en natif, `wasm-bindgen-test` dans un navigateur, Playwright sur Chromium, WebKit et Firefox |
+| Tests | `cargo test` en natif, `wasm-bindgen-test` dans un navigateur ouvert par Playwright (essayé au prototype, dans Chromium), Playwright sur Chromium, WebKit et Firefox |

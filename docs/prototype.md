@@ -1,12 +1,59 @@
 # Le prototype
 
 Proposé par Fable 5 le 16 novembre 2026, une fois les maquettes et les
-règles validées. Il attend le feu vert du mainteneur : rien ne se code tant
-qu'il ne l'a pas donné.
+règles validées. Le mainteneur a donné son feu vert le même jour (« En
+attendant tu peux commencer toi même »). Le travail se fait sur la branche
+`claude/design-navigation-concept-4c4fzs`, et n'arrive sur `main` qu'avec
+son accord.
 
 Le but est de confirmer les outils de [architecture.md](architecture.md),
 partie « Les outils envisagés », sur le moment qui compte le plus :
 l'appel.
+
+## Où il en est
+
+Fait le 16 novembre 2026 :
+
+- le cœur de l'appel en Rust, dans `coeur/` (le paquet `opn-core`) : les
+  clés d'un appareil, le code de la classe, la lettre scellée, la séance, le
+  QR qui change avec son code de six chiffres, la présence signée, et la
+  feuille tenue en journal, avec la clôture, son annulation et les
+  corrections ;
+- 35 tests, dont l'appel d'un mardi matin joué avec une horloge qu'on
+  avance, et les vecteurs du contrat. Ils tournent en Rust et, compilés en
+  WebAssembly, dans Chromium ;
+- trois vérifications cassées exprès font bien échouer les tests, en Rust
+  comme dans le navigateur ;
+- ce que le cœur expose au navigateur (`coeur/src/web.rs`) ;
+- [contrat.md](contrat.md), brouillon, avec ses vecteurs ;
+- les fichiers de licence.
+
+Reste à faire, dans l'ordre :
+
+1. le petit relais Nostr local pour les tests ;
+2. les trois interfaces branchées sur le cœur ;
+3. l'appel joué par Playwright à quatre appareils, avec et sans réseau ;
+4. les captures, montrées au mainteneur.
+
+Ce qui est déjà mesuré :
+
+- le cœur de l'appel pèse 84 Ko compressés, et 6 Ko de JavaScript autour,
+  sans la création ni la lecture des QR ;
+- le QR de la salle porte 26 caractères, celui d'un apprenant sans réseau
+  172.
+
+## Lancer les tests
+
+```sh
+cd coeur
+cargo test                                      # en Rust
+cargo test --target wasm32-unknown-unknown      # compilés en WebAssembly, dans Chromium
+```
+
+Le second passe par `coeur/outils/navigateur.mjs` : le pilote Chrome de
+l'environnement cloud n'a pas la même version que Chromium, alors le script
+fait ouvrir la page des tests par Playwright. `NAVIGATEUR=firefox` ou
+`NAVIGATEUR=webkit` choisit un autre moteur, une fois installé.
 
 ## Ce qu'il fait : l'appel, de bout en bout
 
@@ -35,6 +82,25 @@ tests, les appareils se parlent par un petit relais Nostr lancé en local. Il
 n'existe pas encore : `mesures/relais.mjs` mesure les relais publics, il ne
 sert pas de relais.
 
+## Les choix du prototype, à valider
+
+Le cœur a demandé des choix que la doc ne fixait pas. Ils sont dans le code,
+et attendent l'avis du mainteneur
+([questions-ouvertes.md](questions-ouvertes.md)) :
+
+- le QR de la salle change toutes les dix secondes, et un code tapé reste
+  bon une minute ;
+- le QR de la salle ne porte que la séance, la fenêtre et le code. La
+  séance se calcule des deux côtés avec la clé de la classe, sans rien
+  échanger ;
+- le secret de l'appel n'est révélé qu'à la clôture, dans la feuille. Avant,
+  la feuille n'en porte que l'empreinte. Ensuite, n'importe qui peut
+  revérifier chaque code avec la feuille seule ;
+- une présence lue en face à face dans le QR d'un apprenant sans réseau est
+  acceptée même si son code a plus d'une minute ;
+- la feuille s'écrit en texte, une ligne par événement, et chaque ligne
+  porte l'empreinte de la précédente.
+
 ## Ce qu'il tranche
 
 - Le poids réel du site, face au plafond de 300 Ko compressés
@@ -46,16 +112,23 @@ sert pas de relais.
 - La durée de validité du code de 6 chiffres, vue à l'écran. Le temps qu'il
   faut pour le taper dans une vraie salle se mesure sur place.
 
-## Ce qui vient avec le premier code
+## Ce qui est venu avec le premier code
 
-- Les fichiers de licence, MIT et Apache-2.0.
-- `docs/contrat.md` : les formats et les clés de stockage, chacun avec ses
-  vecteurs de test ([regles.md](regles.md), règle 10).
+- Les fichiers de licence, MIT et Apache-2.0, à la racine.
+- [contrat.md](contrat.md) : les formats, chacun avec ses vecteurs de test
+  ([regles.md](regles.md), règle 10). Les clés de stockage viendront avec
+  les écrans.
 
-## Avant de commencer
+## Préparer un environnement neuf
 
-- Rust 1.97 est installé dans l'environnement cloud. Il manque la cible
-  `wasm32-unknown-unknown` et `wasm-bindgen`.
+- Rust 1.97 est installé dans l'environnement cloud. Il faut ajouter la
+  cible et l'outil, à la version du crate `wasm-bindgen` :
+
+  ```sh
+  rustup target add wasm32-unknown-unknown
+  cargo install wasm-bindgen-cli --version 0.2.130 --locked
+  ```
+
 - Seul Chromium est installé. WebKit et Firefox sont à ajouter pour les
   tests.
 - Les maquettes se refont en suivant
