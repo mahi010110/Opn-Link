@@ -17,10 +17,11 @@ avant ce choix y sont résumées, partie 10.
 ### La conception de Fable 5
 
 Le concept, « la réponse d'abord », est accepté (15 novembre 2026). Il est
-dans [conception.md](conception.md), avec la navigation. Les questions 2 à 7
-de sa partie 10 attendent l'avis du mainteneur, chacune avec une
-recommandation. Les maquettes de [../maquettes/](../maquettes/) suivent ces
-recommandations et ne sont pas validées.
+dans [conception.md](conception.md), avec la navigation. Les six
+recommandations de sa partie 10 sont retenues (« Go », 16 novembre 2026).
+Les maquettes sont dans [../maquettes/](../maquettes/), sur la branche de
+travail. Ce qui reste à essayer avant de coder ces écrans est en partie 11
+de [conception.md](conception.md).
 
 ### Le ton
 

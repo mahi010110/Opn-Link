@@ -327,3 +327,19 @@ refusés.
   `maquettes/`, sur la branche `claude/design-navigation-concept-4c4fzs`.
   Elles attendent l'avis du mainteneur.
 
+## 16 novembre 2026 : les maquettes
+
+- Devant les premières maquettes et les six recommandations de
+  [conception.md](conception.md), partie 10, le mainteneur : « Go. »
+- Retenu : les noms sur le téléphone du formateur et le QR sur l'ordinateur ;
+  les jours au centre appris des appels, avec « Prochain cours » à la
+  clôture ; le soir, tout arrive à l'ouverture suivante ; « Ensemble » sur
+  l'écran de la salle ; « Écouter » sur les annonces ; les entrées de
+  l'apprenant en haut de l'écran.
+- Les écrans qui restaient sont dessinés : 52 écrans en tout, dans
+  `maquettes/`, sur la branche `claude/design-navigation-concept-4c4fzs`.
+  Rien n'est sur `main`.
+- En dessinant : l'app ne connaît pas le genre de la personne, donc aucun mot
+  ne s'accorde avec elle (« Présence signée », « une absence »,
+  « formateur »).
+
