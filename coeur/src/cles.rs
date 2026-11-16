@@ -108,6 +108,8 @@ impl Signature {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(target_arch = "wasm32")]
+    use wasm_bindgen_test::wasm_bindgen_test as test;
 
     #[test]
     fn une_signature_se_verifie_et_ne_resert_pas_ailleurs() {

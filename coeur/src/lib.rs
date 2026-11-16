@@ -21,3 +21,6 @@ pub use cles::{CleAppareil, ClePublique, Signature};
 pub use erreur::Erreur;
 pub use feuille::{ANNULER_CLOTURE_MS, EtatMembre, EtatPresence, Feuille, Ligne, Recu, Voie, verifier_journal};
 pub use lettre::{etiquette_de_boite, ouvrir, sceller};
+
+#[cfg(all(test, target_arch = "wasm32"))]
+wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);

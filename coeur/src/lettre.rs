@@ -64,6 +64,8 @@ fn derive(partage: &[u8]) -> Result<[u8; 32], Erreur> {
 mod tests {
     use super::*;
     use crate::cles::CleAppareil;
+    #[cfg(target_arch = "wasm32")]
+    use wasm_bindgen_test::wasm_bindgen_test as test;
 
     #[test]
     fn seul_le_destinataire_ouvre_la_lettre() {
