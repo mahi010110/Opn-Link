@@ -1,0 +1,38 @@
+[package]
+name = "opn-core"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Le cœur d'Opn-Link : les règles, les clés et les formats, les mêmes dans l'app et sur le site."
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+aes-gcm = "0.11.1"
+base64 = "0.22.1"
+getrandom = { version = "0.4.3", features = ["wasm_js"] }
+hkdf = "0.13.0"
+hmac = "0.13.0"
+p256 = { version = "0.14.0", features = ["ecdh", "ecdsa"] }
+pbkdf2 = "0.13.0"
+sha2 = "0.11.1"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# La même version que l'outil wasm-bindgen installé : les deux doivent s'accorder à l'octet près.
+wasm-bindgen = "=0.2.130"
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+# PBKDF2 à 100 000 tours est lent sans optimisation : les tests en souffriraient.
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
