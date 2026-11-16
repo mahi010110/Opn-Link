@@ -66,6 +66,11 @@ L'apprenant, au téléphone :
 | `apprenant-iphone` | garder l'app sur l'écran d'accueil de l'iPhone |
 | `apprenant-fin` | la classe ferme |
 | `apprenant-jour-variante` | la variante des entrées en lignes |
+| `apprenant-messages` | écrire à un responsable |
+| `apprenant-documents` | retrouver un document |
+| `apprenant-documentation` | les supports de la classe |
+| `apprenant-moi` | son nom, ses appareils, sa phrase de secours, le thème |
+| `apprenant-suivi` | répondre au questionnaire de suivi |
 
 Le formateur :
 
@@ -77,20 +82,23 @@ Le formateur :
 | `cours-publier` | publier une annonce, un dimanche soir |
 | `cours-envoyer` | envoyer un document à signer |
 | `cours-ordinateur` | le cours à l'ordinateur, avec le suivi de la classe |
+| `cours-recherche` | le suivi de la recherche de stage ou d'alternance |
+| `cours-creer`, `cours-inviter`, `cours-accepter` | créer une classe et y faire entrer les apprenants |
+| `cours-signer-ici`, `cours-identite` | faire signer sur son téléphone, vérifier une identité |
+| `cours-membres`, `cours-reglages`, `cours-tuteur` | les membres, les réglages du chef, inviter un tuteur |
+| `cours-fermer` | fermer la classe |
 
 L'écran de la salle : `salle-rejoindre`, `salle-appel`, `salle-bande`
 (l'appel réduit au-dessus des diapositives), `salle-ensemble` (signer un
 document en classe).
 
 Le centre, à l'ordinateur : `bureau-a-completer`, `bureau-presences`,
-`bureau-complet`.
+`bureau-complet`, `bureau-feuille` (une feuille et la preuve d'une
+signature), `bureau-apprenant`, `bureau-archives`.
 
 Le tuteur : `tuteur-mail` (le mail préparé par l'app), `tuteur-absent`,
 `tuteur-present`.
 
 ## Ce qui n'est pas encore dessiné
 
-Messages, Mes documents, Moi, la documentation, les membres et les réglages
-de la classe, créer une classe, accepter les apprenants, vérifier une
-identité, signer sur le téléphone du formateur, la preuve d'une signature
-chez le centre, les archives, le questionnaire de suivi.
+La liste est dans [../docs/conception.md](../docs/conception.md), partie 11.

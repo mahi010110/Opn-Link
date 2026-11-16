@@ -5,10 +5,11 @@ Proposé par Fable 5 le 15 novembre 2026, à partir du
 
 - Le concept, « la réponse d'abord », est accepté par le mainteneur le 15
   novembre 2026 (« Ok pour le concept »).
-- Les questions 2 à 7 de la partie 10 attendent son avis. Les maquettes
-  suivent mes recommandations.
-- Les maquettes des moments clés sont dans [../maquettes/](../maquettes/),
-  et ce qu'elles ont changé est en partie 11. Elles ne sont pas validées.
+- Le 16 novembre 2026, devant les premières maquettes et les
+  recommandations de la partie 10, le mainteneur répond « Go ». Les
+  recommandations sont retenues, et les écrans qui restaient sont dessinés.
+- Les maquettes sont dans [../maquettes/](../maquettes/), et ce qu'elles ont
+  changé est en partie 11. Rien n'est sur `main`.
 
 ## 1. Le concept : la réponse d'abord
 
@@ -42,7 +43,7 @@ capture.
 - Sur l'écran d'entrée, il n'existe que pour ce que la personne doit faire
   maintenant : signer sa présence, signer un document, lancer l'appel, clore.
 - Le geste fait, la case de la demi-journée s'enfonce, avec l'heure, et
-  l'écran dit « Présent · 9 h 02 · reçu par Awa Diallo ». L'apprenant garde
+  l'écran dit « Présence signée · 9 h 02 · reçue par Awa Diallo ». L'apprenant garde
   sous les yeux la preuve qu'il a signé.
 - Quand rien n'est dû, il n'y a pas de touche. Karim n'a rien à lire : il
   regarde le bas de l'écran.
@@ -502,30 +503,29 @@ point, qui change un moment.
   porte un QR, compter les niveaux sous l'écran d'entrée, montrer chaque
   écran d'entrée cinq secondes.
 
-## 10. Ce que j'attends du mainteneur
+## 10. Ce qui était demandé au mainteneur, et sa réponse
 
 1. « La réponse d'abord » à la place de « une chose à la fois, au bon
-   moment » : oui ou non ?
+   moment ». Accepté le 15 novembre 2026.
 2. Les noms sur le téléphone du formateur, le QR sur l'ordinateur. Et sur un
    ordinateur seul, les noms seulement quand il les demande.
-3. Les jours au centre : appris des appels, avec « Prochain cours » à la
-   clôture. Ou un calendrier saisi par le chef. Je recommande le premier.
-4. Le soir : tout attend l'ouverture, sans exception. Je recommande sans
-   exception pour la première version.
-5. « Ensemble » sur l'écran de la salle, pour signer un document en classe :
-   dans la première version ?
-6. « Écouter » : dans la première version, ou plus tard ?
-7. Les entrées de l'apprenant en haut de l'écran, en mots. Je montrerai
-   aussi la variante en lignes dans la page, pour comparer sur images.
+3. Les jours au centre appris des appels, avec « Prochain cours » à la
+   clôture, plutôt qu'un calendrier saisi par le chef.
+4. Le soir, tout attend l'ouverture, sans exception dans la première
+   version.
+5. « Ensemble » sur l'écran de la salle, pour signer un document en classe,
+   dans la première version.
+6. « Écouter » sur les annonces, dans la première version.
+7. Les entrées de l'apprenant en haut de l'écran, en mots.
 
-Après l'avis du mainteneur : les maquettes des moments clés, en captures, au
-téléphone (390 × 844 et 360 × 640), à l'ordinateur, sur l'écran de la salle,
-en clair et en sombre.
+Les points 2 à 7 étaient des recommandations. Le 16 novembre 2026, après
+avoir vu les maquettes qui les suivent, le mainteneur a répondu « Go ». Elles
+sont retenues. Il peut revenir sur chacune.
 
 ## 11. L'étape 2 : les maquettes
 
 Faites les 15 et 16 novembre 2026, dans [../maquettes/](../maquettes/) :
-33 écrans, capturés en clair et en sombre, au téléphone (390 × 844 et
+52 écrans, capturés en clair et en sombre, au téléphone (390 × 844 et
 360 × 640), à l'ordinateur (1280 × 800) et sur l'écran de la salle
 (1280 × 800 et 1920 × 1080). La liste des écrans est dans
 [../maquettes/README.md](../maquettes/README.md).
@@ -547,6 +547,14 @@ Faites les 15 et 16 novembre 2026, dans [../maquettes/](../maquettes/) :
   les autres.
 - Après « Clore et signer », le formateur a trente secondes pour annuler.
   L'empreinte de la feuille part au registre public après ce délai.
+- L'app ne connaît pas le genre de la personne : aucun mot ne s'accorde
+  avec elle. L'écran dit « Présence signée » et pas « Présent », « une
+  absence » et pas « absent », et « formateur » à côté de chaque nom.
+- Chez le formateur, le suivi de la recherche commence par sa réponse (« 5
+  ont trouvé, 2 sont sans nouvelles »), et ceux qui ont besoin de lui sont
+  en haut du tableau, avec leur geste.
+- Fermer la classe est le seul geste qu'on ne peut pas défaire. Il a son
+  écran, qui dit ce qui va se passer, et un bouton rouge.
 
 ### Les gestes, comptés sur les maquettes
 
@@ -596,10 +604,14 @@ la semaine se lit en rangs (un jour par rang), les boutons se replient.
 
 ### Ce qui n'est pas encore dessiné
 
-Messages, Mes documents, Moi, la documentation, les membres et les réglages
-de la classe, créer une classe, accepter les apprenants, vérifier une
-identité, signer sur le téléphone du formateur, la preuve d'une signature
-chez le centre, les archives, le questionnaire de suivi.
+- Le passage de Safari à l'icône sur iPhone, qui attend l'essai sur un vrai
+  iPhone.
+- Relier un autre appareil, et la phrase de secours.
+- Chez le formateur : ses messages, ajouter un support à la documentation,
+  nommer un adjoint, passer la main.
+- Les états d'attente et d'erreur : « un responsable va t'accepter », « mets
+  à jour Opn-Link pour lire ce message ».
+- La tablette : deux fenêtres côte à côte.
 
 ## Sources
 
