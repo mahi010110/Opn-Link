@@ -469,7 +469,8 @@ inspiré de la signalétique, avec la police Luciole, qui sortait du matériel.
   [questions-ouvertes.md](questions-ouvertes.md).
 - Les règles d'Opn-Link sur les données, l'accessibilité, les tests et la
   façon de livrer sont à repenser (décision du 15 novembre 2026). Propose
-  celles qui servent ta conception.
+  celles qui servent ta conception. Fait le 16 novembre 2026 : elles sont
+  dans [regles.md](regles.md).
 - Comment un apprenant qui arrive en cours d'année reçoit les annonces plus
   anciennes ([architecture.md](architecture.md), partie « Le moins de
   données possible »).

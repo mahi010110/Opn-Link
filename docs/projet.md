@@ -10,9 +10,8 @@ Le Fil.
 Rien n'est codé. Ce fichier dit ce qui est décidé,
 [mesures.md](mesures.md) ce qui a été mesuré, et
 [questions-ouvertes.md](questions-ouvertes.md) ce qui reste à mesurer. Les
-règles de qualité, reprises d'OpenContact, sont dans
-[exigences.md](exigences.md), et celles de l'UX et du design dans
-[ux.md](ux.md).
+règles sont dans [regles.md](regles.md), le concept et la navigation dans
+[conception.md](conception.md).
 
 ## 1. D'où vient l'idée
 
@@ -60,9 +59,8 @@ formation, puis un espace commun au centre, aux formateurs et aux apprenants.
 - Le matériel de design « Utilitaire 98 » d'OpenContact, avec des écrans,
   une navigation et une UX propres à Opn-Link, pensés pour ses usagers et
   leurs écrans. D'OpenContact, on ne garde que ce matériel : les règles sur
-  les données, l'accessibilité, les tests et la façon de livrer sont à
-  repenser pour Opn-Link ([exigences.md](exigences.md) sert de point de
-  départ).
+  les données, l'accessibilité, les tests et la façon de livrer sont celles
+  d'Opn-Link ([regles.md](regles.md)).
 
 ## 4. Les mots
 

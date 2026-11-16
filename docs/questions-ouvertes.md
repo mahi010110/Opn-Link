@@ -34,17 +34,9 @@ et la découvre dans un e-mail.
 
 ### Les règles d'Opn-Link
 
-Décidé le 15 novembre 2026 : d'OpenContact, on ne garde que le matériel de
-design. Les règles sur les données, l'accessibilité, les tests et la façon de
-livrer sont à repenser pour Opn-Link.
-
-Recommandation : partir de [exigences.md](exigences.md) et des six règles du
-`CLAUDE.md`, garder ce qui protège les usagers (la vie privée, rien d'écrasé
-sans prévenir, le hors ligne, pas de serveur), et réécrire le reste avec la
-conception de Fable 5, pour les cinq interfaces.
-
-La proposition est dans [regles.md](regles.md) (16 novembre 2026). Elle
-attend l'avis du mainteneur, avec quatre questions en partie 7.
+Tranché le 16 novembre 2026 : les règles de [regles.md](regles.md) sont
+validées (« Tout est bon pour moi »). Elles remplacent `exigences.md` et les
+six règles du `CLAUDE.md`.
 
 ## À mesurer sur place
 
@@ -64,6 +56,10 @@ un vrai centre.
   par connexion, et un seul abonnement peut suivre plusieurs classes : la
   limite viendra plutôt du volume de messages. Une dizaine semble un bon point
   de départ.
+- Le plafond de poids du site de l'apprenant : 300 Ko compressés au premier
+  chargement sont retenus. Le cœur seul en pèse 186 ([mesures.md](mesures.md)).
+- Les largeurs où l'écran passe à deux puis à trois fenêtres : 600 et 901 px
+  sont retenus.
 
 ## À faire
 

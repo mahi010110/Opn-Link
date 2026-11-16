@@ -1,9 +1,9 @@
 # Les règles d'Opn-Link
 
-Proposées par Fable 5 le 16 novembre 2026. Rien n'est décidé ici : le
-mainteneur dit ce qu'il garde. Une fois validées, elles remplacent
-[exigences.md](exigences.md), qui résume les règles d'OpenContact, et les six
-règles du `CLAUDE.md`.
+Proposées par Fable 5 le 16 novembre 2026, et validées le même jour par le
+mainteneur (« Tout est bon pour moi »). Elles remplacent `exigences.md`, qui
+résumait les règles d'OpenContact, et les six règles que portait le
+`CLAUDE.md`.
 
 - Elles gardent ce qui protège les usagers dans les règles d'OpenContact.
 - Elles reprennent les décisions de [projet.md](projet.md).
@@ -16,9 +16,11 @@ n'est pas dans ce fichier.
 ## 1. Les règles à ne jamais casser
 
 1. Ce qu'une personne n'a pas choisi d'envoyer ne part pas. Avant chaque
-   envoi, l'écran dit à qui ça part.
+   envoi, l'écran dit à qui ça part. Un partage qui dure s'arrête quand
+   elle le veut.
    - Vérifié par un scénario pour chaque envoi, qui lit ce qui arrive sur
-     les relais et chez chaque destinataire.
+     les relais et chez chaque destinataire, et par un scénario où un
+     partage est arrêté : plus rien ne part ensuite.
 2. Chacun ne reçoit que ce qui est pour lui. Le tuteur reçoit les présences
    et les absences de son apprenti, jamais le motif. Un justificatif médical
    va aux seuls responsables. Un apprenant ne voit pas les messages d'un
@@ -68,6 +70,15 @@ n'est pas dans ce fichier.
 - Un seul écran d'entrée par interface, et deux niveaux au plus au
   téléphone. « Retour » est en bas à gauche, et le retour du téléphone ferme
   la fenêtre. Vérifié par un scénario qui ouvre chaque fenêtre et revient.
+- Une fenêtre sert à une seule chose, et sa barre de titre la nomme en un
+  mot. Vérifié par un relevé des barres de titre.
+- L'écran montre une fenêtre sous 600 px de large, deux à partir de 600 px,
+  trois à partir de 901 px. L'écran de la salle en montre une seule, très
+  grande. Vérifié par les captures à chaque largeur.
+- Le matériel est celui du kit d'OpenContact, pris par un script, jamais
+  recopié à la main ([brief-conception.md](brief-conception.md), partie 3).
+  Aucune couleur en dur, aucune autre police, aucun emoji. Vérifié par un
+  relevé des feuilles de style.
 - Un état du matériel a un seul sens ([conception.md](conception.md),
   partie 3). Une pièce nouvelle prend un sens qui existe, ou la règle change
   d'abord. Vérifié sur les captures.
@@ -101,7 +112,15 @@ n'est pas dans ce fichier.
 La référence est le RGAA, qui suit le WCAG 2.2 au niveau AA.
 
 - Une cible fait 44 px au doigt et 32 px à la souris. Ce qu'on voit fait la
-  taille de ce qu'on touche. Mesuré sur chaque écran.
+  taille de ce qu'on touche. Deux gestes aux conséquences différentes sont
+  séparés d'au moins 8 px. Mesuré sur chaque écran.
+- Une fenêtre où l'on écrit se place au-dessus du clavier, et le champ où
+  l'on tape reste visible. Vérifié par un scénario qui réduit la zone
+  visible, comme le fait le clavier d'un iPhone.
+- Le survol ne s'applique qu'aux appareils qui en ont un : sur un iPhone, il
+  reste collé après un tap. Un geste au doigt qui s'interrompt, comme le
+  dessin d'une signature, revient à son état de départ. Vérifié par un
+  relevé des feuilles de style et par un scénario qui coupe le geste.
 - Avec le texte agrandi à 200 %, à 360 px, rien ne sort de l'écran. Un nom
   se replie, il n'est jamais coupé. Aucune page ne défile de côté, même à
   320 px. Vérifié par l'outil de captures.
@@ -120,7 +139,8 @@ La référence est le RGAA, qui suit le WCAG 2.2 au niveau AA.
   de 2 px. Une touche du clavier est écrite sur ce qu'elle commande. Vérifié
   par un scénario sans souris, chez le formateur et chez le centre.
 - Ce qui change sans prendre le focus est lu par un lecteur d'écran. Quand
-  un élément disparaît, le focus passe à son voisin.
+  un élément disparaît, le focus passe à son voisin. Ouvrir une fenêtre
+  change le titre de la page et met le focus sur son titre.
 - Aucun geste de tous les jours ne demande de lire une phrase. Un
   pictogramme a toujours son mot. Aucun geste n'est caché : tout ce qui se
   fait a un bouton qu'on voit.
@@ -152,7 +172,8 @@ La référence est le RGAA, qui suit le WCAG 2.2 au niveau AA.
 - Ce qui dépend d'un vrai appareil ou d'un vrai lieu s'essaie sur place
   avant qu'on compte dessus : un iPhone, un vieux Android, une salle, le
   Wi-Fi d'un centre.
-- Le poids du site est mesuré à chaque livraison.
+- Le site de l'apprenant pèse au plus 300 Ko compressés au premier
+  chargement. Mesuré à chaque livraison.
 
 ## 5. Livrer
 
@@ -186,15 +207,33 @@ La référence est le RGAA, qui suit le WCAG 2.2 au niveau AA.
 - Le toast. La ligne de faits le remplace.
 - Tout ce qui ne concerne que les pistes et les contacts.
 
-## 7. Ce que j'attends du mainteneur
+## 7. Ce qui se confirme au prototype
 
-1. Ces règles à la place d'[exigences.md](exigences.md) et des six règles
-   du `CLAUDE.md` : oui, non, ou lesquelles changer ?
-2. « Aucun message qui passe et disparaît » est une règle nouvelle. Je la
-   recommande : quelqu'un qui lit lentement rate un message affiché trois
-   secondes.
-3. Un plafond de poids pour le site de l'apprenant. Je propose 300 Ko
-   compressés au premier chargement, à confirmer au prototype. Le cœur seul
-   en pèse 186 aujourd'hui ([mesures.md](mesures.md)).
-4. Les largeurs où l'on passe à deux puis à trois fenêtres. Je propose 600
-   et 901 px, à confirmer au prototype.
+Deux chiffres sont retenus sans avoir été essayés. Le prototype les confirme
+ou les change, et le changement se note dans [carnet.md](carnet.md).
+
+- Le plafond de 300 Ko compressés pour le site de l'apprenant. Le cœur seul
+  en pèse 186 aujourd'hui ([mesures.md](mesures.md)).
+- Les largeurs de 600 et 901 px, où l'on passe à deux puis à trois fenêtres.
+
+## 8. Ce que le mainteneur a tranché
+
+Le 16 novembre 2026, sur les quatre questions de la proposition :
+
+1. Ces règles prennent la place d'`exigences.md` et des six règles du
+   `CLAUDE.md`.
+2. « Aucun message qui passe et disparaît » est retenu.
+3. Le plafond de 300 Ko est retenu, à confirmer au prototype.
+4. Les largeurs de 600 et 901 px sont retenues, à confirmer au prototype.
+
+En reportant les règles, sept lignes ont été reprises des six règles du
+`CLAUDE.md`, d'`exigences.md` et du concept. Elles valaient toujours, et la
+proposition les avait oubliées :
+
+- un partage qui dure s'arrête quand la personne le veut ;
+- une fenêtre sert à une seule chose ;
+- le matériel est pris par script, sans couleur en dur ;
+- 8 px entre deux gestes aux conséquences différentes ;
+- la fenêtre où l'on écrit se place au-dessus du clavier ;
+- le survol, et le geste au doigt qui s'interrompt ;
+- le titre de la page change quand une fenêtre s'ouvre.

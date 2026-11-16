@@ -502,7 +502,8 @@ point, qui change un moment.
   partir des six règles de la partie 2, chacune avec sa façon de la
   vérifier : compter les boutons pleins, chercher un nom sur un écran qui
   porte un QR, compter les niveaux sous l'écran d'entrée, montrer chaque
-  écran d'entrée cinq secondes.
+  écran d'entrée cinq secondes. Fait le 16 novembre 2026 : elles sont dans
+  [regles.md](regles.md), validées le même jour.
 
 ## 10. Ce qui était demandé au mainteneur, et sa réponse
 

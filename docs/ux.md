@@ -1,9 +1,8 @@
 # UX et design
 
 Rédigé le 15 novembre 2026. Ce sont des propositions, à vérifier sur les
-maquettes avant de coder. Les règles générales, reprises d'OpenContact, sont
-dans [exigences.md](exigences.md). Ce fichier ajoute ce qui est propre à
-Opn-Link.
+maquettes avant de coder. Les règles d'Opn-Link sont depuis dans
+[regles.md](regles.md), qui passe avant ce fichier.
 
 Le même jour, les premières maquettes ont été refusées : elles reprenaient
 l'interface d'OpenContact. Opn-Link garde le matériel « Utilitaire 98 », mais

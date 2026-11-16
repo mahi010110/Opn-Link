@@ -9,8 +9,9 @@ ce qui est déjà décidé. Le détail est dans `docs/`.
 - On discute avant d'agir. Rien ne se code, ne se lance ou ne se publie sans
   le feu vert du mainteneur.
 - Avant de proposer quelque chose, relire `docs/projet.md`,
-  `docs/exigences.md`, `docs/ux.md`, `docs/architecture.md`,
-  `docs/mesures.md`, `docs/questions-ouvertes.md` et `docs/carnet.md`.
+  `docs/regles.md`, `docs/conception.md`, `docs/ux.md`,
+  `docs/architecture.md`, `docs/mesures.md`, `docs/questions-ouvertes.md` et
+  `docs/carnet.md`.
 - Pour concevoir l'app, son design ou sa navigation, lire d'abord
   `docs/brief-conception.md`.
 - Ce qui dépend d'un service public (relais, OpenTimestamps) se mesure avant
@@ -23,7 +24,7 @@ ce qui est déjà décidé. Le détail est dans `docs/`.
 - La doc est sur `main`, pas sur une branche à part.
 - Un changement visible (un écran, un bouton) est montré au mainteneur en
   captures avant d'arriver dans `main` : avant et après, sur téléphone et sur
-  ordinateur.
+  ordinateur, en clair et en sombre.
 - Pas de vraies données d'apprenants dans le dépôt. Les exemples et les
   captures utilisent des données inventées.
 
@@ -70,10 +71,10 @@ Le détail et les dates sont dans `docs/carnet.md`.
 - Les maquettes de `maquettes/` sont validées : 52 écrans, pour les cinq
   interfaces (16 novembre 2026). Un écran nouveau part d'elles et de
   `maquettes/opn-link.css`.
-- D'OpenContact, on ne garde que ce matériel. Les règles d'Opn-Link sur les
-  données, l'accessibilité, les tests et la façon de livrer sont à repenser
-  pour lui ; `docs/exigences.md` garde celles d'OpenContact comme point de
-  départ (15 novembre 2026).
+- D'OpenContact, on ne garde que ce matériel (15 novembre 2026). Les règles
+  d'Opn-Link sur les données, l'interface, l'accessibilité, les tests et la
+  façon de livrer sont dans `docs/regles.md`, chacune avec la façon de la
+  vérifier (16 novembre 2026). Elles ont remplacé `docs/exigences.md`.
 - Une interface par personne et par écran : l'apprenant sur son téléphone,
   le formateur en cours avec l'appel sur l'écran de la salle, le centre à
   l'ordinateur, le tuteur sur une page ouverte depuis un e-mail. Chacune
@@ -120,20 +121,35 @@ Le détail et les dates sont dans `docs/carnet.md`.
 
 ## Les règles à ne jamais casser
 
-Elles viennent d'OpenContact, et seront repensées avec les autres règles
-d'Opn-Link.
+Validées le 16 novembre 2026. `docs/regles.md`, partie 1, dit comment chacune
+se vérifie. Les règles de l'interface, de l'accessibilité, des tests et de
+la livraison sont dans ses parties 2 à 5.
 
-1. Ce que l'apprenant n'a pas choisi de partager ne part pas. Il voit ce qui
-   va partir avant l'envoi, et peut arrêter quand il veut.
-2. On n'écrase jamais des données sans prévenir : un aperçu avant, un bouton
-   « Annuler » après les gestes importants.
-3. Un écran sert à une seule chose.
-4. L'app marche sans réseau, ou dit ce qui ne marche pas. Rien n'est
-   téléchargé d'Internet au démarrage.
-5. Pas de serveur Opn-Link, pas de compte Opn-Link, pas de statistiques
+1. Ce qu'une personne n'a pas choisi d'envoyer ne part pas. Avant chaque
+   envoi, l'écran dit à qui ça part. Un partage qui dure s'arrête quand elle
+   le veut.
+2. Chacun ne reçoit que ce qui est pour lui. Le tuteur reçoit les présences
+   et les absences de son apprenti, jamais le motif. Un justificatif médical
+   va aux seuls responsables. Un apprenant ne voit pas les messages d'un
+   autre.
+3. Rien ne dit à l'autre quand on a ouvert quelque chose : ni « vu », ni
+   « en train d'écrire », ni « en ligne ».
+4. La salle ne voit jamais un nom. Un écran qui montre le QR de l'appel ne
+   montre aucun nom d'apprenant.
+5. Une feuille close ne change plus. Une correction s'ajoute et reste
+   visible. Une signature arrivée après la clôture ne compte pas.
+6. On n'écrase rien sans prévenir : un aperçu avant, « Annuler » pendant
+   trente secondes après. Fermer la classe est le seul geste qui ne se
+   défait pas, et il a son écran.
+7. L'app marche sans réseau, ou dit ce qui attend. L'appel marche sans
+   réseau. Rien n'est téléchargé d'Internet au démarrage.
+8. Pas de serveur Opn-Link, pas de compte Opn-Link, pas de statistiques
    envoyées.
-6. Un format ou une clé de stockage ne change jamais de nom. S'il évolue, il
-   prend une nouvelle version, et l'app sait toujours lire l'ancienne.
+9. Chaque donnée a une durée de vie, écrite dans le contrat. Passé ce délai,
+   elle s'efface de l'appareil.
+10. Un format ou une clé de stockage ne change jamais de nom. S'il évolue,
+    il prend une nouvelle version, et l'app lit toujours l'ancienne. Une app
+    garde intact ce qu'elle ne comprend pas.
 
 ## Les autres dépôts
 

@@ -120,8 +120,8 @@ l'espace de vie ».
 ### Les décisions suivantes
 
 - Les mêmes exigences qu'OpenContact. Le mainteneur : « Je souhaite les
-  mêmes exigences que OpenContact ! ». Elles sont résumées dans
-  [exigences.md](exigences.md).
+  mêmes exigences que OpenContact ! ». Elles étaient résumées dans
+  `exigences.md`, remplacé le 16 novembre par [regles.md](regles.md).
 - Si le chef s'en va, il passe la main à un autre responsable par un geste
   signé. Sa phrase de secours sauve sa clé si son téléphone est perdu.
 - On peut être dans plusieurs classes dès la première version, avec une
@@ -346,3 +346,23 @@ refusés.
   maquettes sont validées. Les choix retenus sont reportés dans
   [projet.md](projet.md), partie 5.
 
+## 16 novembre 2026 : les règles
+
+- Fable 5 propose les règles d'Opn-Link dans [regles.md](regles.md), chacune
+  avec la façon de la vérifier. Le mainteneur : « Tout est bon pour moi. »
+- Décidé : elles remplacent `exigences.md`, retiré du dépôt, et les six
+  règles du `CLAUDE.md`. Les règles à ne jamais casser passent de six à dix.
+  S'y ajoutent : chacun ne reçoit que ce qui est pour lui, rien ne dit à
+  l'autre quand on a ouvert quelque chose, la salle ne voit jamais un nom,
+  une feuille close ne change plus, chaque donnée a une durée de vie.
+- « Un écran sert à une seule chose » quitte les règles à ne jamais casser.
+  Elle devient une règle de l'interface, dans les mots du concept : une
+  fenêtre sert à une seule chose.
+- Décidé : aucun message qui passe et disparaît. La ligne de faits remplace
+  le toast d'OpenContact.
+- Retenu, à confirmer au prototype : 300 Ko compressés au plus pour le site
+  de l'apprenant, et les largeurs de 600 et 901 px pour passer à deux puis à
+  trois fenêtres.
+- En reportant les règles, sept lignes des anciennes règles ont été reprises
+  parce que la proposition les avait oubliées. La liste est dans
+  [regles.md](regles.md), partie 8.

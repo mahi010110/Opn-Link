@@ -8,16 +8,20 @@ chacun dans sa recherche de stage ou d'alternance. L'app est libre, gratuite,
 et marche sans serveur à payer.
 
 Rien n'est codé pour l'instant. Le cadrage est fini : toutes les questions de
-produit sont tranchées. La conception de l'app part du brief de conception.
+produit sont tranchées. Le concept, la navigation et les maquettes sont
+validés, et les règles aussi.
 
 - [docs/projet.md](docs/projet.md) : ce que fait l'app, et ce que contient la
   première version
 - [docs/brief-conception.md](docs/brief-conception.md) : tout ce qu'il faut
   savoir pour concevoir l'app, son design et sa navigation
+- [docs/conception.md](docs/conception.md) : le concept, « la réponse
+  d'abord », et la navigation de chaque interface
+- [maquettes/](maquettes/) : les 52 écrans validés, en HTML
+- [docs/regles.md](docs/regles.md) : les règles d'Opn-Link, chacune avec la
+  façon de la vérifier
 - [docs/ux.md](docs/ux.md) : les exigences d'UX et de design, et ce que font
   les concurrents
-- [docs/exigences.md](docs/exigences.md) : les règles de qualité, reprises
-  d'OpenContact
 - [docs/architecture.md](docs/architecture.md) : une app en Rust qui marche
   aussi sur le web
 - [docs/mesures.md](docs/mesures.md) : les relais, les fichiers, l'horodatage,
