@@ -48,6 +48,9 @@ Trois choses à savoir :
   version de Chromium : les tests du cœur dans le navigateur passent par
   `coeur/outils/navigateur.mjs`, et télécharger un autre pilote a été
   refusé.
+- Un écran qui change se montre au mainteneur avant `main`, avant et après :
+  `node outils/avant-apres.mjs <cas>` dans `site/` (partie « Comment on
+  livre »).
 
 Le but est de confirmer les outils de [architecture.md](architecture.md),
 partie « Les outils envisagés », sur le moment qui compte le plus :
@@ -456,3 +459,16 @@ Pour la caméra (17 novembre 2026) :
 - Le cœur et ses tests d'abord, puis l'écran.
 - Les captures se montrent en planches, comme celles de `maquettes/` : avant
   et après, au téléphone et à l'ordinateur, en clair et en sombre.
+- `node outils/avant-apres.mjs <cas> [référence]`, dans `site/`, après
+  `npm run construire`, fait cette planche : il construit à part la version
+  de la référence (`main` par défaut), pose la même classe inventée dans
+  les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour` et
+  `signer` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et
+  le geste qui mène à l'écran.
+- Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
+  scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans
+  une copie du site hors du dépôt, faite comme le fait `avant-apres.mjs`
+  (le cœur et les maquettes en liens), pour ne jamais laisser le dépôt dans
+  un état cassé.
+- Le scénario de la classe se relance après chaque morceau, et les
+  planches se refont depuis ses captures (`node outils/planches.mjs`).

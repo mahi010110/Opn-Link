@@ -7,7 +7,8 @@
     "construire": "node outils/construire.mjs",
     "relais": "node outils/relais.mjs",
     "verifier": "tsc",
-    "classe": "node tests/classe.mjs"
+    "classe": "node tests/classe.mjs",
+    "avant-apres": "node outils/avant-apres.mjs"
   },
   "devDependencies": {
     "esbuild": "0.25.12",
