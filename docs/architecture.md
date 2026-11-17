@@ -381,7 +381,7 @@ d'un vrai centre se découvriront à la première vraie utilisation.
 | PDF | `lopdf` pour lire un PDF, trouver ses cases de signature et ajouter une page ; `underskrift` avec notre signataire pour le sceau PAdES (mesuré) |
 | Date des feuilles | OpenTimestamps, un registre public gratuit |
 | Gros fichiers | en morceaux par les relais jusqu'à 1 Mo, en direct entre deux appareils, sinon un lien |
-| QR | `qrcode` pour les créer, `rqrr` pour les lire |
+| QR | `qrcode` pour les créer, `rqrr` pour les lire. Le prototype prend `quircs` : `rqrr` pèse 85 Ko de plus (mesuré le 17 novembre 2026, à valider) |
 | Mail à l'entreprise | un lien `mailto:` |
 | Interface | HTML, CSS et TypeScript, avec le style du kit d'OpenContact. Sans React au prototype : 6 Ko compressés pour trois interfaces |
 | Tests | `cargo test` en natif, `wasm-bindgen-test` dans un navigateur ouvert par Playwright (essayé au prototype, dans Chromium), Playwright sur Chromium, WebKit et Firefox |

@@ -474,3 +474,7 @@ refusés.
   d'appel ouvert » et « Une absence » sont des choix de Fable 5, à valider
   ([prototype.md](prototype.md), partie « Les choix du prototype, à
   valider »).
+- L'apprenant signe en visant le QR de la salle avec la caméra. Pour lire
+  les QR, le prototype prend quircs au lieu de rqrr : rqrr ajoutait 85 Ko et
+  faisait passer le premier chargement au-dessus du plafond de 300 Ko
+  (mesuré). C'est un choix de Fable 5, à valider.

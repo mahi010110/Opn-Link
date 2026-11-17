@@ -131,6 +131,11 @@ Mesuré ensuite sur le prototype (16 novembre 2026) :
   ([regles.md](regles.md), partie 7). La lecture des QR par la caméra n'y
   est pas encore.
 
+Mesuré le 17 novembre 2026, pour lire les QR avec la caméra : rqrr ajoute
+85 Ko compressés au cœur, et le premier chargement d'un apprenant passe à
+337 Ko. quircs, un portage en Rust de la bibliothèque quirc, sous licence
+MIT, en ajoute 11,5 : le premier chargement reste à 265 Ko.
+
 ## Les QR codes
 
 Mesurés sur un ordinateur, avec une correction d'erreur moyenne et un contenu

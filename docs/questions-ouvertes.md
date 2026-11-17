@@ -21,7 +21,8 @@ que la porte, la demande laissée dehors sans réponse, le nom du formateur
 demandé à la création. Puis les relais : ceux de secours ne servent que tant
 que moins de deux principaux répondent, et un relais qui refuse est écarté
 dix minutes. Puis l'appel annoncé sur le fil : « Pas d'appel ouvert » avant
-l'appel, « Une absence » après, et la touche gardée sans réseau.
+l'appel, « Une absence » après, et la touche gardée sans réseau. Puis la
+caméra : quircs au lieu de rqrr pour lire les QR, à cause du poids.
 
 Recommandation : les garder.
 

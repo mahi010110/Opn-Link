@@ -26,7 +26,7 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
    --depth=1 origin <version>`.
 3. Vérifier que tout passe, comme le 17 novembre 2026 :
-   - `cd coeur && cargo test` : 54 tests ;
+   - `cd coeur && cargo test` : 57 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
    - `cd ../site && npm run verifier && npm run construire && npm run
@@ -234,6 +234,24 @@ l'appel clos avec sa propre clé : le téléphone de Noah n'en tient pas
 compte. Sans la vérification du responsable dans le cœur, ce contrôle
 échoue. Mesuré : le premier chargement chez un apprenant pèse 253 Ko.
 
+Fait ensuite le 17 novembre 2026, la caméra :
+
+- le cœur lit un QR dans une image en niveaux de gris, avec la
+  bibliothèque quircs. rqrr, prévu par l'architecture, ajoutait 85 Ko
+  compressés au cœur, et le premier chargement passait à 337 Ko, au-dessus
+  du plafond. quircs en ajoute 11,5 : le premier chargement pèse 265 Ko
+  ([mesures.md](mesures.md)) ;
+- l'écran « Signer » montre la caméra arrière dans le viseur, et les six
+  chiffres dessous, comme la maquette. Le site lit cinq images par seconde,
+  réduites à 640 pixels de large. Un QR de l'appel lu, la présence part ;
+- un autre QR, celui de la classe par exemple, se dit sous le viseur, sans
+  marquer le code en rouge, et rien ne part ;
+- sans caméra, refusée ou absente, le viseur dit « La caméra ne s'ouvre
+  pas » et les chiffres restent.
+
+Le scénario fait signer Léa avec la caméra simulée de Chromium : elle vise
+d'abord le QR de la classe, puis celui que montre la salle.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -249,8 +267,10 @@ on construit directement la première version complète
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
    relais publics, l'écran d'entrée de chacun. Il passe avant la fin du 1 :
    sans les relais publics, rien ne marchait hors des tests. Les relais
-   publics et l'appel annoncé sur le fil sont faits le 17 novembre 2026.
-   Reste, dans cet ordre : la caméra, l'écran d'entrée de chacun.
+   publics, l'appel annoncé sur le fil et la caméra sont faits le 17
+   novembre 2026. Reste : l'écran d'entrée de chacun, et la caméra du
+   formateur pour lire le QR d'un apprenant sans réseau, qui se colle encore
+   en texte.
 3. Les annonces et les messages privés.
 4. Les absences, et la page du tuteur.
 5. Les documents à signer, la feuille exportée en PDF et le registre
@@ -386,6 +406,13 @@ Pour l'appel annoncé sur le fil (17 novembre 2026) :
   absences ;
 - sans réseau, la touche revient au bout de cinq secondes sans relais ;
 - l'annonce reste un jour sur les relais.
+
+Pour la caméra (17 novembre 2026) :
+
+- quircs plutôt que rqrr pour lire les QR, à cause du poids mesuré ;
+- cinq images lues par seconde, réduites à 640 pixels de large ;
+- sans annonce de l'appel, un QR du matin ou de l'après-midi du jour est
+  accepté : un appel se lance parfois un peu avant l'heure.
 
 ## Ce qu'il tranche
 
