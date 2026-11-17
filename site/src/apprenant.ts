@@ -3,6 +3,7 @@
 // le savoir : la touche « Signer ma présence » reste là pendant les heures de la classe.
 // Sans réponse au bout de dix secondes, l'écran montre seul le QR à tendre au formateur.
 
+import { arreter, poser, viser } from './camera';
 import { type Contexte, faits, nomDe } from './contexte';
 import { type ClasseGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
 import { entree } from './routes';
@@ -17,7 +18,7 @@ interface Garde {
   recu?: { quand: number; par: string };
 }
 
-type Vue = { ecran: 'jour' } | { ecran: 'signer'; chiffres: string; erreur?: string } | { ecran: 'sans-reseau' };
+type Vue = { ecran: 'jour' } | { ecran: 'signer'; chiffres: string; erreur?: string; erreurQr?: string; sansCamera?: boolean } | { ecran: 'sans-reseau' };
 
 type Annonce = ReturnType<Contexte['coeur']['lire_annonce_de_l_appel']>;
 interface AnnonceGardee {
@@ -58,6 +59,14 @@ export function apprenant(ctx: Contexte): void {
     return aujourdhui.find((a) => a.etat === 'ouvert') ?? aujourdhui.find((a) => a.demi === demi());
   };
   const seanceDuMoment = () => annonceDuMoment()?.seance ?? seance();
+  // Un QR lu en face de l'écran de la salle dit sa séance. Sans annonce, il peut être celui du
+  // matin ou de l'après-midi : un appel se lance parfois un peu avant l'heure.
+  const seancesDuQr = () => {
+    const annonce = annonceDuMoment();
+    if (annonce) return [annonce.seance];
+    const date = dateIso(maintenant());
+    return [coeur.seance(classe.code, date, 'matin'), coeur.seance(classe.code, date, 'apres-midi')];
+  };
   const cetteFois = () => (garde?.seance === seanceDuMoment() ? garde : undefined);
   const horsLigne = () => !relais.ouvert && Date.now() - demarrage > HORS_LIGNE_MS;
   const barre = (ouvert = false) =>
@@ -103,15 +112,51 @@ export function apprenant(ctx: Contexte): void {
     );
   };
 
+  const versSigner = (chiffres = '', erreur?: string) => {
+    const sansCamera = vue.ecran === 'signer' && vue.sansCamera;
+    vue = { ecran: 'signer', chiffres, erreur, sansCamera };
+    rendre();
+    if (sansCamera) return;
+    viser(coeur, signerLeQr).then((ouverte) => {
+      if (ouverte || vue.ecran !== 'signer') return;
+      vue = { ...vue, sansCamera: true };
+      rendre();
+    });
+  };
+
+  const signerLeQr = (qr: string) => {
+    if (vue.ecran !== 'signer') return;
+    let seanceLue: string | undefined;
+    try {
+      seanceLue = coeur.seance_du_qr(qr);
+    } catch {
+      // Ce n'est pas le QR d'un appel : celui de la classe, ou un autre.
+    }
+    const erreur = !seanceLue ? 'autre-qr' : seancesDuQr().includes(seanceLue) ? undefined : 'autre-seance';
+    if (erreur || !seanceLue) {
+      if (vue.erreurQr !== erreur) {
+        vue = { ...vue, erreurQr: erreur };
+        rendre();
+      }
+      return;
+    }
+    envoyerPresence(seanceLue, moi.signer_qr(qr, maintenant()));
+  };
+
   const signer = (chiffres: string) => {
     let presence: string;
     try {
       presence = moi.signer_code(seanceDuMoment(), chiffres, maintenant());
     } catch {
-      vue = { ecran: 'signer', chiffres, erreur: 'code-inconnu' };
+      vue = { ...vue, ecran: 'signer', chiffres, erreur: 'code-inconnu' };
       return rendre();
     }
-    garde = { seance: seanceDuMoment(), presence, signee: maintenant() };
+    envoyerPresence(seanceDuMoment(), presence);
+  };
+
+  const envoyerPresence = (seanceSignee: string, presence: string) => {
+    arreter();
+    garde = { seance: seanceSignee, presence, signee: maintenant() };
     ecrire('presence', garde);
     for (const r of porte.responsables) envoyer(coeur, relais, r.boite, { v: 1, t: 'presence', presence });
     vue = { ecran: 'jour' };
@@ -128,14 +173,14 @@ export function apprenant(ctx: Contexte): void {
   const taper = (chiffre: string) => {
     if (vue.ecran !== 'signer') return;
     const chiffres = vue.erreur ? chiffre : (vue.chiffres + chiffre).slice(0, 6);
-    vue = { ecran: 'signer', chiffres };
+    vue = { ...vue, chiffres, erreur: undefined, erreurQr: undefined };
     if (chiffres.length === 6) return signer(chiffres);
     rendre();
   };
 
   const effacer = () => {
     if (vue.ecran !== 'signer') return;
-    vue = { ecran: 'signer', chiffres: vue.chiffres.slice(0, -1) };
+    vue = { ...vue, chiffres: vue.chiffres.slice(0, -1), erreur: undefined, erreurQr: undefined };
     rendre();
   };
 
@@ -171,13 +216,11 @@ export function apprenant(ctx: Contexte): void {
       ecrire('accueil-propose', Date.now());
       rendre();
     },
-    signer: () => {
-      vue = { ecran: 'signer', chiffres: '' };
-      rendre();
-    },
+    signer: () => versSigner(),
     chiffre: (c: HTMLElement) => taper(c.dataset.n!),
     effacer,
     retour: () => {
+      arreter();
       vue = { ecran: 'jour' };
       rendre();
     },
@@ -197,7 +240,7 @@ export function apprenant(ctx: Contexte): void {
     const [debut, fin] = (laDemi === 'matin' ? porte.matin : porte.apres_midi).split('-');
     const nomDeLaDemi = laDemi === 'matin' ? 'Matin' : 'Après-midi';
     const moment = `${nomDeLaDemi}, ${horaire(debut)} à ${horaire(fin)} · ${qui}`;
-    const signer = `<div class="gestes"><button class="touche" data-geste="signer">${ic('qr-code', 'ic-24')}<span>Signer ma présence</span></button></div>`;
+    const toucheSigner = `<div class="gestes"><button class="touche" data-geste="signer">${ic('qr-code', 'ic-24')}<span>Signer ma présence</span></button></div>`;
     const ouvert = !fois && annonce?.etat === 'ouvert';
     let reponse: string;
     let touche = '';
@@ -212,12 +255,12 @@ export function apprenant(ctx: Contexte): void {
       reponse = `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Présence envoyée</h2><p class="mono">${heure(fois.signee)} · ${esc(formateur())} ne l’a pas encore reçue</p></div>`;
     } else if (ouvert) {
       reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">L’appel est ouvert</h2><p class="mono">${moment}</p></div>`;
-      touche = signer;
+      touche = toucheSigner;
     } else if (annonce?.etat === 'clos') {
       reponse = `${ic('square-alert', 'ic-32')}<div><h2 class="tres-gros">Une absence</h2><p class="mono">${nomDeLaDemi} · appel clos à ${heure(annonce.quand)} par ${qui}</p></div>`;
     } else if (horsLigne()) {
       reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">Ta présence</h2><p class="mono">${moment}</p></div>`;
-      touche = signer;
+      touche = toucheSigner;
     } else {
       reponse = `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Pas d’appel ouvert</h2><p class="mono">${moment}</p></div>`;
     }
@@ -232,9 +275,13 @@ export function apprenant(ctx: Contexte): void {
       'Présence',
       `<header class="barre maintenant"><h1 class="barre-titre" tabindex="-1">Présence</h1><span class="mono">${demi() === 'matin' ? 'matin' : 'après-midi'} · ${esc(formateur())}</span></header>
        <main class="page">
-         <div class="viseur-vide">La caméra viendra au prochain pas du prototype.</div>
+         <div class="viseur" role="img" aria-label="La caméra">
+           <i class="viseur-coin hg"></i><i class="viseur-coin hd"></i><i class="viseur-coin bg"></i><i class="viseur-coin bd"></i>
+           <p class="viseur-mot">${v.sansCamera ? 'La caméra ne s’ouvre pas' : 'Vise le QR de la salle'}</p>
+         </div>
+         ${v.erreurQr ? `<p class="erreur" role="alert">${ic('info-box')}<span>${esc(phrase(v.erreurQr, formateur()))}</span></p>` : ''}
          <section class="bloc">
-           <p class="etiquette">Tape les 6 chiffres de l’écran</p>
+           <p class="etiquette">${v.sansCamera ? 'Tape les 6 chiffres de l’écran' : 'Ou tape les 6 chiffres'}</p>
            <div class="code6${v.erreur ? ' faux' : ''}" role="group" aria-label="Le code de l’appel"${v.erreur ? ' aria-describedby="erreur"' : ''}>${cases}</div>
            ${v.erreur ? `<p class="erreur" id="erreur" role="alert">${ic('info-box')}<span>${esc(phrase(v.erreur, formateur()))}</span></p>` : ''}
          </section>
@@ -244,6 +291,7 @@ export function apprenant(ctx: Contexte): void {
       gestes,
       v.chiffres.length > 0,
     );
+    poser();
   };
 
   const ecranSansReseau = () => {
@@ -289,7 +337,7 @@ export function apprenant(ctx: Contexte): void {
       const chiffres = garde.presence.split('.')[2] ?? '';
       garde = undefined;
       ecrire('presence', null);
-      vue = { ecran: 'signer', chiffres, erreur: l.raison };
+      return versSigner(chiffres, l.raison);
     } else {
       return;
     }

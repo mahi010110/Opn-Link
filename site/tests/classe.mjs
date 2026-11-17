@@ -1,8 +1,8 @@
 // Une classe de bout en bout, jouée par Playwright avec de vrais appareils et des relais locaux.
 // Awa crée la classe et l'invite à la salle. Léa, Inès, Noah et Kevin ouvrent le lien du QR,
 // Yanis tape le code, d'abord de travers, Noah sans réseau. Awa accepte tout le monde sauf
-// Kevin, qu'elle ne connaît pas. Puis l'appel, annoncé sur le fil de la classe : Léa signe,
-// Yanis se trompe de code puis signe, et tente de clore l'appel avec sa propre clé. Inès n'a plus
+// Kevin, qu'elle ne connaît pas. Puis l'appel, annoncé sur le fil de la classe : Léa signe en
+// visant le QR de la salle avec la caméra simulée de Chromium, Yanis se trompe de code puis signe, et tente de clore l'appel avec sa propre clé. Inès n'a plus
 // de réseau et tend son QR, Noah est absent. Awa clôt. Les captures vont dans captures/.
 //
 // Les appareils ont deux relais principaux, dont un qui refuse toute écriture, et deux de
@@ -70,6 +70,49 @@ const reseauDInes = await reseau();
 const reseauDeNoah = await reseau();
 
 const navigateur = await chromium.launch();
+// La caméra simulée de Chromium filme un fichier. On y écrit, au moment de signer, l'image du QR
+// que montre la salle : Chromium lit le fichier quand la page ouvre la caméra.
+const CAMERA = join(CAPTURES, '.camera.y4m');
+const LARGEUR_CAMERA = 640;
+const HAUTEUR_CAMERA = 480;
+const filmer = (gris) =>
+  writeFileSync(
+    CAMERA,
+    Buffer.concat([
+      Buffer.from(`YUV4MPEG2 W${LARGEUR_CAMERA} H${HAUTEUR_CAMERA} F10:1 Ip A1:1 C420jpeg\nFRAME\n`),
+      Buffer.from(gris),
+      Buffer.alloc((LARGEUR_CAMERA * HAUTEUR_CAMERA) / 2, 128),
+    ]),
+  );
+filmer(new Uint8Array(LARGEUR_CAMERA * HAUTEUR_CAMERA).fill(200));
+const navigateurCamera = await chromium.launch({
+  args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', `--use-file-for-fake-video-capture=${CAMERA}`],
+});
+// Le QR de la salle, posé de travers sur un mur, comme dans le viseur de la maquette.
+async function filmerLeQr(texte) {
+  const page = await navigateur.newPage();
+  const gris = await page.evaluate(
+    async ([svg, l, h]) => {
+      const toile = Object.assign(document.createElement('canvas'), { width: l, height: h });
+      const ctx = toile.getContext('2d');
+      ctx.fillStyle = '#8a8478';
+      ctx.fillRect(0, 0, l, h);
+      const image = new Image();
+      image.src = `data:image/svg+xml;base64,${btoa(svg)}`;
+      await image.decode();
+      ctx.translate(l / 2, h / 2);
+      ctx.rotate(-0.05);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(-150, -150, 300, 300);
+      ctx.drawImage(image, -125, -125, 250, 250);
+      const rvb = ctx.getImageData(0, 0, l, h).data;
+      return Array.from({ length: l * h }, (_, i) => Math.round(rvb[i * 4] * 0.299 + rvb[i * 4 + 1] * 0.587 + rvb[i * 4 + 2] * 0.114));
+    },
+    [coeur.svg_du_qr(texte), LARGEUR_CAMERA, HAUTEUR_CAMERA],
+  );
+  await page.close();
+  filmer(gris);
+}
 const TEL = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
 const ORDI = { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 };
 // Les appareils vivent le mardi 17 novembre 2026 au matin, comme dans les maquettes.
@@ -82,8 +125,14 @@ const pages = {};
 
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
 
-async function appareil(nom, options, { url = '/index.html', cles, liste = LISTE, userAgent } = {}) {
-  const contexte = await navigateur.newContext({ ...options, locale: 'fr-FR', timezoneId: 'Europe/Paris', ...(userAgent ? { userAgent } : {}) });
+async function appareil(nom, options, { url = '/index.html', cles, liste = LISTE, userAgent, camera = false } = {}) {
+  const contexte = await (camera ? navigateurCamera : navigateur).newContext({
+    ...options,
+    locale: 'fr-FR',
+    timezoneId: 'Europe/Paris',
+    ...(userAgent ? { userAgent } : {}),
+    ...(camera ? { permissions: ['camera'] } : {}),
+  });
   await contexte.clock.setSystemTime(MARDI_MATIN);
   await contexte.addInitScript(
     ([nom, cles, liste]) => {
@@ -159,7 +208,7 @@ try {
     'la porte, acceptée par le principal avant que le secours ne s’ouvre, a été renvoyée au secours',
   );
 
-  const telLea = await appareil('lea', TEL, { url: `/index.html#${ancre}`, userAgent: IPHONE });
+  const telLea = await appareil('lea', TEL, { url: `/index.html#${ancre}`, userAgent: IPHONE, camera: true });
   await telLea.locator('#prenom').waitFor({ timeout: 15_000 });
   verifier(await telLea.getByText('BTS SIO 2').count() === 1 && await telLea.getByText('Centre Exemple · Awa Diallo, formateur').count() === 1, 'le lien ouvre la classe, déjà affichée');
   await telLea.fill('#prenom', 'Léa');
@@ -246,9 +295,16 @@ try {
   );
   verifier(await telKevin.getByText('Demande envoyée').count() === 1, 'Kevin, laissé dehors, ne voit pas l’appel');
 
+  await filmerLeQr(lien);
   await telLea.click('[data-geste="signer"]');
-  await taper(telLea, await codeDeLAppel());
+  await telLea.getByText('Ce QR n’est pas celui de l’appel').waitFor({ timeout: 15_000 });
+  await capturer(telLea, '13c-apprenant-viseur');
+  verifier(true, 'viser le QR de la classe au lieu de celui de l’appel : une phrase, et rien ne part');
+  await telLea.click('[data-geste="retour"]');
+  await filmerLeQr(await salle.locator('[data-qr]').getAttribute('data-qr'));
+  await telLea.click('[data-geste="signer"]');
   await telLea.getByText('Présence signée').waitFor({ timeout: 15_000 });
+  verifier(true, 'Léa signe en visant le QR de la salle : la caméra le lit, sans un chiffre tapé');
   await telLea.getByText('Garde Opn-Link sur ton écran d’accueil').waitFor();
   await capturer(telLea, '14-apprenant-signee');
   verifier(true, 'sur iPhone, après la première présence signée, l’app propose l’écran d’accueil, avec les trois pas');
@@ -404,6 +460,7 @@ try {
   verifier([...adresses].every((h) => h.startsWith('127.0.0.1')), `aucune requête ne quitte la machine (${[...adresses].join(', ')})`);
 } finally {
   await navigateur.close();
+  await navigateurCamera.close();
   await reseauDInes.fermer();
   await reseauDeNoah.fermer();
   for (const r of [principal, ferme, secours, mort]) await r.fermer();

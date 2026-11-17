@@ -22,6 +22,7 @@ pub enum Erreur {
     JournalAbime,
     PorteInconnue,
     PorteAmbigue,
+    PasDeQr,
 }
 
 impl Erreur {
@@ -48,6 +49,7 @@ impl Erreur {
             Erreur::JournalAbime => "journal-abime",
             Erreur::PorteInconnue => "porte-inconnue",
             Erreur::PorteAmbigue => "porte-ambigue",
+            Erreur::PasDeQr => "pas-de-qr",
         }
     }
 }

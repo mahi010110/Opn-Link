@@ -16,6 +16,7 @@ mod erreur;
 mod feuille;
 mod fil;
 mod hasard;
+mod lecture;
 mod lettre;
 mod nostr;
 #[cfg(target_arch = "wasm32")]
@@ -30,6 +31,7 @@ pub use entree::{Demande, Porte, Responsable, Role, choisir_porte};
 pub use erreur::Erreur;
 pub use feuille::{ANNULER_CLOTURE_MS, EtatMembre, EtatPresence, Feuille, Ligne, Recu, Voie, verifier_journal};
 pub use fil::SecretDuFil;
+pub use lecture::lire_qr;
 pub use lettre::{etiquette_de_boite, ouvrir, sceller};
 pub use nostr::{SORTE as SORTE_NOSTR, evenement as evenement_nostr};
 

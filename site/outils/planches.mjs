@@ -40,6 +40,7 @@ const PLANCHES = [
     largeur: 1360,
     images: [
       ['13b-apprenant-appel-ouvert', 'L’appel est ouvert', 'Annoncé sur le fil : la barre passe en marine, la touche apparaît.'],
+      ['13c-apprenant-viseur', 'Léa vise le mauvais QR', 'Celui de la classe : une phrase sous le code, rien ne part. Puis elle vise celui de l’appel, et sa présence part.'],
       ['14-apprenant-signee', 'Léa a signé', 'Reçue par Awa Diallo. Sur iPhone, l’app propose une fois de la garder sur l’écran d’accueil, avec les trois pas.'],
       ['15-apprenant-sans-reseau', 'Inès n’a plus de réseau', 'Au bout de dix secondes, le QR de sa présence s’affiche seul.'],
       ['16-formateur-clos', 'Clos et signé', 'Noah est absent. Kevin n’est pas sur la feuille.'],

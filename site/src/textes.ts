@@ -14,6 +14,8 @@ export function phrase(code: string, formateur = 'ton formateur'): string {
       return 'Ce code est celui d’un autre appel. Regarde l’écran de ta salle.';
     case 'qr-inconnu':
       return 'Ce QR n’est pas celui d’une présence.';
+    case 'autre-qr':
+      return 'Ce QR n’est pas celui de l’appel. Vise l’écran de la salle.';
     case 'code-de-classe-invalide':
     case 'porte-inconnue':
       return 'Aucune classe n’a ce code. Compare-le à celui de l’écran, bloc par bloc.';

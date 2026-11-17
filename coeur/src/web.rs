@@ -262,6 +262,13 @@ pub fn dechiffrer_du_fil(secret: &str, chiffre: &str) -> Result<String, Erreur> 
     String::from_utf8(SecretDuFil::lire(secret)?.dechiffrer(chiffre)?).map_err(|_| Erreur::LettreIllisible)
 }
 
+/// Le texte du QR que montre l'image de la caméra, en niveaux de gris. Rend l'erreur `pas-de-qr`
+/// tant qu'aucun QR n'est lisible.
+#[wasm_bindgen]
+pub fn lire_qr(gris: &[u8], largeur: u32, hauteur: u32) -> Result<String, Erreur> {
+    crate::lecture::lire_qr(gris, largeur as usize, hauteur as usize)
+}
+
 /// L'état de l'appel d'une demi-journée, tel qu'un responsable l'a annoncé sur le fil.
 #[wasm_bindgen(getter_with_clone)]
 pub struct AnnonceJs {
