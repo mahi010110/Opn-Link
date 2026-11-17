@@ -72,18 +72,19 @@ function taperLeCode(ctx: Contexte, texte = '', erreur?: string): void {
 /// Le lien du QR mène ici : la classe s'affiche tout de suite, sans rien taper.
 export async function rejoindreParLien(ctx: Contexte, code: string, chef: string): Promise<void> {
   history.replaceState(null, '', location.pathname + location.search);
-  const attendre = (texte: string) =>
-    afficher('tel', 'Rejoindre', `<header class="barre"><h1 class="barre-titre">Rejoindre</h1></header><main class="page"><p class="mono" role="status">${esc(texte)}</p></main>`, {});
+  const ecran = (corps: string) => afficher('tel', 'Rejoindre', `<header class="barre"><h1 class="barre-titre">Rejoindre</h1></header><main class="page">${corps}</main>`, {});
   const chercher = async () => {
     try {
       rejoindre(ctx, code, await chercherPorte(ctx.coeur, ctx.relais, code, chef));
     } catch (e) {
       if (codeDe(e) !== 'sans-reseau') return taperLeCode(ctx, codeAffiche(code), codeDe(e));
-      attendre(phrase('sans-reseau'));
+      ecran(
+        `<section class="reponse">${ic('reload', 'ic-32')}<div><h2 class="tres-gros" tabindex="-1">Pas de réseau</h2><p class="mono">Je cherche la classe dès qu’il revient</p></div></section>`,
+      );
       auRetourDuReseau(ctx, chercher);
     }
   };
-  attendre('Je cherche la classe…');
+  ecran('<p class="mono" role="status">Je cherche la classe…</p>');
   await chercher();
 }
 

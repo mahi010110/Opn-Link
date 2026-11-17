@@ -185,7 +185,7 @@ try {
 
   reseauDeNoah.couper();
   const telNoah = await appareil('noah', TEL, { url: `/index.html#${ancre}`, liste: reseauDeNoah.liste });
-  await telNoah.getByText('Pas de réseau. Je cherche la classe dès qu’il revient.').waitFor({ timeout: 15_000 });
+  await telNoah.getByText('Je cherche la classe dès qu’il revient').waitFor({ timeout: 15_000 });
   await capturer(telNoah, '07b-apprenant-lien-sans-reseau');
   verifier(true, 'sans réseau, le lien de la classe dit « Pas de réseau », sans parler de code faux');
   reseauDeNoah.retablir();

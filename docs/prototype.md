@@ -185,8 +185,7 @@ Fait ensuite le 17 novembre 2026, les relais publics :
 - une recherche attend chaque relais en service, six secondes au plus. Un
   relais qui répond vite sans rien ne fait plus conclure « aucune classe »
   avant celui qui a la porte. Si aucun ne répond, l'écran dit « Pas de
-  réseau. Je cherche la classe dès qu'il revient. », et la recherche
-  reprend toute seule.
+  réseau » au lieu d'un code faux, et la recherche reprend toute seule.
 
 Le scénario donne à chaque appareil deux principaux, dont un qui refuse
 toute écriture, et deux secours, dont un qui ne répond pas. Le principal qui
