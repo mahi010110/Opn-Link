@@ -1,32 +1,60 @@
-// L'écran de la salle : le QR qui change, les six chiffres et les pavés. Aucun nom, jamais.
+// L'écran de la salle : le QR pour rejoindre la classe, puis celui de l'appel. Aucun nom, jamais.
+// Il tourne sur l'ordinateur du formateur, qui reçoit de son téléphone l'état de la classe.
 
-import type { Coeur } from './coeur';
-import type { Config } from './config';
-import { recevoir } from './lettres';
-import type { Relais } from './relais';
-import { afficher, esc, heure, jour, paves } from './vue';
+import type { Appel } from './coeur';
+import { type Contexte } from './contexte';
+import { type ClasseGardee, ecrire, lire } from './etat';
+import { lienDeLaClasse, recevoir } from './lettres';
+import { afficher, codeAffiche, esc, heure, jour, paves } from './vue';
 
 const AFFICHER_CLOS_MS = 3000;
 
-export function salle(coeur: Coeur, config: Config, relais: Relais): void {
-  const moi = coeur.Appareil.relire(config.secrets);
-  const titre = `Appel · ${config.classe.nom}`;
-  let appel: InstanceType<Coeur['Appel']> | undefined;
-  let compte = [0, config.inscrits.length];
+export function salle(ctx: Contexte): void {
+  const { coeur, relais, moi } = ctx;
+  let classe = lire<ClasseGardee>('classe-de-la-salle');
+  let rejoindre = false;
+  let appel: Appel | undefined;
+  let compte = [0, 0];
   let clos: number | undefined;
   let dernier = '';
+
+  const porte = () => (classe ? coeur.lire_porte(classe.code, classe.porte) : undefined);
+  const nom = () => porte()?.nom ?? 'Opn-Link';
 
   const attente = () =>
     afficher(
       'salle',
-      config.classe.nom,
-      `<header class="barre"><h1 class="barre-titre" tabindex="-1">${esc(config.classe.nom)}</h1><span class="mono">${jour(Date.now())}</span></header>
+      nom(),
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">${esc(nom())}</h1><span class="mono">${jour(Date.now())}</span></header>
        <main class="salle-corps" style="grid-template-columns: 1fr"><p class="salle-mot">Lance l’appel depuis ton téléphone.<br>Il s’affichera ici.</p></main>`,
       {},
     );
 
+  const ecranRejoindre = () => {
+    const p = porte()!;
+    const lien = lienDeLaClasse(coeur, classe!.code, p.responsables[0].cle);
+    const ont = (classe!.membres?.length ?? 0) + (classe!.demandes?.length ?? 0);
+    afficher(
+      'salle',
+      `Rejoindre · ${p.nom}`,
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Rejoindre · ${esc(p.nom)}</h1><span class="mono">${esc(p.centre)}</span></header>
+       <main class="salle-corps">
+         <div class="salle-qr" role="img" aria-label="Le QR de la classe" data-lien="${esc(lien)}">${coeur.svg_du_qr(lien)}</div>
+         <div>
+           <p class="salle-mot">Visez ce QR avec l’appareil photo<br>de votre téléphone</p>
+           <p class="salle-mot" style="margin-top: 5vh">ou allez sur ${esc(location.host)}<br>et tapez le code de la classe</p>
+           <p class="salle-code" style="font-size: 4.9vw" data-code="${esc(classe!.code)}">${codeAffiche(classe!.code)}</p>
+         </div>
+       </main>
+       <footer class="salle-bas">${paves(ont, Math.max(ont, 1))}<p class="salle-compte">${ont} ${ont > 1 ? 'ont' : 'a'} rejoint</p></footer>`,
+      {},
+      true,
+    );
+  };
+
   const rendre = () => {
     const maintenant = Date.now();
+    const titre = `Appel · ${nom()}`;
     if (clos !== undefined) {
       afficher(
         'salle',
@@ -38,7 +66,7 @@ export function salle(coeur: Coeur, config: Config, relais: Relais): void {
       );
       return;
     }
-    if (!appel) return attente();
+    if (!appel) return rejoindre && classe ? ecranRejoindre() : attente();
     let qr;
     try {
       qr = appel.qr(maintenant);
@@ -65,11 +93,17 @@ export function salle(coeur: Coeur, config: Config, relais: Relais): void {
   };
 
   recevoir(coeur, relais, moi, (l) => {
-    if (l.t === 'appel') {
+    if (l.t === 'classe') {
+      classe = l.classe;
+      ecrire('classe-de-la-salle', classe);
+    } else if (l.t === 'montrer') {
+      rejoindre = l.quoi === 'rejoindre';
+    } else if (l.t === 'appel') {
       appel = coeur.Appel.relire(l.journal, l.secret, moi);
       const [presents, inscrits] = appel.compte();
       compte = [presents, inscrits];
       clos = undefined;
+      rejoindre = false;
     } else if (appel && 'seance' in l && l.seance === appel.seance()) {
       if (l.t === 'compte') compte = [l.presents, l.inscrits];
       if (l.t === 'reouvert') clos = undefined;
@@ -102,5 +136,5 @@ export function salle(coeur: Coeur, config: Config, relais: Relais): void {
       rendre();
     }
   }, 500);
-  attente();
+  rendre();
 }

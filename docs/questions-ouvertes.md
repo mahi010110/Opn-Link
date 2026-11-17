@@ -11,11 +11,14 @@ Le cadrage, la conception, les maquettes et les règles sont validés. Le
 prototype de l'appel a commencé le 16 novembre 2026, avec le feu vert du
 mainteneur. Le plan et l'avancée sont dans [prototype.md](prototype.md).
 
-### Les choix du cœur
+### Les choix du cœur et des écrans
 
-Le cœur a demandé des choix que la doc ne fixait pas. Ils sont listés dans
-[prototype.md](prototype.md), partie « Les choix du prototype, à valider »,
-et décrits dans [contrat.md](contrat.md).
+Le cœur et les écrans ont demandé des choix que la doc ne fixait pas. Ils
+sont listés dans [prototype.md](prototype.md), partie « Les choix du
+prototype, à valider », et décrits dans [contrat.md](contrat.md). Ceux du
+17 novembre 2026 concernent l'entrée dans une classe : le code qui n'ouvre
+que la porte, la demande laissée dehors sans réponse, le nom du formateur
+demandé à la création.
 
 Recommandation : les garder.
 

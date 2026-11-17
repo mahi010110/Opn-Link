@@ -308,9 +308,21 @@ destinataire. Elles ne sont pas encore figées.
 | `presence` | l'apprenant, au formateur | sa présence `OPS1.` |
 | `recu`, `refus` | le formateur, à l'apprenant | l'heure de réception et qui l'a reçue, ou le code de l'erreur |
 | `compte`, `clos`, `reouvert` | le formateur, à ses propres appareils | ce que la salle affiche : le compte, la clôture, son annulation |
+| `entree` | l'apprenant, à chaque responsable | sa demande d'entrée |
+| `admis` | le responsable, à l'apprenant | la porte, l'acceptation et le secret du fil |
+| `classe`, `montrer` | le formateur, à ses propres appareils | l'état de la classe, et ce que la salle montre |
 
-Les clés de stockage du prototype commencent par `opl_proto_`. Elles
-disparaîtront avec lui.
+La porte voyage autrement : un événement sous l'étiquette de la classe, dont
+le contenu est la porte chiffrée par la clé de la classe (`OPC1.`). Le chef
+la publie à la création, puis une fois par jour au plus.
+
+Le lien du QR de la classe : l'adresse du site, puis
+`#r=<code en minuscules>.<clé du chef, forme courte>`. Ce qui suit `#` ne
+part jamais vers le serveur du site.
+
+Les clés de stockage du prototype commencent par `opl_proto_`, suivies du
+nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presence`,
+`classe-de-la-salle` et `relais`. Elles disparaîtront avec lui.
 
 ## Ce qui n'est pas encore écrit
 

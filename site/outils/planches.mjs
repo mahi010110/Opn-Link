@@ -1,4 +1,4 @@
-// Réunit les captures du scénario de l'appel en planches, avec leur légende, pour les regarder d'un coup.
+// Réunit les captures du scénario de la classe en planches, avec leur légende, pour les regarder d'un coup.
 
 import { createRequire } from 'node:module';
 import { rmSync, writeFileSync } from 'node:fs';
@@ -11,36 +11,49 @@ const CAPTURES = join(SITE, 'captures');
 
 const PLANCHES = [
   {
-    nom: 'planche-1-telephones',
-    titre: 'Le prototype de l’appel, au téléphone',
-    sous: 'Les écrans branchés sur le cœur, joués par Playwright. Léa et Yanis signent par le réseau, Inès n’a pas de réseau. La caméra viendra au prochain pas : ici, on tape les six chiffres.',
+    nom: 'planche-1-rejoindre',
+    titre: 'Créer la classe, la rejoindre, accepter',
+    sous: 'Awa crée la classe et l’invite. Léa ouvre le lien du QR, Yanis tape le code, d’abord de travers. Awa accepte tout le monde sauf Kevin, qu’elle ne connaît pas.',
     colonnes: 4,
     largeur: 1360,
     images: [
-      ['01-formateur-avant', 'Le formateur, avant l’appel', 'Une touche : « Lancer l’appel ».'],
-      ['02-apprenant-avant', 'L’apprenant, pendant le cours', 'Une touche : « Signer ma présence ».'],
-      ['04-apprenant-signer', 'Léa tape le code', 'Le code de l’écran de la salle, au doigt ou au clavier.'],
-      ['05-apprenant-signee', 'Sa présence est reçue', 'L’appareil du formateur l’a vérifiée et a répondu.'],
-      ['06-apprenant-code-faux', 'Yanis se trompe de code', 'Refusé par le formateur, dit avec une phrase. Il retape.'],
-      ['07-apprenant-sans-reseau', 'Inès n’a pas de réseau', 'Au bout de dix secondes, le QR de sa présence s’affiche seul.'],
-      ['08-formateur-liste', 'La liste du formateur', 'Ceux qui manquent en haut. La salle, elle, ne voit aucun nom.'],
-      ['09-formateur-nom', 'Les gestes d’un nom', '« Lire son QR » pour Inès.'],
-      ['11-formateur-clos', 'Clos et signé', 'Noah est absent. Trente secondes pour annuler.'],
-      ['13-formateur-clos-sombre', 'En sombre'],
-      ['14-apprenant-sans-reseau-sombre', 'En sombre', 'Le QR reste sombre sur blanc.'],
-      ['15-apprenant-signee-sombre', 'En sombre'],
+      ['01-formateur-creer', 'Créer une classe', 'Son nom, la première fois, puis la classe et ses horaires.'],
+      ['01b-formateur-heure-illisible', 'Une heure illisible', '« midi » à la place d’une heure : seul ce champ est marqué, et tout ce qui est tapé reste.'],
+      ['02-formateur-classe-neuve', 'La classe neuve', 'Personne encore : la touche invite.'],
+      ['03-formateur-inviter', 'Inviter', 'Le QR est un lien. Le code s’affiche dessous.'],
+      ['04-apprenant-rejoindre', 'Léa ouvre le lien', 'La classe s’affiche tout de suite. Deux champs, une touche.'],
+      ['05-apprenant-attente', 'En attente', 'Rien à faire : la classe s’ouvre quand c’est accepté.'],
+      ['06-apprenant-sans-classe', 'Sans le lien', 'Yanis ouvre le site et tape le code.'],
+      ['07-apprenant-code-faux', 'Un code de travers', 'L’erreur sous le champ. Ce qui est tapé reste.'],
+      ['09-formateur-demandes', 'Cinq demandent à entrer', 'Sur l’écran du cours, dans « À suivre ».'],
+      ['10-formateur-accepter', 'Accepter', 'Tous cochés d’avance. Kevin est décoché : il reste dehors.'],
+      ['11-apprenant-admis', 'Léa est dans la classe', 'L’écran du jour : sa présence à signer.'],
+      ['12-formateur-membres', 'Les membres', 'Le chef, puis les apprenants acceptés.'],
     ],
   },
   {
-    nom: 'planche-2-salle',
-    titre: 'Le prototype de l’appel, sur l’écran de la salle',
-    sous: 'Le QR change toutes les dix secondes et ne porte que la séance, la fenêtre et le code : 25 × 25 cases. Aucun nom, vérifié à chaque étape.',
+    nom: 'planche-2-appel',
+    titre: 'L’appel, avec les vrais membres',
+    sous: 'Léa signe, Yanis se trompe puis signe, Inès n’a plus de réseau et tend son QR, Noah est absent. Le réseau revenu, Inès reçoit la réponse.',
+    colonnes: 4,
+    largeur: 1360,
+    images: [
+      ['14-apprenant-signee', 'Léa a signé', 'Reçue par Awa Diallo.'],
+      ['15-apprenant-sans-reseau', 'Inès n’a plus de réseau', 'Au bout de dix secondes, le QR de sa présence s’affiche seul.'],
+      ['16-formateur-clos', 'Clos et signé', 'Noah est absent. Kevin n’est pas sur la feuille.'],
+      ['17-formateur-clos-sombre', 'En sombre'],
+      ['18-apprenant-signee-sombre', 'En sombre'],
+    ],
+  },
+  {
+    nom: 'planche-3-salle',
+    titre: 'L’écran de la salle',
+    sous: 'Le premier jour, le QR de la classe. Puis celui de l’appel, qui change toutes les dix secondes. Aucun nom d’apprenant, vérifié à chaque étape.',
     colonnes: 1,
     largeur: 1280,
     images: [
-      ['03-salle-appel', 'L’appel est ouvert'],
-      ['10-salle-trois', 'Trois sur quatre', 'Les pavés comptent sans dire qui.'],
-      ['12-salle-close', 'Appel clos', 'Trois secondes, puis la fenêtre se ferme.'],
+      ['08-salle-rejoindre', 'Rejoindre', 'Le lien et le code de la classe, et combien ont rejoint.'],
+      ['13-salle-appel', 'L’appel'],
     ],
   },
 ];

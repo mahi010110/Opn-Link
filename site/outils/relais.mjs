@@ -78,3 +78,46 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const relais = await lancerRelais(Number(process.argv[2] ?? 7447));
   console.log(`Relais local : ${relais.url}`);
 }
+
+// Une passerelle vers le relais, que les tests coupent et rétablissent : c'est le réseau d'un téléphone.
+export async function lancerPasserelle(vers) {
+  const serveur = new WebSocketServer({ host: '127.0.0.1', port: 0 });
+  await new Promise((ok) => serveur.on('listening', ok));
+  let coupee = false;
+  const liaisons = new Set();
+  serveur.on('connection', async (client) => {
+    if (coupee) return client.terminate();
+    const { WebSocket } = await import('ws');
+    const relais = new WebSocket(vers);
+    const enAttente = [];
+    const liaison = { client, relais };
+    liaisons.add(liaison);
+    relais.on('open', () => enAttente.splice(0).forEach((m) => relais.send(m)));
+    relais.on('message', (m) => client.readyState === 1 && client.send(m.toString()));
+    client.on('message', (m) => (relais.readyState === 1 ? relais.send(m.toString()) : enAttente.push(m.toString())));
+    const fermer = () => {
+      liaisons.delete(liaison);
+      client.terminate();
+      relais.terminate();
+    };
+    client.on('close', fermer);
+    relais.on('close', fermer);
+  });
+  return {
+    url: `ws://127.0.0.1:${serveur.address().port}`,
+    couper: () => {
+      coupee = true;
+      for (const l of liaisons) {
+        l.client.terminate();
+        l.relais.terminate();
+      }
+    },
+    retablir: () => {
+      coupee = false;
+    },
+    fermer: () => new Promise((ok) => {
+      for (const c of serveur.clients) c.terminate();
+      serveur.close(ok);
+    }),
+  };
+}

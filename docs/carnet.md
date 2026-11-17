@@ -442,3 +442,15 @@ refusés.
   utilisation. Les règles qui demandaient un essai sur place, et le test
   des cinq secondes, sont remplacées par des vérifications sur les captures
   et par les chemins de secours.
+- Le mainteneur : « Continue pour l'instant et oublie pas de faire en sorte
+  que ce soit à jour. » Le travail continue sur la branche, et la doc suit
+  chaque morceau.
+- Rejoindre une classe est fait en partie : créer, inviter, rejoindre par le
+  lien ou par le code, accepter, les membres. Le scénario de la classe se
+  joue de bout en bout à huit appareils, l'appel compris. Le détail est dans
+  [prototype.md](prototype.md).
+- Choisi par Fable 5, à valider : le code de la classe n'ouvre que sa porte,
+  et le fil a son propre secret, remis à l'apprenant accepté. C'est le choix
+  d'OpenContact pour ses groupes « sur demande ». Les autres choix sont dans
+  [prototype.md](prototype.md), partie « Les choix du prototype, à
+  valider ».

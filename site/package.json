@@ -6,11 +6,13 @@
   "scripts": {
     "construire": "node outils/construire.mjs",
     "relais": "node outils/relais.mjs",
-    "appel": "node tests/appel.mjs"
+    "verifier": "tsc",
+    "classe": "node tests/classe.mjs"
   },
   "devDependencies": {
     "esbuild": "0.25.12",
     "nostr-tools": "2.10.4",
+    "typescript": "^5.9.3",
     "ws": "8.18.0"
   }
 }

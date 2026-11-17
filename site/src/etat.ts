@@ -1,0 +1,69 @@
+// Ce que l'appareil garde. Les clés de stockage commencent par opl_proto_ : elles disparaîtront
+// avec le prototype, et le contrat écrira les vraies.
+
+import type { Appareil, Coeur } from './coeur';
+
+export interface Moi {
+  prenom: string;
+  nom: string;
+}
+
+export interface ClasseGardee {
+  code: string;
+  role: 'chef' | 'apprenant';
+  porte: string;
+  fil?: string;
+  /// L'apprenant : son acceptation, une fois admis, ou sa demande, tant qu'il attend.
+  acceptation?: string;
+  demande?: string;
+  /// Le chef : les acceptations, les demandes en attente, et les clés de ceux qu'il a laissés dehors.
+  membres?: string[];
+  demandes?: string[];
+  dehors?: string[];
+  portePubliee?: number;
+}
+
+const parametres = new URLSearchParams(location.search);
+export const appareil = parametres.get('appareil') ?? 'moi';
+export const ecran = parametres.get('ecran');
+const cle = (nom: string) => `opl_proto_${appareil}_${nom}`;
+
+export function lire<T>(nom: string): T | undefined {
+  try {
+    const t = localStorage.getItem(cle(nom));
+    return t ? (JSON.parse(t) as T) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function ecrire(nom: string, valeur: unknown): void {
+  try {
+    if (valeur === undefined || valeur === null) localStorage.removeItem(cle(nom));
+    else localStorage.setItem(cle(nom), JSON.stringify(valeur));
+  } catch {
+    // Sans stockage, l'appareil marche le temps de la page.
+  }
+}
+
+/// Les clés de cet appareil, tirées la première fois.
+export function clesDeLAppareil(coeur: Coeur): Appareil {
+  const gardees = lire<string>('cles');
+  if (gardees) return coeur.Appareil.relire(gardees);
+  const neuves = new coeur.Appareil();
+  ecrire('cles', neuves.secrets());
+  return neuves;
+}
+
+export const classes = (): ClasseGardee[] => lire<ClasseGardee[]>('classes') ?? [];
+
+export function garderClasse(classe: ClasseGardee): void {
+  ecrire('classes', [classe, ...classes().filter((c) => c.code !== classe.code)]);
+}
+
+export function oublierClasse(code: string): void {
+  ecrire('classes', classes().filter((c) => c.code !== code));
+}
+
+// Les relais publics viendront avec l'appel complet. Pour l'instant, les tests donnent le leur.
+export const adresseDuRelais = (): string => lire<string>('relais') ?? 'ws://127.0.0.1:7447';

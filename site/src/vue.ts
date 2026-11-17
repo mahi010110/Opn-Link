@@ -21,7 +21,11 @@ export const dateIso = (ms: number): string => {
   const d = new Date(ms);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
-export const horaire = (h: string): string => h.replace(':00', '').replace(':', `${espace}h${espace}`).replace(/^(\d+)$/, `$1${espace}h`);
+/// « 9:00 » devient « 9 h », « 12:30 » devient « 12 h 30 ».
+export const horaire = (h: string): string => {
+  const [heures, minutes = '00'] = h.split(':');
+  return minutes === '00' ? `${Number(heures)}${espace}h` : `${Number(heures)}${espace}h${espace}${minutes}`;
+};
 
 /// Le matin ou l'après-midi, d'après les horaires de l'après-midi (« 13:30-17:00 »).
 /// L'appel de l'après-midi peut se lancer une heure avant son début.
@@ -35,6 +39,8 @@ type Geste = (cible: HTMLElement) => void;
 let gestes: Record<string, Geste> = {};
 
 document.addEventListener('click', (e) => {
+  const lien = (e.target as Element).closest('a[href="#"]');
+  if (lien) e.preventDefault();
   const cible = (e.target as Element).closest<HTMLElement>('[data-geste]');
   if (cible && !cible.hasAttribute('disabled')) gestes[cible.dataset.geste!]?.(cible);
 });
@@ -50,3 +56,6 @@ export function afficher(classe: string, titre: string, html: string, nouveauxGe
 
 export const paves = (fait: number, total: number): string =>
   `<div class="paves" role="img" aria-label="${fait} sur ${total}">${Array.from({ length: total }, (_, n) => `<span class="pave${n < fait ? ' fait' : ''}"></span>`).join('')}</div>`;
+
+/// Le code d'une classe tel qu'on l'affiche : trois blocs de cinq, en majuscules.
+export const codeAffiche = (code: string): string => code.replace(/[\s-]/g, '').toUpperCase().replace(/(.{5})(?=.)/g, '$1 ');

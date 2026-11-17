@@ -25,19 +25,23 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    Si son clone est trop court pour la version voulue (`VERSION_OC` dans
    `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
    --depth=1 origin <version>`.
-3. Vérifier que tout passe, comme le 16 novembre 2026 :
-   - `cd coeur && cargo test` : 38 tests ;
+3. Vérifier que tout passe, comme le 17 novembre 2026 :
+   - `cd coeur && cargo test` : 48 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
-   - `cd ../site && npm run construire && npm run appel` : le scénario,
-     sans aucun échec ;
+   - `cd ../site && npm run verifier && npm run construire && npm run
+     classe` : les types de l'interface, puis le scénario, sans aucun
+     échec ;
    - `node outils/planches.mjs` : les captures en planches, à regarder.
 4. Reprendre la suite, dans l'ordre de « La suite » plus bas. Les
    questions qui attendent le mainteneur sont dans
    [questions-ouvertes.md](questions-ouvertes.md), partie « Le prototype ».
 
-Deux choses à savoir :
+Trois choses à savoir :
 
+- Le travail avance sur la branche `claude/design-navigation-concept-4c4fzs`
+  avant d'arriver sur `main`. Si elle a des commits que `main` n'a pas,
+  demander au mainteneur de les fusionner avant de reprendre.
 - Pousser sur `main` demande l'accord explicite du mainteneur, à chaque
   fois. La session le bloque sinon.
 - Seul Chromium est installé. Le pilote Chrome de l'environnement n'a pas la
@@ -73,7 +77,8 @@ Fait le 16 novembre 2026 :
   avec les pièces des maquettes ;
 - un petit relais Nostr local pour les tests (`site/outils/relais.mjs`), qui
   vérifie chaque événement comme un vrai relais ;
-- l'appel joué par Playwright (`site/tests/appel.mjs`) avec six appareils :
+- l'appel joué par Playwright avec six appareils (ce scénario est devenu
+  `site/tests/classe.mjs` le 17 novembre) :
   l'ordinateur du formateur, son téléphone, et quatre apprenants. Léa signe,
   Yanis se trompe de code puis signe, Inès n'a pas de réseau et tend son QR,
   Noah est absent. Le formateur clôt. Les captures sont dans
@@ -103,6 +108,47 @@ Ce que les captures ont montré, et qui est corrigé : les lignes de la liste
 du formateur étaient centrées et encadrées comme des boutons, et l'heure de
 l'après-midi était mal lue, ce qui affichait « Après-midi » à 9 h.
 
+Fait le 17 novembre 2026, le premier morceau de la première version,
+rejoindre une classe :
+
+- dans le cœur : la porte de la classe, la demande d'entrée signée par
+  l'appareil de l'apprenant, l'acceptation en texte, le secret du fil, et
+  leurs vecteurs. 48 tests, en Rust et dans Chromium ;
+- sur le site : créer une classe (le lien d'entrée `#creer`), inviter (le QR,
+  qui est un lien, le code, « Montrer à la salle », « Envoyer le lien »),
+  rejoindre par le lien ou en tapant le code, attendre d'être accepté,
+  accepter en décochant ceux qu'on laisse dehors, voir les membres. L'écran
+  de la salle montre le QR de la classe et combien ont rejoint ;
+- l'état de chaque appareil (ses clés, ses classes) remplace la
+  configuration que posaient les tests. L'appel se fait avec les vrais
+  membres ;
+- TypeScript vérifie les types de l'interface (`npm run verifier`) ;
+- le scénario `site/tests/classe.mjs` remplace celui de l'appel seul. Awa
+  crée la classe et l'invite à la salle. Léa, Inès, Noah et Kevin ouvrent le
+  lien, Yanis tape le code, d'abord de travers. Awa accepte tout le monde
+  sauf Kevin. Puis l'appel, comme avant. Le réseau revenu, Inès reçoit la
+  réponse du formateur.
+
+Ce que ce scénario vérifie en plus :
+
+- le lien du QR de la classe reste court (96 caractères), et il ouvre la
+  classe déjà affichée ;
+- un code de classe faux et une heure illisible sont refusés avec une
+  phrase, sous le champ, et seul le champ fautif est marqué ;
+- Kevin, laissé dehors, ne reçoit rien : ni réponse, ni secret du fil, et il
+  n'est pas sur la feuille ;
+- ni un nom, ni le nom de la classe ne passent en clair sur le relais.
+
+Mesuré le 17 novembre 2026 : le cœur pèse 128 Ko compressés, l'interface
+11 Ko, et le premier chargement chez un apprenant 248 Ko, dont 88 Ko de
+polices. C'est sous le plafond de 300 Ko.
+
+Ce que les captures et le scénario ont montré, et qui est corrigé : le
+champ d'heure de Chromium affichait « 01:30 » pour 13 h 30, il est remplacé
+par un champ de texte qui lit « 9 h 30 » comme « 930 » ; et le code de la
+classe était gardé sous deux formes, si bien que le formateur ne voyait pas
+les demandes.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -110,6 +156,10 @@ on construit directement la première version complète
 ([projet.md](projet.md), partie 5), dans cet ordre.
 
 1. Rejoindre une classe et être accepté, les responsables et les réglages.
+   Fait en partie le 17 novembre 2026 : créer, inviter, rejoindre, accepter,
+   les membres. Reste : nommer un adjoint et passer la main, les réglages du
+   chef, corriger son nom, plusieurs classes et « Mes cours », l'ajout à
+   l'écran d'accueil de l'iPhone, refaire l'invitation.
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
    relais publics, l'écran d'entrée de chacun.
 3. Les annonces et les messages privés.
@@ -143,17 +193,18 @@ l'environnement cloud n'a pas la même version que Chromium, alors le script
 fait ouvrir la page des tests par Playwright. `NAVIGATEUR=firefox` ou
 `NAVIGATEUR=webkit` choisit un autre moteur, une fois installé.
 
-L'appel joué à six appareils :
+La classe jouée de bout en bout, à huit appareils :
 
 ```sh
 cd maquettes && npm install && npm run style    # le matériel, une fois
 cd ../site && npm install
+npm run verifier                                # les types de l'interface
 npm run construire                              # le cœur, l'interface, et leur poids
-npm run appel                                   # le scénario et ses captures
+npm run classe                                  # le scénario et ses captures
 node outils/planches.mjs                        # les captures en planches
 ```
 
-## Ce qu'il fait : l'appel, de bout en bout
+## Le plan de départ : l'appel, de bout en bout
 
 1. Le cœur en Rust, avec ses tests (`cargo test`) :
    - une clé P-256 par appareil ;
@@ -198,6 +249,26 @@ et attendent l'avis du mainteneur
   acceptée même si son code a plus d'une minute ;
 - la feuille s'écrit en texte, une ligne par événement, et chaque ligne
   porte l'empreinte de la précédente.
+
+Pour rejoindre une classe (17 novembre 2026) :
+
+- le code de la classe n'ouvre que sa porte : il permet de trouver la classe
+  et de demander à entrer. Le fil a son propre secret, remis à l'apprenant
+  accepté. Une photo du QR de la salle ne suffit pas pour lire les annonces ;
+- une demande laissée dehors ne reçoit pas de réponse, comme dans
+  OpenContact. L'apprenant peut dire « Ce n'est pas ma classe » ;
+- « Créer une classe » demande aussi le prénom et le nom du formateur, la
+  première fois : la maquette ne les avait pas ;
+- sur le site, on crée une classe par le lien d'entrée `#creer`. Le lien
+  d'entrée fixe le rôle ;
+- tant que la caméra n'est pas là, l'écran sans classe n'a pas de touche :
+  on vise le QR avec l'appareil photo du téléphone, ou on tape le code ;
+- une classe sans apprenant a pour touche « Inviter des apprenants » ;
+- les heures se tapent comme du texte, « 9 h 30 », plutôt qu'avec le champ
+  d'heure du téléphone, dont l'affichage change d'un appareil à l'autre ;
+- en attendant « relier un appareil », le téléphone et l'ordinateur du
+  formateur ont les mêmes clés. C'est ainsi que l'ordinateur reçoit l'état de
+  la classe et montre la salle.
 
 ## Ce qu'il tranche
 

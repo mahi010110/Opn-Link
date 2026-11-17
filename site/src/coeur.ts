@@ -1,5 +1,7 @@
 // Le cœur compilé en WebAssembly, servi à côté de app.js.
 export type Coeur = typeof import('../dist/coeur/opn_core.js');
+export type Appel = import('../dist/coeur/opn_core.js').Appel;
+export type Appareil = import('../dist/coeur/opn_core.js').Appareil;
 
 export async function chargerCoeur(): Promise<Coeur> {
   const chemin = './coeur/opn_core.js';

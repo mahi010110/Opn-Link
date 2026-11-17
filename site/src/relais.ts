@@ -12,11 +12,19 @@ interface Ecoute {
   rappel: (e: EvenementNostr) => void;
 }
 
+interface Recherche {
+  filtre: Record<string, unknown>;
+  trouves: EvenementNostr[];
+  finir: () => void;
+}
+
 export class Relais {
   private ws?: WebSocket;
   private enAttente = new Map<string, string>();
   private ecoutes = new Map<string, Ecoute>();
   private vus = new Set<string>();
+  private recherches = new Map<string, Recherche>();
+  private compteur = 0;
   ouvert = false;
   changement: () => void = () => {};
 
@@ -40,12 +48,18 @@ export class Relais {
     ws.onopen = () => {
       this.ouvert = true;
       for (const [id, e] of this.ecoutes) ws.send(JSON.stringify(['REQ', id, e.filtre]));
+      for (const [id, r] of this.recherches) ws.send(JSON.stringify(['REQ', id, r.filtre]));
       for (const e of this.enAttente.values()) ws.send(`["EVENT",${e}]`);
       this.changement();
     };
     ws.onmessage = (m) => {
       const [sorte, a, b] = JSON.parse(String(m.data));
-      if (sorte === 'OK' && b === true) {
+      const recherche = this.recherches.get(a);
+      if (recherche && sorte === 'EVENT') {
+        recherche.trouves.push(b);
+      } else if (recherche && sorte === 'EOSE') {
+        recherche.finir();
+      } else if (sorte === 'OK' && b === true) {
         this.enAttente.delete(a);
         this.changement();
       } else if (sorte === 'EVENT' && !this.vus.has(b.id)) {
@@ -65,6 +79,23 @@ export class Relais {
     this.enAttente.set(id, evenement);
     if (this.ouvert) this.ws?.send(`["EVENT",${evenement}]`);
     this.changement();
+  }
+
+  /// Ce que les relais gardent pour un filtre, jusqu'à leur fin de liste, ou au bout du délai.
+  chercher(filtre: Record<string, unknown>, delaiMs = 6000): Promise<EvenementNostr[]> {
+    return new Promise((ok) => {
+      const id = `r${++this.compteur}`;
+      const trouves: EvenementNostr[] = [];
+      const finir = () => {
+        clearTimeout(minuterie);
+        if (!this.recherches.delete(id)) return;
+        if (this.ouvert) this.ws?.send(JSON.stringify(['CLOSE', id]));
+        ok(trouves);
+      };
+      const minuterie = setTimeout(finir, delaiMs);
+      this.recherches.set(id, { filtre, trouves, finir });
+      if (this.ouvert) this.ws?.send(JSON.stringify(['REQ', id, filtre]));
+    });
   }
 
   ecouter(id: string, filtre: Record<string, unknown>, rappel: (e: EvenementNostr) => void): void {
