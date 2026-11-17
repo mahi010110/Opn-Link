@@ -3,7 +3,7 @@ use sha2::Sha256;
 
 use crate::appel::{Demi, IdSeance};
 use crate::cles::{CleAppareil, ClePublique, Signature};
-use crate::encodage::{a_signer, champ, hex};
+use crate::encodage::{a_signer, champ, hex, lire_signe};
 use crate::erreur::Erreur;
 use crate::hasard;
 
@@ -75,6 +75,15 @@ impl SecretsDeClasse {
 
     /// L'identifiant d'une demi-journée de cette classe. Il se calcule des deux côtés,
     /// chez le formateur et chez l'apprenant, sans rien échanger.
+    /// Chiffre pour qui a le code, comme la porte de la classe.
+    pub fn chiffrer(&self, texte: &[u8]) -> Result<String, Erreur> {
+        crate::chiffre::chiffrer(&self.cle, texte)
+    }
+
+    pub fn dechiffrer(&self, texte: &str) -> Result<Vec<u8>, Erreur> {
+        crate::chiffre::dechiffrer(&self.cle, texte)
+    }
+
     pub fn seance(&self, date: &str, demi: Demi) -> Result<IdSeance, Erreur> {
         let mut mac = <Hmac<Sha256> as KeyInit>::new_from_slice(&self.cle).map_err(|_| Erreur::Encodage)?;
         mac.update(&a_signer("opn-link·seance·v1", &[champ(date)?, demi.texte()])?);
@@ -121,6 +130,30 @@ impl Acceptation {
         let par = responsable.publique();
         let signature = responsable.signer(&Self::octets(classe, &membre, &par, quand)?);
         Ok(Acceptation { membre, par, quand, signature })
+    }
+
+    /// L'acceptation en texte : les champs signés, une ligne chacun, puis la signature.
+    pub fn texte(&self, classe: &SecretsDeClasse) -> Result<String, Erreur> {
+        let mut texte = String::from_utf8(Self::octets(classe, &self.membre, &self.par, self.quand)?).map_err(|_| Erreur::Encodage)?;
+        texte.push('\n');
+        texte.push_str(&self.signature.texte());
+        Ok(texte)
+    }
+
+    /// Relit une acceptation, et vérifie qu'un responsable l'a signée.
+    pub fn lire(classe: &SecretsDeClasse, texte: &str, responsables: &[ClePublique]) -> Result<Self, Erreur> {
+        let (champs, signature, _) = lire_signe(texte, "opn-link·acceptation·v1")?;
+        let [etiquette, prenom, nom, cle, boite, par, quand] = champs[..] else {
+            return Err(Erreur::Encodage);
+        };
+        if etiquette != classe.etiquette() {
+            return Err(Erreur::AutreSeance);
+        }
+        let membre = Membre { prenom: prenom.into(), nom: nom.into(), cle: ClePublique::lire(cle)?, boite: ClePublique::lire(boite)? };
+        let acceptation =
+            Acceptation { membre, par: ClePublique::lire(par)?, quand: quand.parse().map_err(|_| Erreur::Encodage)?, signature };
+        acceptation.verifier(classe, responsables)?;
+        Ok(acceptation)
     }
 
     /// Vérifie la signature, et que celui qui a accepté est bien un responsable.

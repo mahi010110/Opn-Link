@@ -88,3 +88,43 @@ fn la_feuille() {
     assert_eq!(etat[1].prenom, "Yanis");
     assert!(etat[1].corrige);
 }
+
+const PORTE: &str = include_str!("vecteurs/porte-v1.txt");
+const PORTE_CHIFFREE: &str = include_str!("vecteurs/porte-chiffree-v1.txt");
+const DEMANDE: &str = include_str!("vecteurs/demande-v1.txt");
+const ACCEPTATION: &str = include_str!("vecteurs/acceptation-v1.txt");
+const FIL_CHIFFRE: &str = include_str!("vecteurs/fil-chiffre-v1.txt");
+const ETIQUETTE_DU_FIL: &str = "opl-fil-68e3771df5dddf4deb00bafc6ef946a7";
+
+#[test]
+fn la_porte() {
+    let classe = CodeDeClasse::lire(CODE).unwrap().secrets();
+    let porte = Porte::lire(&classe, PORTE).unwrap();
+    assert_eq!((porte.nom.as_str(), porte.centre.as_str(), porte.matin.as_str()), ("BTS SIO 2", "Centre Exemple", "9:00-12:30"));
+    assert_eq!(porte.chef().cle, awa().publique());
+    assert_eq!(String::from_utf8(classe.dechiffrer(PORTE_CHIFFREE).unwrap()).unwrap(), PORTE);
+    let chef =
+        Responsable { prenom: "Awa".into(), nom: "Diallo".into(), role: Role::Formateur, cle: awa().publique(), boite: awa().boite() };
+    assert_eq!(
+        Porte::signer(&classe, "BTS SIO 2", "Centre Exemple", "9:00-12:30", "13:30-17:00", &[chef], &awa(), 1_763_366_000_000).unwrap(),
+        PORTE
+    );
+}
+
+#[test]
+fn la_demande_et_l_acceptation() {
+    let classe = CodeDeClasse::lire(CODE).unwrap().secrets();
+    let demande = Demande::lire(&classe, DEMANDE).unwrap();
+    assert_eq!((demande.membre.prenom.as_str(), demande.membre.cle.clone()), ("Léa", lea().publique()));
+    assert_eq!(Demande::signer(&classe, "Léa", "Martin", &lea(), 1_763_366_100_000).unwrap(), DEMANDE);
+    let acceptation = Acceptation::lire(&classe, ACCEPTATION, &[awa().publique()]).unwrap();
+    assert_eq!(acceptation.membre, demande.membre);
+    assert_eq!(acceptation.texte(&classe).unwrap(), ACCEPTATION);
+}
+
+#[test]
+fn le_fil() {
+    let fil = SecretDuFil::depuis_octets([9u8; 32]);
+    assert_eq!(fil.etiquette(), ETIQUETTE_DU_FIL);
+    assert_eq!(fil.dechiffrer(FIL_CHIFFRE).unwrap(), "Lundi 23, salle B12.".as_bytes());
+}

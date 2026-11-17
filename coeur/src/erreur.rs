@@ -20,6 +20,8 @@ pub enum Erreur {
     MembreInconnu,
     ClotureDefinitive,
     JournalAbime,
+    PorteInconnue,
+    PorteAmbigue,
 }
 
 impl Erreur {
@@ -44,6 +46,8 @@ impl Erreur {
             Erreur::MembreInconnu => "membre-inconnu",
             Erreur::ClotureDefinitive => "cloture-definitive",
             Erreur::JournalAbime => "journal-abime",
+            Erreur::PorteInconnue => "porte-inconnue",
+            Erreur::PorteAmbigue => "porte-ambigue",
         }
     }
 }

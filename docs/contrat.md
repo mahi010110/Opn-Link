@@ -36,6 +36,9 @@ se régénèrent pas : une version future doit toujours les relire.
 
 ## Le code de la classe
 
+C'est la porte de la classe : il permet de la trouver et de demander à
+entrer, rien de plus. Il s'affiche sous le QR, et on peut le taper.
+
 - 15 caractères pris dans `abcdefghjkmnpqrstuvwxyz23456789`. Il s'affiche
   en majuscules, en trois blocs de cinq. À la lecture, les espaces, les
   tirets et les majuscules ne comptent pas.
@@ -43,9 +46,11 @@ se régénèrent pas : une version future doit toujours les relire.
   100 000 tours, 48 octets :
   - les 16 premiers donnent l'étiquette que voient les relais :
     `opl-classe-` puis leur écriture hexadécimale ;
-  - les 32 suivants sont la clé de la classe.
+  - les 32 suivants sont la clé de la classe, qui chiffre sa porte.
 
-C'est le schéma des groupes d'OpenContact, avec un autre sel.
+C'est le schéma des groupes d'OpenContact, avec un autre sel. Comme pour
+leurs groupes « sur demande », le code ne donne pas le fil : une photo du QR
+de la salle permet de demander à entrer, pas de lire les annonces.
 
 Vecteur : `RJ4KP 7MX2D W8QHN` donne
 `opl-classe-48c4e5ebf83ef60682ad29918ce4ec5a`.
@@ -133,12 +138,102 @@ sels.
 Vecteur : `coeur/tests/vecteurs/lettre-v1.txt`, scellée pour la boîte de 32
 octets valant `12`. Elle contient la présence ci-dessus.
 
+## Les textes signés
+
+La porte, la demande d'entrée et l'acceptation sont des textes signés : une
+étiquette de format, un champ par ligne, puis la signature en dernière
+ligne. Ce qui est signé, c'est le texte sans sa dernière ligne. On les lit
+sans rien deviner, et la signature se vérifie à l'octet près.
+
+## Le chiffrement par une clé partagée
+
+```
+OPC1.<base64url de : IV (12 octets), chiffré>
+```
+
+AES-256-GCM, un IV neuf à chaque fois. La porte se chiffre avec la clé de la
+classe, le fil avec la clé du fil.
+
+## La porte
+
+Le chef la publie sur les relais, sous l'étiquette de la classe, chiffrée
+avec sa clé. Elle dit à qui a le code ce qu'il rejoint, et à qui demander.
+
+```
+opn-link·porte·v1
+<étiquette de la classe>
+<nom de la classe>
+<nom du centre>
+<horaires du matin>
+<horaires de l'après-midi>
+<heure>
+<prénom>  <nom>  <rôle>  <clé>  <boîte>   (cinq lignes par responsable, le chef en premier)
+<signature du chef>
+```
+
+- Le rôle vaut `formateur` ou `centre`.
+- Les horaires s'écrivent `9:00-12:30`.
+- Le lien du QR de la classe porte la clé du chef : seule une porte signée
+  par lui compte. Un code tapé à la main ne la porte pas : si deux chefs
+  différents ont publié une porte pour le même code, l'app ne choisit pas.
+  Sinon, elle prend la plus récente.
+
+Vecteurs : `coeur/tests/vecteurs/porte-v1.txt`, et la même chiffrée,
+`porte-chiffree-v1.txt`.
+
+## La demande d'entrée
+
+```
+opn-link·entree·v1
+<étiquette de la classe>
+<prénom>
+<nom>
+<clé de l'apprenant>
+<boîte de l'apprenant>
+<heure>
+<signature de l'apprenant>
+```
+
+Elle est signée par l'appareil qui signera la présence : personne ne peut
+demander à entrer avec la clé d'un autre. Elle part scellée dans la boîte de
+chaque responsable. Ses camarades ne la voient pas.
+
+Vecteur : `coeur/tests/vecteurs/demande-v1.txt`.
+
 ## L'acceptation
 
-Un responsable accepte un apprenant et l'appareil qui a demandé à entrer. Il
-signe
-`opn-link·acceptation·v1\n<étiquette de la classe>\n<prénom>\n<nom>\n<clé>\n<boîte>\n<clé du responsable>\n<heure>`.
-Seule une acceptation signée par un responsable compte.
+```
+opn-link·acceptation·v1
+<étiquette de la classe>
+<prénom>
+<nom>
+<clé>
+<boîte>
+<clé du responsable>
+<heure>
+<signature du responsable>
+```
+
+Seule une acceptation signée par un responsable de la porte compte.
+
+Vecteur : `coeur/tests/vecteurs/acceptation-v1.txt`.
+
+## Le secret du fil
+
+Le fil porte les annonces et ce que la classe se dit. Son secret, 32 octets
+tirés au hasard, n'est jamais affiché. Un responsable le remet à l'apprenant
+qu'il accepte, scellé pour lui seul.
+
+- HKDF-SHA-256 sur le secret, sel `opn-link·fil·v1`, info `fil`, 48 octets :
+  les 16 premiers donnent l'étiquette `opl-fil-` et leur écriture
+  hexadécimale, les 32 suivants la clé du fil.
+- Retirer un membre change ce secret. Le code de la classe, lui, ne change
+  que si le chef refait l'invitation.
+
+Vecteurs : un secret de 32 octets valant `09` donne
+`opl-fil-68e3771df5dddf4deb00bafc6ef946a7`, et
+`coeur/tests/vecteurs/fil-chiffre-v1.txt` se déchiffre en
+« Lundi 23, salle B12. ».
 
 ## La feuille de présence
 

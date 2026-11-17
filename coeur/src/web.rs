@@ -4,11 +4,13 @@
 use wasm_bindgen::prelude::*;
 
 use crate::appel::{Demi, IdSeance, Presence, Qr};
-use crate::classe::{CodeDeClasse, Membre};
+use crate::classe::{Acceptation, CodeDeClasse, Membre};
 use crate::cles::{CleAppareil, ClePublique};
 use crate::encodage::{b64, de_b64};
+use crate::entree::{Demande, Porte, Responsable, Role};
 use crate::erreur::Erreur;
 use crate::feuille::{EtatPresence, Feuille, Recu, Voie};
+use crate::fil::SecretDuFil;
 use crate::{appel, feuille, lettre};
 
 impl From<Erreur> for JsValue {
@@ -72,6 +74,18 @@ impl Appareil {
         Ok(Presence::depuis_qr(&self.0, &Qr::lire(qr)?, heure(maintenant))?.texte())
     }
 
+    /// Demande à entrer dans la classe : le prénom, le nom, et les clés de cet appareil, signés par lui.
+    pub fn demander_entree(&self, code: &str, prenom: &str, nom: &str, maintenant: f64) -> Result<String, Erreur> {
+        Demande::signer(&CodeDeClasse::lire(code)?.secrets(), prenom, nom, &self.0, heure(maintenant))
+    }
+
+    /// Accepte une demande d'entrée. Rend l'acceptation signée, à remettre à l'apprenant.
+    pub fn accepter(&self, code: &str, demande: &str, maintenant: f64) -> Result<String, Erreur> {
+        let classe = CodeDeClasse::lire(code)?.secrets();
+        let demande = Demande::lire(&classe, demande)?;
+        Acceptation::signer(&classe, demande.membre, &self.0, heure(maintenant))?.texte(&classe)
+    }
+
     /// Signe sa présence avec les six chiffres tapés.
     pub fn signer_code(&self, seance: &str, code: &str, maintenant: f64) -> Result<String, Erreur> {
         Ok(Presence::depuis_code(&self.0, IdSeance::lire(seance)?, code, heure(maintenant))?.texte())
@@ -94,6 +108,169 @@ pub fn seance(code: &str, date: &str, demi_journee: &str) -> Result<String, Erre
 #[wasm_bindgen]
 pub fn nouveau_code_de_classe() -> Result<String, Erreur> {
     Ok(CodeDeClasse::nouveau()?.affiche())
+}
+
+/// Un responsable de la classe.
+#[wasm_bindgen(getter_with_clone)]
+#[derive(Clone)]
+pub struct ResponsableJs {
+    pub prenom: String,
+    pub nom: String,
+    /// `formateur` ou `centre`.
+    pub role: String,
+    pub cle: String,
+    pub boite: String,
+}
+
+/// Ce que dit la porte d'une classe.
+#[wasm_bindgen(getter_with_clone)]
+pub struct PorteJs {
+    pub nom: String,
+    pub centre: String,
+    pub matin: String,
+    pub apres_midi: String,
+    pub quand: f64,
+    pub texte: String,
+    pub responsables: Vec<ResponsableJs>,
+}
+
+impl From<Porte> for PorteJs {
+    fn from(p: Porte) -> Self {
+        PorteJs {
+            responsables: p
+                .responsables
+                .iter()
+                .map(|r| ResponsableJs {
+                    prenom: r.prenom.clone(),
+                    nom: r.nom.clone(),
+                    role: r.role.texte().into(),
+                    cle: r.cle.texte(),
+                    boite: r.boite.texte(),
+                })
+                .collect(),
+            nom: p.nom,
+            centre: p.centre,
+            matin: p.matin,
+            apres_midi: p.apres_midi,
+            quand: p.quand as f64,
+            texte: p.texte,
+        }
+    }
+}
+
+/// Un apprenant qui demande à entrer, ou qui a été accepté.
+#[wasm_bindgen(getter_with_clone)]
+pub struct MembreJs {
+    pub prenom: String,
+    pub nom: String,
+    pub cle: String,
+    pub boite: String,
+    pub quand: f64,
+}
+
+fn membre_js(m: Membre, quand: u64) -> MembreJs {
+    MembreJs { prenom: m.prenom, nom: m.nom, cle: m.cle.texte(), boite: m.boite.texte(), quand: quand as f64 }
+}
+
+/// Le chef signe la porte. Les responsables arrivent en texte : une ligne chacun, prénom, nom,
+/// rôle, clé et boîte séparés par des tabulations, le chef en premier.
+#[wasm_bindgen]
+#[allow(clippy::too_many_arguments)]
+pub fn signer_porte(
+    code: &str,
+    nom: &str,
+    centre: &str,
+    matin: &str,
+    apres_midi: &str,
+    responsables: &str,
+    chef: &Appareil,
+    maintenant: f64,
+) -> Result<String, Erreur> {
+    let responsables = responsables
+        .lines()
+        .filter(|l| !l.is_empty())
+        .map(|l| match l.split('\t').collect::<Vec<_>>()[..] {
+            [prenom, nom, role, cle, boite] => Ok(Responsable {
+                prenom: prenom.into(),
+                nom: nom.into(),
+                role: Role::lire(role)?,
+                cle: ClePublique::lire(cle)?,
+                boite: ClePublique::lire(boite)?,
+            }),
+            _ => Err(Erreur::ChampInvalide),
+        })
+        .collect::<Result<Vec<_>, Erreur>>()?;
+    Porte::signer(&CodeDeClasse::lire(code)?.secrets(), nom, centre, matin, apres_midi, &responsables, &chef.0, heure(maintenant))
+}
+
+/// Choisit la porte parmi celles que rendent les relais. `chef` vient du lien du QR, s'il y en a un.
+#[wasm_bindgen]
+pub fn choisir_porte(code: &str, textes: Vec<String>, chef: Option<String>) -> Result<PorteJs, Erreur> {
+    let chef = chef.map(|c| ClePublique::lire(&c)).transpose()?;
+    let textes: Vec<&str> = textes.iter().map(String::as_str).collect();
+    Ok(crate::entree::choisir_porte(&CodeDeClasse::lire(code)?.secrets(), &textes, chef.as_ref())?.into())
+}
+
+#[wasm_bindgen]
+pub fn lire_porte(code: &str, texte: &str) -> Result<PorteJs, Erreur> {
+    Ok(Porte::lire(&CodeDeClasse::lire(code)?.secrets(), texte)?.into())
+}
+
+#[wasm_bindgen]
+pub fn lire_demande(code: &str, demande: &str) -> Result<MembreJs, Erreur> {
+    let d = Demande::lire(&CodeDeClasse::lire(code)?.secrets(), demande)?;
+    Ok(membre_js(d.membre, d.quand))
+}
+
+/// Relit une acceptation, et vérifie qu'un des responsables donnés l'a signée.
+#[wasm_bindgen]
+pub fn lire_acceptation(code: &str, acceptation: &str, responsables: Vec<String>) -> Result<MembreJs, Erreur> {
+    let responsables = responsables.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
+    let a = Acceptation::lire(&CodeDeClasse::lire(code)?.secrets(), acceptation, &responsables)?;
+    Ok(membre_js(a.membre, a.quand))
+}
+
+/// Chiffre pour qui a le code de la classe : c'est ainsi que voyage la porte.
+#[wasm_bindgen]
+pub fn chiffrer_pour_la_classe(code: &str, texte: &str) -> Result<String, Erreur> {
+    CodeDeClasse::lire(code)?.secrets().chiffrer(texte.as_bytes())
+}
+
+#[wasm_bindgen]
+pub fn dechiffrer_pour_la_classe(code: &str, chiffre: &str) -> Result<String, Erreur> {
+    String::from_utf8(CodeDeClasse::lire(code)?.secrets().dechiffrer(chiffre)?).map_err(|_| Erreur::LettreIllisible)
+}
+
+#[wasm_bindgen]
+pub fn nouveau_secret_du_fil() -> Result<String, Erreur> {
+    Ok(SecretDuFil::nouveau()?.texte())
+}
+
+#[wasm_bindgen]
+pub fn etiquette_du_fil(secret: &str) -> Result<String, Erreur> {
+    Ok(SecretDuFil::lire(secret)?.etiquette())
+}
+
+#[wasm_bindgen]
+pub fn chiffrer_pour_le_fil(secret: &str, texte: &str) -> Result<String, Erreur> {
+    SecretDuFil::lire(secret)?.chiffrer(texte.as_bytes())
+}
+
+#[wasm_bindgen]
+pub fn dechiffrer_du_fil(secret: &str, chiffre: &str) -> Result<String, Erreur> {
+    String::from_utf8(SecretDuFil::lire(secret)?.dechiffrer(chiffre)?).map_err(|_| Erreur::LettreIllisible)
+}
+
+/// Une clé publique sous sa forme courte, pour la faire tenir dans un lien.
+#[wasm_bindgen]
+pub fn cle_courte(cle: &str) -> Result<String, Erreur> {
+    Ok(ClePublique::lire(cle)?.courte())
+}
+
+/// Une clé publique sous sa forme longue, celle qui se compare.
+#[wasm_bindgen]
+pub fn cle_longue(cle: &str) -> Result<String, Erreur> {
+    Ok(ClePublique::lire(cle)?.texte())
 }
 
 /// La séance que porte le QR de la salle, pour savoir de quelle classe il vient.

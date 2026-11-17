@@ -42,3 +42,29 @@ pub(crate) fn a_signer(format: &str, champs: &[&str]) -> Result<Vec<u8>, Erreur>
     }
     Ok(sortie.into_bytes())
 }
+
+/// Un texte signé : une étiquette de format, un champ par ligne, puis la signature en dernière
+/// ligne. Ce qui est signé, c'est le texte sans sa dernière ligne.
+pub(crate) fn texte_signe(format: &str, champs: &[&str], signataire: &crate::cles::CleAppareil) -> Result<String, Erreur> {
+    let octets = a_signer(format, champs)?;
+    let signature = signataire.signer(&octets);
+    let mut texte = String::from_utf8(octets).map_err(|_| Erreur::Encodage)?;
+    texte.push('\n');
+    texte.push_str(&signature.texte());
+    Ok(texte)
+}
+
+/// Relit un texte signé : ses champs, sa signature, et la partie signée, que l'appelant vérifie
+/// avec la clé qu'il attend.
+pub(crate) fn lire_signe<'a>(texte: &'a str, format: &str) -> Result<(Vec<&'a str>, crate::cles::Signature, &'a str), Erreur> {
+    let (signe, signature) = texte.trim_end_matches('\n').rsplit_once('\n').ok_or(Erreur::Encodage)?;
+    let mut lignes = signe.split('\n');
+    if lignes.next() != Some(format) {
+        return Err(Erreur::Encodage);
+    }
+    let champs: Vec<&str> = lignes.collect();
+    for c in &champs {
+        champ(c)?;
+    }
+    Ok((champs, crate::cles::Signature::lire(signature)?, signe))
+}
