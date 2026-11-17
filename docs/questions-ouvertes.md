@@ -18,7 +18,9 @@ sont listés dans [prototype.md](prototype.md), partie « Les choix du
 prototype, à valider », et décrits dans [contrat.md](contrat.md). Ceux du
 17 novembre 2026 concernent l'entrée dans une classe : le code qui n'ouvre
 que la porte, la demande laissée dehors sans réponse, le nom du formateur
-demandé à la création.
+demandé à la création. Puis les relais : ceux de secours ne servent que tant
+que moins de deux principaux répondent, et un relais qui refuse est écarté
+dix minutes.
 
 Recommandation : les garder.
 

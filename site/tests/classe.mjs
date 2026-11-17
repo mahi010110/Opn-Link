@@ -1,8 +1,13 @@
-// Une classe de bout en bout, jouée par Playwright avec de vrais appareils et un relais local.
+// Une classe de bout en bout, jouée par Playwright avec de vrais appareils et des relais locaux.
 // Awa crée la classe et l'invite à la salle. Léa, Inès, Noah et Kevin ouvrent le lien du QR,
-// Yanis tape le code, d'abord de travers. Awa accepte tout le monde sauf Kevin, qu'elle ne
-// connaît pas. Puis l'appel : Léa signe, Yanis se trompe de code puis signe, Inès n'a plus de
-// réseau et tend son QR, Noah est absent. Awa clôt. Les captures vont dans captures/.
+// Yanis tape le code, d'abord de travers, Noah sans réseau. Awa accepte tout le monde sauf
+// Kevin, qu'elle ne connaît pas. Puis l'appel : Léa signe, Yanis se trompe de code puis signe,
+// Inès n'a plus de réseau et tend son QR, Noah est absent. Awa clôt. Les captures vont dans
+// captures/.
+//
+// Les appareils ont deux relais principaux, dont un qui refuse toute écriture, et deux de
+// secours, dont un qui ne répond pas. Le principal qui marche tombe juste après l'invitation :
+// tout le reste passe par le secours. À la fin, la liste par défaut se vérifie sans réseau.
 //
 // npm run construire, puis npm run classe.
 
@@ -12,7 +17,7 @@ import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
-import { lancerPasserelle, lancerRelais } from '../outils/relais.mjs';
+import { lancerPasserelle, lancerRelais, lancerRelaisMort } from '../outils/relais.mjs';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
 const SITE = fileURLToPath(new URL('..', import.meta.url));
@@ -42,8 +47,26 @@ const serveur = createServer((requete, reponse) => {
 });
 await new Promise((ok) => serveur.listen(0, '127.0.0.1', ok));
 const site = `http://127.0.0.1:${serveur.address().port}`;
-const relais = await lancerRelais();
-const reseauDInes = await lancerPasserelle(relais.url);
+
+const principal = await lancerRelais();
+const ferme = await lancerRelais(0, { refuser: true });
+const secours = await lancerRelais();
+const mort = await lancerRelaisMort();
+const LISTE = { principaux: [principal.url, ferme.url], secours: [secours.url, mort.url] };
+const debut = Date.now();
+// Le réseau d'un téléphone : une passerelle par relais, que le test coupe et rétablit.
+async function reseau() {
+  const passerelles = await Promise.all([principal, ferme, secours].map((r) => lancerPasserelle(r.url)));
+  const [p, f, s] = passerelles.map((x) => x.url);
+  return {
+    liste: { principaux: [p, f], secours: [s, mort.url] },
+    couper: () => passerelles.forEach((x) => x.couper()),
+    retablir: () => passerelles.forEach((x) => x.retablir()),
+    fermer: () => Promise.all(passerelles.map((x) => x.fermer())),
+  };
+}
+const reseauDInes = await reseau();
+const reseauDeNoah = await reseau();
 
 const navigateur = await chromium.launch();
 const TEL = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
@@ -58,20 +81,21 @@ const pages = {};
 
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
 
-async function appareil(nom, options, { url = '/index.html', cles, relaisUrl = relais.url, userAgent } = {}) {
+async function appareil(nom, options, { url = '/index.html', cles, liste = LISTE, userAgent } = {}) {
   const contexte = await navigateur.newContext({ ...options, locale: 'fr-FR', timezoneId: 'Europe/Paris', ...(userAgent ? { userAgent } : {}) });
   await contexte.clock.setSystemTime(MARDI_MATIN);
   await contexte.addInitScript(
-    ([nom, cles, relaisUrl]) => {
-      localStorage.setItem(`opl_proto_${nom}_relais`, JSON.stringify(relaisUrl));
+    ([nom, cles, liste]) => {
+      localStorage.setItem(`opl_proto_${nom}_relais`, JSON.stringify(liste));
       if (cles) localStorage.setItem(`opl_proto_${nom}_cles`, JSON.stringify(cles));
     },
-    [nom, cles, relaisUrl],
+    [nom, cles, liste],
   );
   const page = await contexte.newPage();
   page.on('pageerror', (e) => echecs.push(`${nom} : ${e.message}`));
   page.on('console', (m) => m.type() === 'error' && !m.text().includes('WebSocket') && echecs.push(`${nom} : ${m.text()}`));
   page.on('request', (r) => adresses.add(new URL(r.url()).host));
+  page.on('websocket', (ws) => adresses.add(new URL(ws.url()).host));
   const [chemin, ancre = ''] = url.split('#');
   await page.goto(`${site}${chemin}${chemin.includes('?') ? '&' : '?'}appareil=${nom}${ancre ? `#${ancre}` : ''}`);
   pages[nom] = { page, contexte };
@@ -126,6 +150,14 @@ try {
   verifier(lien.length < 110, `le lien du QR reste court (${lien.length} caractères)`);
   const ancre = lien.split('#')[1];
 
+  await principal.fermer();
+  const gardesAvantLaPanne = secours.gardes.length;
+  const etiquetteDeLaClasse = coeur.etiquette_de_classe(code);
+  verifier(
+    secours.gardes.some((e) => e.tags.some(([t, v]) => t === 'x' && v === etiquetteDeLaClasse)),
+    'la porte, acceptée par le principal avant que le secours ne s’ouvre, a été renvoyée au secours',
+  );
+
   const telLea = await appareil('lea', TEL, { url: `/index.html#${ancre}`, userAgent: IPHONE });
   await telLea.locator('#prenom').waitFor({ timeout: 15_000 });
   verifier(await telLea.getByText('BTS SIO 2').count() === 1 && await telLea.getByText('Centre Exemple · Awa Diallo, formateur').count() === 1, 'le lien ouvre la classe, déjà affichée');
@@ -148,10 +180,17 @@ try {
   await telYanis.fill('#code', code.toUpperCase().replace(/(.{5})(?=.)/g, '$1 '));
   await rejoindre(telYanis, 'Yanis', 'Haddad');
 
-  const telInes = await appareil('ines', TEL, { url: `/index.html#${ancre}`, relaisUrl: reseauDInes.url });
+  const telInes = await appareil('ines', TEL, { url: `/index.html#${ancre}`, liste: reseauDInes.liste });
   await rejoindre(telInes, 'Inès', 'Roux');
-  const telNoah = await appareil('noah', TEL, { url: `/index.html#${ancre}` });
+
+  reseauDeNoah.couper();
+  const telNoah = await appareil('noah', TEL, { url: `/index.html#${ancre}`, liste: reseauDeNoah.liste });
+  await telNoah.getByText('Pas de réseau. Je cherche la classe dès qu’il revient.').waitFor({ timeout: 15_000 });
+  await capturer(telNoah, '07b-apprenant-lien-sans-reseau');
+  verifier(true, 'sans réseau, le lien de la classe dit « Pas de réseau », sans parler de code faux');
+  reseauDeNoah.retablir();
   await rejoindre(telNoah, 'Noah', 'Petit');
+  verifier(true, 'le réseau revenu, la classe s’affiche d’elle-même');
   const telKevin = await appareil('kevin', TEL, { url: `/index.html#${ancre}` });
   await rejoindre(telKevin, 'Kevin', 'Intrus');
 
@@ -214,6 +253,10 @@ try {
   verifier(await telInes.getByText('Pas de réseau · 1 envoi attend').count() === 1, 'sans réseau, l’écran dit ce qui attend');
   const presenceDInes = await telInes.locator('[data-presence]').getAttribute('data-presence');
   const cleDInes = coeur.cle_de_la_presence(presenceDInes);
+  const enAttente = JSON.parse(await telInes.evaluate(() => localStorage.getItem('opl_proto_ines_envois')));
+  await telInes.reload();
+  await telInes.getByText('Pas de réseau · 1 envoi attend').waitFor({ timeout: 15_000 });
+  verifier(enAttente.length === 1, 'ce qui attend se garde sur le téléphone : rechargé, il dit encore « 1 envoi attend »');
   await tel.click(`[data-geste="nom"][data-cle="${cleDInes}"]`);
   await tel.click('[data-geste="lireQr"]');
   await tel.fill('#texte-qr', presenceDInes);
@@ -231,6 +274,9 @@ try {
   reseauDInes.retablir();
   await telInes.getByText('Présence signée').waitFor({ timeout: 20_000 });
   verifier(true, 'le réseau revenu, Inès reçoit la réponse : sa présence est signée');
+  await telInes.waitForFunction(() => localStorage.getItem('opl_proto_ines_envois') === '[]', null, { timeout: 15_000 });
+  const idDeLaPresence = JSON.parse(enAttente[0]).id;
+  verifier(secours.gardes.some((e) => e.id === idDeLaPresence), 'la présence gardée part d’elle-même au retour du réseau, rechargement compris');
 
   const garde = JSON.parse(await tel.evaluate(() => localStorage.getItem('opl_proto_awa-tel_appel')));
   verifier(/^[0-9a-f]{64}$/.test(coeur.verifier_journal(garde.journal)), 'la feuille close se vérifie seule');
@@ -238,14 +284,21 @@ try {
   writeFileSync(join(CAPTURES, 'feuille.txt'), garde.journal);
   copyFileSync(join(DIST, 'icone-512.png'), join(CAPTURES, '19-icone.png'));
 
-  verifier(relais.refuses.length === 0, `le relais a accepté chaque événement signé par le cœur (${relais.gardes.length} événements)`);
+  const gardes = [...principal.gardes, ...secours.gardes];
+  verifier(principal.refuses.length + secours.refuses.length === 0, `les relais ont accepté chaque événement signé par le cœur (${gardes.length} événements)`);
+  verifier(secours.gardes.length - gardesAvantLaPanne > 20, `le principal tombé, tout est passé par le relais de secours (${secours.gardes.length - gardesAvantLaPanne} événements depuis)`);
+  const parSeconde = mort.tentatives / ((Date.now() - debut) / 1000);
+  verifier(mort.tentatives > 0 && parSeconde < 4, `le relais de secours mort est retenté toutes les trois secondes, pas plus (${mort.tentatives} tentatives, ${parSeconde.toFixed(1)} par seconde pour tous les appareils)`);
+  const ecrivains = ferme.connexions.filter((c) => c.evenements > 0);
+  const auPlus = Math.max(...ferme.connexions.map((c) => c.evenements));
+  verifier(ecrivains.length > 0 && auPlus <= 3, `le relais qui refuse est écarté au premier refus (${ecrivains.length} appareils ont essayé, ${auPlus} événements au plus chacun)`);
   // Un contenu chiffré est du base64 : trois lettres comme « Awa » y tombent par hasard. On vérifie
   // donc que chaque contenu est une lettre scellée ou une porte chiffrée, et qu'aucun nom complet,
   // espace compris, n'apparaît nulle part.
-  const surLeRelais = JSON.stringify(relais.gardes);
-  const enClair = ['Awa Diallo', 'Léa Martin', 'Yanis Haddad', 'Inès Roux', 'Noah Petit', 'Kevin Intrus', 'BTS SIO 2', 'Centre Exemple'].filter((n) => surLeRelais.includes(n));
-  const nonChiffres = relais.gardes.filter((e) => !/^OP[BC]1\.[A-Za-z0-9_-]+$/.test(e.content));
-  verifier(enClair.length === 0 && nonChiffres.length === 0, `rien ne passe en clair sur le relais : chaque contenu est scellé ou chiffré, et aucun nom ne s'y lit (${enClair.join(', ') || 'aucun'})`);
+  const surLesRelais = JSON.stringify(gardes);
+  const enClair = ['Awa Diallo', 'Léa Martin', 'Yanis Haddad', 'Inès Roux', 'Noah Petit', 'Kevin Intrus', 'BTS SIO 2', 'Centre Exemple'].filter((n) => surLesRelais.includes(n));
+  const nonChiffres = gardes.filter((e) => !/^OP[BC]1\.[A-Za-z0-9_-]+$/.test(e.content));
+  verifier(enClair.length === 0 && nonChiffres.length === 0, `rien ne passe en clair sur les relais : chaque contenu est scellé ou chiffré, et aucun nom ne s'y lit (${enClair.join(', ') || 'aucun'})`);
   verifier([...adresses].every((h) => h.startsWith('127.0.0.1')), `aucune autre adresse contactée (${[...adresses].join(', ')})`);
 
   await telLea.evaluate(() => navigator.serviceWorker.ready.then(() => true));
@@ -261,7 +314,7 @@ try {
 
   const poids = [];
   const premier = await navigateur.newContext({ ...TEL });
-  await premier.addInitScript((url) => localStorage.setItem('opl_proto_neuf_relais', JSON.stringify(url)), relais.url);
+  await premier.addInitScript((url) => localStorage.setItem('opl_proto_neuf_relais', JSON.stringify({ principaux: [url], secours: [] })), secours.url);
   const pageNeuve = await premier.newPage();
   pageNeuve.on('response', async (r) => {
     try {
@@ -276,10 +329,47 @@ try {
   const polices = poids.filter(([c]) => c.endsWith('.woff2')).reduce((s, [, o]) => s + o, 0);
   console.log(`Premier chargement chez un apprenant : ${(total / 1024).toFixed(1)} Ko compressés, dont ${(polices / 1024).toFixed(1)} Ko de polices`);
   verifier(total <= 300 * 1024, 'le premier chargement tient sous le plafond de 300 Ko');
+
+  // La liste par défaut, sans toucher au réseau : Playwright tient le rôle des relais publics.
+  // nos.lol refuse les écritures, comme un relais qui bloque l'adresse d'un centre.
+  const contactes = [];
+  const evenementsPour = {};
+  const sansReglage = await navigateur.newContext({ ...TEL, locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+  await sansReglage.routeWebSocket(/^wss:/, (ws) => {
+    const hote = new URL(ws.url()).host;
+    contactes.push(hote);
+    ws.onMessage((brut) => {
+      const [sorte, a] = JSON.parse(String(brut));
+      if (sorte === 'REQ') ws.send(JSON.stringify(['EOSE', a]));
+      if (sorte !== 'EVENT') return;
+      evenementsPour[hote] = (evenementsPour[hote] ?? 0) + 1;
+      ws.send(JSON.stringify(hote === 'nos.lol' ? ['OK', a.id, false, 'blocked: écriture fermée'] : ['OK', a.id, true, '']));
+    });
+  });
+  const pageSansReglage = await sansReglage.newPage();
+  pageSansReglage.on('request', (r) => adresses.add(new URL(r.url()).host));
+  await pageSansReglage.goto(`${site}/index.html?appareil=defaut#creer`);
+  await pageSansReglage.locator('#prenom').waitFor();
+  await pageSansReglage.waitForTimeout(1500);
+  const vus = () => [...new Set(contactes)].sort().join(', ');
+  verifier(vus() === 'nos.lol, nostr.sathoarder.com', `sans réglage, l’app passe par nostr.sathoarder.com et nos.lol, et pas par les secours (${vus()})`);
+  await pageSansReglage.fill('#prenom', 'Awa');
+  await pageSansReglage.fill('#nom', 'Diallo');
+  await pageSansReglage.fill('#classe', 'BTS SIO 2');
+  await pageSansReglage.fill('#centre', 'Centre Exemple');
+  await pageSansReglage.click('[data-geste="creer"]');
+  await pageSansReglage.getByText('Inviter des apprenants').waitFor();
+  await pageSansReglage.waitForTimeout(1500);
+  verifier(
+    vus() === 'nos.lol, nostr-01.yakihonne.com, nostr-relay.corb.net, nostr.sathoarder.com' && evenementsPour['nos.lol'] <= 3 && evenementsPour['nostr-relay.corb.net'] > 0,
+    `nos.lol refuse : l’app l’écarte et passe par les deux relais de secours (${vus()} ; ${JSON.stringify(evenementsPour)})`,
+  );
+  verifier([...adresses].every((h) => h.startsWith('127.0.0.1')), `aucune requête ne quitte la machine (${[...adresses].join(', ')})`);
 } finally {
   await navigateur.close();
   await reseauDInes.fermer();
-  await relais.fermer();
+  await reseauDeNoah.fermer();
+  for (const r of [principal, ferme, secours, mort]) await r.fermer();
   serveur.close();
 }
 

@@ -65,5 +65,9 @@ export function oublierClasse(code: string): void {
   ecrire('classes', classes().filter((c) => c.code !== code));
 }
 
-// Les relais publics viendront avec l'appel complet. Pour l'instant, les tests donnent le leur.
-export const adresseDuRelais = (): string => lire<string>('relais') ?? 'ws://127.0.0.1:7447';
+// Les relais par défaut, mesurés le 15 novembre 2026 (docs/architecture.md). Les tests donnent les leurs.
+const RELAIS_PAR_DEFAUT = {
+  principaux: ['wss://nostr.sathoarder.com', 'wss://nos.lol'],
+  secours: ['wss://nostr-relay.corb.net', 'wss://nostr-01.yakihonne.com'],
+};
+export const listeDesRelais = (): { principaux: string[]; secours: string[] } => lire('relais') ?? RELAIS_PAR_DEFAUT;

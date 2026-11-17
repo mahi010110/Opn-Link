@@ -1,7 +1,7 @@
 import { chargerCoeur } from './coeur';
 import { creer } from './creer';
 import { rejoindreParLien } from './entree';
-import { adresseDuRelais, clesDeLAppareil, ecran } from './etat';
+import { clesDeLAppareil, ecran, ecrire, lire, listeDesRelais } from './etat';
 import { lireLien } from './lettres';
 import { Relais } from './relais';
 import { entree } from './routes';
@@ -15,7 +15,8 @@ suivreTheme();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 chargerCoeur().then((coeur) => {
-  const ctx = { coeur, relais: new Relais(adresseDuRelais()), moi: clesDeLAppareil(coeur) };
+  const envois = { lire: () => lire<string[]>('envois') ?? [], ecrire: (e: string[]) => ecrire('envois', e) };
+  const ctx = { coeur, relais: new Relais(listeDesRelais(), envois), moi: clesDeLAppareil(coeur) };
   const lien = lireLien(location.hash);
   if (ecran === 'salle') return salle(ctx);
   if (location.hash === '#creer') return creer(ctx);

@@ -459,3 +459,11 @@ refusés.
   première présence signée, l'app propose une fois de la garder sur l'écran
   d'accueil, comme le dit la conception. L'icône est un choix de Fable 5, à
   valider.
+- L'appel complet passe avant la fin de « Rejoindre une classe » : sans les
+  relais publics, rien ne marchait hors des tests. Les relais sont faits :
+  l'app passe par nostr.sathoarder.com et nos.lol, et par les deux relais de
+  secours tant que moins de deux principaux répondent. Un relais qui refuse
+  est écarté dix minutes. Ce qu'aucun relais n'a accepté se garde sur
+  l'appareil et repart au retour du réseau. Ce sens donné à « en secours »
+  est un choix de Fable 5, à valider ([prototype.md](prototype.md), partie
+  « Les choix du prototype, à valider »).

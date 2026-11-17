@@ -10,6 +10,7 @@ import { afficher, codeAffiche, esc, ic } from './vue';
 type Porte = ReturnType<Contexte['coeur']['choisir_porte']>;
 
 export function sansClasse(ctx: Contexte): void {
+  ctx.relais.changement = () => {};
   afficher(
     'tel',
     'Opn-Link',
@@ -22,8 +23,19 @@ export function sansClasse(ctx: Contexte): void {
   );
 }
 
+// Sans réseau, la recherche reprend d'elle-même dès qu'un relais répond.
+function auRetourDuReseau(ctx: Contexte, reprendre: () => void): void {
+  ctx.relais.changement = () => {
+    if (!ctx.relais.ouvert) return;
+    ctx.relais.changement = () => {};
+    reprendre();
+  };
+}
+
 function taperLeCode(ctx: Contexte, texte = '', erreur?: string): void {
   let cherche = false;
+  const attente = erreur === 'sans-reseau';
+  if (attente) erreur = undefined;
   afficher(
     'tel',
     'Code',
@@ -31,7 +43,7 @@ function taperLeCode(ctx: Contexte, texte = '', erreur?: string): void {
      <main class="page"><div class="bloc">
        <label class="champ-nom" for="code">Le code de ta classe</label>
        <input id="code" class="champ code${erreur ? ' faux' : ''}" value="${esc(texte)}" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"${erreur ? ' aria-describedby="erreur"' : ''}>
-       ${erreur ? `<p class="erreur" id="erreur" role="alert">${ic('info-box')}<span>${esc(phrase(erreur))}</span></p>` : '<p class="mono" id="etat"></p>'}
+       ${erreur ? `<p class="erreur" id="erreur" role="alert">${ic('info-box')}<span>${esc(phrase(erreur))}</span></p>` : `<p class="mono" id="etat" role="status">${attente ? esc(phrase('sans-reseau')) : ''}</p>`}
      </div></main>
      <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button></div></footer>`,
     { retour: () => sansClasse(ctx) },
@@ -40,7 +52,7 @@ function taperLeCode(ctx: Contexte, texte = '', erreur?: string): void {
   const champ = document.querySelector<HTMLInputElement>('#code')!;
   champ.focus();
   champ.setSelectionRange(champ.value.length, champ.value.length);
-  champ.addEventListener('input', async () => {
+  const chercher = async () => {
     const valeur = champ.value;
     if (cherche || valeur.replace(/[\s-]/g, '').length < 15) return;
     cherche = true;
@@ -52,18 +64,27 @@ function taperLeCode(ctx: Contexte, texte = '', erreur?: string): void {
     } catch (e) {
       taperLeCode(ctx, valeur, codeDe(e));
     }
-  });
+  };
+  champ.addEventListener('input', chercher);
+  if (attente) auRetourDuReseau(ctx, chercher);
 }
 
 /// Le lien du QR mène ici : la classe s'affiche tout de suite, sans rien taper.
 export async function rejoindreParLien(ctx: Contexte, code: string, chef: string): Promise<void> {
   history.replaceState(null, '', location.pathname + location.search);
-  afficher('tel', 'Rejoindre', `<header class="barre"><h1 class="barre-titre">Rejoindre</h1></header><main class="page"><p class="mono">Je cherche la classe…</p></main>`, {});
-  try {
-    rejoindre(ctx, code, await chercherPorte(ctx.coeur, ctx.relais, code, chef));
-  } catch (e) {
-    taperLeCode(ctx, codeAffiche(code), codeDe(e));
-  }
+  const attendre = (texte: string) =>
+    afficher('tel', 'Rejoindre', `<header class="barre"><h1 class="barre-titre">Rejoindre</h1></header><main class="page"><p class="mono" role="status">${esc(texte)}</p></main>`, {});
+  const chercher = async () => {
+    try {
+      rejoindre(ctx, code, await chercherPorte(ctx.coeur, ctx.relais, code, chef));
+    } catch (e) {
+      if (codeDe(e) !== 'sans-reseau') return taperLeCode(ctx, codeAffiche(code), codeDe(e));
+      attendre(phrase('sans-reseau'));
+      auRetourDuReseau(ctx, chercher);
+    }
+  };
+  attendre('Je cherche la classe…');
+  await chercher();
 }
 
 function rejoindre(ctx: Contexte, code: string, porte: Porte, prenom = '', nom = '', erreurs: { prenom?: string; nom?: string } = {}): void {

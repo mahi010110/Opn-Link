@@ -13,7 +13,7 @@ const PLANCHES = [
   {
     nom: 'planche-1-rejoindre',
     titre: 'Créer la classe, la rejoindre, accepter',
-    sous: 'Awa crée la classe et l’invite. Léa ouvre le lien du QR, Yanis tape le code, d’abord de travers. Awa accepte tout le monde sauf Kevin, qu’elle ne connaît pas.',
+    sous: 'Awa crée la classe et l’invite. Léa ouvre le lien du QR, Yanis tape le code, d’abord de travers, Noah ouvre le lien sans réseau. Awa accepte tout le monde sauf Kevin, qu’elle ne connaît pas.',
     colonnes: 4,
     largeur: 1360,
     images: [
@@ -25,6 +25,7 @@ const PLANCHES = [
       ['05-apprenant-attente', 'En attente', 'Rien à faire : la classe s’ouvre quand c’est accepté.'],
       ['06-apprenant-sans-classe', 'Sans le lien', 'Yanis ouvre le site et tape le code.'],
       ['07-apprenant-code-faux', 'Un code de travers', 'L’erreur sous le champ. Ce qui est tapé reste.'],
+      ['07b-apprenant-lien-sans-reseau', 'Le lien, sans réseau', 'Rien à faire : la classe s’affiche quand le réseau revient.'],
       ['09-formateur-demandes', 'Cinq demandent à entrer', 'Sur l’écran du cours, dans « À suivre ».'],
       ['10-formateur-accepter', 'Accepter', 'Tous cochés d’avance. Kevin est décoché : il reste dehors.'],
       ['11-apprenant-admis', 'Léa est dans la classe', 'L’écran du jour : sa présence à signer.'],

@@ -1,11 +1,15 @@
 // Un petit relais Nostr, pour que les appareils se parlent pendant les tests, sans dépendre
 // des relais publics. Il vérifie chaque événement comme un vrai relais, garde ce qu'il reçoit
 // jusqu'à son expiration (NIP-40), et sert les filtres dont Opn-Link a besoin.
+// Avec { refuser: true }, il sert les lectures et refuse toute écriture, comme relay.froth.zone
+// le 15 novembre 2026 (docs/mesures.md).
 //
 // node outils/relais.mjs [port]  le lance seul ; sinon les tests appellent lancerRelais().
 
-import { WebSocketServer } from 'ws';
+import { WebSocket, WebSocketServer } from 'ws';
 import { verifyEvent } from 'nostr-tools/pure';
+import { createServer } from 'node:http';
+import { createServer as createNetServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 
 const expiration = (e) => Number(e.tags.find((t) => t[0] === 'expiration')?.[1] ?? Infinity);
@@ -16,15 +20,19 @@ const correspond = (filtre, e) =>
   (!filtre.since || e.created_at >= filtre.since) &&
   (!filtre['#x'] || e.tags.some((t) => t[0] === 'x' && filtre['#x'].includes(t[1])));
 
-export async function lancerRelais(port = 0) {
+export async function lancerRelais(port = 0, { refuser = false } = {}) {
   const serveur = new WebSocketServer({ host: '127.0.0.1', port });
   await new Promise((ok) => serveur.on('listening', ok));
   const gardes = [];
   const abonnements = new Map();
   const refuses = [];
+  // Pour chaque connexion, le nombre d'événements reçus : on y voit qui insiste après un refus.
+  const connexions = [];
 
   serveur.on('connection', (ws) => {
     const siens = new Map();
+    const connexion = { evenements: 0 };
+    connexions.push(connexion);
     abonnements.set(ws, siens);
     ws.on('close', () => abonnements.delete(ws));
     ws.on('message', (brut) => {
@@ -37,6 +45,8 @@ export async function lancerRelais(port = 0) {
       const [sorte, ...reste] = message;
       if (sorte === 'EVENT') {
         const [e] = reste;
+        connexion.evenements++;
+        if (refuser) return ws.send(JSON.stringify(['OK', e?.id ?? '', false, 'blocked: écriture fermée']));
         if (!verifyEvent(e)) {
           refuses.push(e);
           return ws.send(JSON.stringify(['OK', e?.id ?? '', false, 'invalid: signature']));
@@ -63,14 +73,35 @@ export async function lancerRelais(port = 0) {
     });
   });
 
+  let arrete = false;
   return {
     url: `ws://127.0.0.1:${serveur.address().port}`,
     gardes,
     refuses,
+    connexions,
     fermer: () => new Promise((ok) => {
+      if (arrete) return ok();
+      arrete = true;
       for (const c of serveur.clients) c.terminate();
-      serveur.close(ok);
+      serveur.close(() => ok());
     }),
+  };
+}
+
+// Un relais mort : il coupe chaque connexion dès qu'elle arrive, et compte les tentatives.
+export async function lancerRelaisMort() {
+  let tentatives = 0;
+  const serveur = createNetServer((socket) => {
+    tentatives++;
+    socket.destroy();
+  });
+  await new Promise((ok) => serveur.listen(0, '127.0.0.1', ok));
+  return {
+    url: `ws://127.0.0.1:${serveur.address().port}`,
+    get tentatives() {
+      return tentatives;
+    },
+    fermer: () => new Promise((ok) => serveur.close(() => ok())),
   };
 }
 
@@ -79,32 +110,42 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   console.log(`Relais local : ${relais.url}`);
 }
 
-// Une passerelle vers le relais, que les tests coupent et rétablissent : c'est le réseau d'un téléphone.
+// Une passerelle vers un relais, que les tests coupent et rétablissent : c'est le réseau d'un
+// téléphone. Elle n'accepte la connexion qu'une fois le relais joint, comme un vrai réseau :
+// un relais tombé derrière elle reste injoignable, au lieu de s'ouvrir puis se fermer aussitôt.
 export async function lancerPasserelle(vers) {
-  const serveur = new WebSocketServer({ host: '127.0.0.1', port: 0 });
-  await new Promise((ok) => serveur.on('listening', ok));
+  const http = createServer();
+  const serveur = new WebSocketServer({ noServer: true });
+  await new Promise((ok) => http.listen(0, '127.0.0.1', ok));
   let coupee = false;
   const liaisons = new Set();
-  serveur.on('connection', async (client) => {
-    if (coupee) return client.terminate();
-    const { WebSocket } = await import('ws');
+  http.on('upgrade', (requete, socket, tete) => {
+    if (coupee) return socket.destroy();
     const relais = new WebSocket(vers);
-    const enAttente = [];
-    const liaison = { client, relais };
-    liaisons.add(liaison);
-    relais.on('open', () => enAttente.splice(0).forEach((m) => relais.send(m)));
-    relais.on('message', (m) => client.readyState === 1 && client.send(m.toString()));
-    client.on('message', (m) => (relais.readyState === 1 ? relais.send(m.toString()) : enAttente.push(m.toString())));
-    const fermer = () => {
-      liaisons.delete(liaison);
-      client.terminate();
-      relais.terminate();
-    };
-    client.on('close', fermer);
-    relais.on('close', fermer);
+    relais.on('error', () => socket.destroy());
+    relais.once('open', () => {
+      if (coupee) {
+        relais.terminate();
+        return socket.destroy();
+      }
+      serveur.handleUpgrade(requete, socket, tete, (client) => {
+        const liaison = { client, relais };
+        liaisons.add(liaison);
+        client.on('error', () => {});
+        relais.on('message', (m) => client.readyState === 1 && client.send(m.toString()));
+        client.on('message', (m) => relais.readyState === 1 && relais.send(m.toString()));
+        const fermer = () => {
+          liaisons.delete(liaison);
+          client.terminate();
+          relais.terminate();
+        };
+        client.on('close', fermer);
+        relais.on('close', fermer);
+      });
+    });
   });
   return {
-    url: `ws://127.0.0.1:${serveur.address().port}`,
+    url: `ws://127.0.0.1:${http.address().port}`,
     couper: () => {
       coupee = true;
       for (const l of liaisons) {
@@ -116,8 +157,12 @@ export async function lancerPasserelle(vers) {
       coupee = false;
     },
     fermer: () => new Promise((ok) => {
-      for (const c of serveur.clients) c.terminate();
-      serveur.close(ok);
+      for (const l of liaisons) {
+        l.client.terminate();
+        l.relais.terminate();
+      }
+      http.closeAllConnections();
+      http.close(ok);
     }),
   };
 }

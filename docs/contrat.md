@@ -285,7 +285,10 @@ données possible ». Pour l'appel :
 - le secret de l'appel vit sur les appareils du formateur jusqu'à la
   clôture, puis dans la feuille ;
 - la feuille vit chez le centre, ou chez le chef, de 5 à 10 ans. Chez les
-  autres, jusqu'à la fermeture de la classe.
+  autres, jusqu'à la fermeture de la classe ;
+- un envoi qu'aucun relais n'a encore accepté vit sur l'appareil jusqu'à ce
+  qu'un relais l'accepte, au plus jusqu'à l'expiration de son événement :
+  7 jours pour une lettre, 30 pour la porte.
 
 ## L'événement Nostr
 
@@ -322,8 +325,11 @@ part jamais vers le serveur du site.
 
 Les clés de stockage du prototype commencent par `opl_proto_`, suivies du
 nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presence`,
-`classe-de-la-salle`, `accueil-propose` et `relais`. Elles disparaîtront
-avec lui.
+`classe-de-la-salle`, `accueil-propose`, `relais` et `envois`. Elles
+disparaîtront avec lui. `relais` porte la liste des relais,
+`{"principaux": [...], "secours": [...]}` ; seuls les tests l'écrivent, et
+sans elle l'app prend la liste par défaut. `envois` porte les événements
+Nostr qu'aucun relais n'a encore acceptés, en texte.
 
 Le service worker garde le site dans une réserve nommée `opn-link-` suivi de
 l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.

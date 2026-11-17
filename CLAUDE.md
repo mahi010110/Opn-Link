@@ -12,7 +12,8 @@ Le prototype de l'appel a commencé le même jour, avec le feu vert du
 mainteneur. Le cœur en Rust est dans `coeur/`, avec ses tests. Le site est
 dans `site/`. Le 17 novembre 2026, on y crée une classe, on la rejoint, on
 accepte les apprenants, puis on fait l'appel : le scénario se joue de bout
-en bout à huit appareils. Les formats
+en bout à huit appareils. Le site passe par les relais publics de
+`docs/architecture.md`, avec ceux de secours. Les formats
 sont dans `docs/contrat.md`. Ce qui reste ouvert est dans
 `docs/questions-ouvertes.md`, et ce qui s'est décidé jour après jour dans
 `docs/carnet.md`.

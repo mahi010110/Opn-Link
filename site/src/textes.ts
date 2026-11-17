@@ -21,6 +21,8 @@ export function phrase(code: string, formateur = 'ton formateur'): string {
       return 'Ce code mène à deux classes. Demande à ton formateur le lien de la classe.';
     case 'champ-invalide':
       return 'Écris-le en toutes lettres.';
+    case 'sans-reseau':
+      return 'Pas de réseau. Je cherche la classe dès qu’il revient.';
     default:
       return `Ça n’a pas marché. Réessaie, ou montre ton écran à ${formateur}.`;
   }

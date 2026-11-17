@@ -170,6 +170,41 @@ maintenant que chaque contenu est scellé ou chiffré, et qu'aucun nom complet
 ne s'y lit. Une copie de la porte publiée exprès en clair le fait bien
 échouer.
 
+Fait ensuite le 17 novembre 2026, les relais publics :
+
+- l'app passe par les relais de [architecture.md](architecture.md), partie
+  « Les relais par défaut » : nostr.sathoarder.com et nos.lol, puis
+  nostr-relay.corb.net et nostr-01.yakihonne.com tant que moins de deux
+  principaux répondent ;
+- un relais qui refuse un message est écarté dix minutes, sur l'appareil ;
+- ce qu'aucun relais n'a accepté se garde sur l'appareil (`envois`), et
+  repart dès qu'un relais répond, même après un rechargement de la page ;
+- un relais qui se connecte reçoit ce qui est parti pendant la session et
+  qu'il n'a pas : la porte publiée avant l'ouverture du secours y arrive
+  aussi ;
+- une recherche attend chaque relais en service, six secondes au plus. Un
+  relais qui répond vite sans rien ne fait plus conclure « aucune classe »
+  avant celui qui a la porte. Si aucun ne répond, l'écran dit « Pas de
+  réseau. Je cherche la classe dès qu'il revient. », et la recherche
+  reprend toute seule.
+
+Le scénario donne à chaque appareil deux principaux, dont un qui refuse
+toute écriture, et deux secours, dont un qui ne répond pas. Le principal qui
+marche tombe juste après l'invitation : tout le reste passe par le secours.
+Noah ouvre le lien sans réseau, puis le réseau revient. Inès recharge son
+téléphone pendant qu'elle n'a pas de réseau, et sa présence part au retour.
+À la fin, la liste par défaut se vérifie sans toucher au réseau : Playwright
+tient le rôle des quatre relais publics, et nos.lol refuse. Les défauts posés
+exprès dans le client doivent faire échouer le scénario
+(`site/tests/classe.mjs`) : un relais qui refuse et n'est pas écarté, rien de
+renvoyé à la connexion, rien de gardé sur l'appareil, les secours toujours
+ouverts, une recherche qui conclut trop tôt, un relais mort retenté en
+boucle.
+
+Une limite reste : un message parti seulement par les secours n'arrive à un
+appareil resté sur les principaux que si celui qui l'a envoyé retrouve un
+principal pendant qu'il a l'app ouverte.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -183,7 +218,10 @@ on construit directement la première version complète
    plusieurs classes et « Mes cours », redemander l'écran d'accueil avant plus
    de sept jours sans cours, refaire l'invitation.
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
-   relais publics, l'écran d'entrée de chacun.
+   relais publics, l'écran d'entrée de chacun. Il passe avant la fin du 1 :
+   sans les relais publics, rien ne marchait hors des tests. Les relais
+   publics sont faits le 17 novembre 2026. Reste, dans cet ordre : l'appel
+   annoncé sur le fil, la caméra, l'écran d'entrée de chacun.
 3. Les annonces et les messages privés.
 4. Les absences, et la page du tuteur.
 5. Les documents à signer, la feuille exportée en PDF et le registre
@@ -249,9 +287,9 @@ node outils/planches.mjs                        # les captures en planches
    partie 4).
 
 Les relais publics et l'app pour ordinateur viennent après. Pendant les
-tests, les appareils se parlent par un petit relais Nostr lancé en local. Il
-n'existe pas encore : `mesures/relais.mjs` mesure les relais publics, il ne
-sert pas de relais.
+tests, les appareils se parlent par de petits relais Nostr lancés en local
+(`site/outils/relais.mjs`). `mesures/relais.mjs`, lui, mesure les relais
+publics.
 
 ## Les choix du prototype, à valider
 
@@ -295,6 +333,19 @@ Pour rejoindre une classe (17 novembre 2026) :
 - en attendant « relier un appareil », le téléphone et l'ordinateur du
   formateur ont les mêmes clés. C'est ainsi que l'ordinateur reçoit l'état de
   la classe et montre la salle.
+
+Pour les relais (17 novembre 2026) :
+
+- les relais de secours ne servent que tant que moins de deux principaux
+  répondent. Ils se referment quand deux principaux répondent de nouveau ;
+- un relais qui refuse un message est écarté dix minutes, sur l'appareil
+  seulement ;
+- une connexion qui ne s'ouvre pas en huit secondes est abandonnée, et
+  retentée trois secondes plus tard ;
+- une recherche attend six secondes au plus ;
+- l'appareil garde au plus 300 envois en mémoire pour les relais qui se
+  connectent plus tard. Ce qu'aucun relais n'a accepté n'est jamais écarté
+  avant son expiration.
 
 ## Ce qu'il tranche
 
