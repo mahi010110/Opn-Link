@@ -454,3 +454,8 @@ refusés.
   d'OpenContact pour ses groupes « sur demande ». Les autres choix sont dans
   [prototype.md](prototype.md), partie « Les choix du prototype, à
   valider ».
+- Le site devient installable et marche sans réseau une fois ouvert : un
+  service worker, un manifeste et une icône tirée du matériel. Après la
+  première présence signée, l'app propose une fois de la garder sur l'écran
+  d'accueil, comme le dit la conception. L'icône est un choix de Fable 5, à
+  valider.

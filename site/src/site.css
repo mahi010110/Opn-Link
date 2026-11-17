@@ -40,3 +40,9 @@ button.rangee {
 button.rangee:first-child {
   border-top: 0;
 }
+
+/* Le focus posé sur un titre à l'ouverture d'un écran sert aux lecteurs d'écran. Un titre ne se
+   touche pas : pas de contour. Tout ce qui se touche garde le sien. */
+[tabindex="-1"]:focus {
+  outline: none;
+}

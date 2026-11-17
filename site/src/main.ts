@@ -12,6 +12,8 @@ const suivreTheme = () => (document.documentElement.dataset.theme = theme.matche
 theme.addEventListener('change', suivreTheme);
 suivreTheme();
 
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
 chargerCoeur().then((coeur) => {
   const ctx = { coeur, relais: new Relais(adresseDuRelais()), moi: clesDeLAppareil(coeur) };
   const lien = lireLien(location.hash);

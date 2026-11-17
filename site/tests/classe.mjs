@@ -8,7 +8,7 @@
 
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
@@ -56,8 +56,10 @@ const adresses = new Set();
 const clesDAwa = new coeur.Appareil().secrets();
 const pages = {};
 
-async function appareil(nom, options, { url = '/index.html', cles, relaisUrl = relais.url } = {}) {
-  const contexte = await navigateur.newContext({ ...options, locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
+
+async function appareil(nom, options, { url = '/index.html', cles, relaisUrl = relais.url, userAgent } = {}) {
+  const contexte = await navigateur.newContext({ ...options, locale: 'fr-FR', timezoneId: 'Europe/Paris', ...(userAgent ? { userAgent } : {}) });
   await contexte.clock.setSystemTime(MARDI_MATIN);
   await contexte.addInitScript(
     ([nom, cles, relaisUrl]) => {
@@ -124,7 +126,7 @@ try {
   verifier(lien.length < 110, `le lien du QR reste court (${lien.length} caractères)`);
   const ancre = lien.split('#')[1];
 
-  const telLea = await appareil('lea', TEL, { url: `/index.html#${ancre}` });
+  const telLea = await appareil('lea', TEL, { url: `/index.html#${ancre}`, userAgent: IPHONE });
   await telLea.locator('#prenom').waitFor({ timeout: 15_000 });
   verifier(await telLea.getByText('BTS SIO 2').count() === 1 && await telLea.getByText('Centre Exemple · Awa Diallo, formateur').count() === 1, 'le lien ouvre la classe, déjà affichée');
   await telLea.fill('#prenom', 'Léa');
@@ -192,7 +194,11 @@ try {
   await telLea.click('[data-geste="signer"]');
   await taper(telLea, await codeDeLAppel());
   await telLea.getByText('Présence signée').waitFor({ timeout: 15_000 });
+  await telLea.getByText('Garde Opn-Link sur ton écran d’accueil').waitFor();
   await capturer(telLea, '14-apprenant-signee');
+  verifier(true, 'sur iPhone, après la première présence signée, l’app propose l’écran d’accueil, avec les trois pas');
+  await telLea.click('[data-geste="plusTard"]');
+  verifier(await telLea.getByText('Garde Opn-Link sur ton écran d’accueil').count() === 0, '« Plus tard » la fait disparaître');
 
   await telYanis.click('[data-geste="signer"]');
   await taper(telYanis, '000000');
@@ -230,11 +236,24 @@ try {
   verifier(/^[0-9a-f]{64}$/.test(coeur.verifier_journal(garde.journal)), 'la feuille close se vérifie seule');
   verifier(!garde.journal.includes('Kevin'), 'Kevin, laissé dehors, n’est pas sur la feuille');
   writeFileSync(join(CAPTURES, 'feuille.txt'), garde.journal);
+  copyFileSync(join(DIST, 'icone-512.png'), join(CAPTURES, '19-icone.png'));
 
   verifier(relais.refuses.length === 0, `le relais a accepté chaque événement signé par le cœur (${relais.gardes.length} événements)`);
+  // Un contenu chiffré est du base64 : trois lettres comme « Awa » y tombent par hasard. On vérifie
+  // donc que chaque contenu est une lettre scellée ou une porte chiffrée, et qu'aucun nom complet,
+  // espace compris, n'apparaît nulle part.
   const surLeRelais = JSON.stringify(relais.gardes);
-  verifier([...NOMS, 'Awa', 'Diallo', 'BTS SIO 2', 'Centre Exemple'].every((n) => !surLeRelais.includes(n)), 'rien ne passe en clair sur le relais : ni un nom, ni la classe');
+  const enClair = ['Awa Diallo', 'Léa Martin', 'Yanis Haddad', 'Inès Roux', 'Noah Petit', 'Kevin Intrus', 'BTS SIO 2', 'Centre Exemple'].filter((n) => surLeRelais.includes(n));
+  const nonChiffres = relais.gardes.filter((e) => !/^OP[BC]1\.[A-Za-z0-9_-]+$/.test(e.content));
+  verifier(enClair.length === 0 && nonChiffres.length === 0, `rien ne passe en clair sur le relais : chaque contenu est scellé ou chiffré, et aucun nom ne s'y lit (${enClair.join(', ') || 'aucun'})`);
   verifier([...adresses].every((h) => h.startsWith('127.0.0.1')), `aucune autre adresse contactée (${[...adresses].join(', ')})`);
+
+  await telLea.evaluate(() => navigator.serviceWorker.ready.then(() => true));
+  await pages.lea.contexte.setOffline(true);
+  await telLea.reload();
+  await telLea.getByText('Présence signée').waitFor({ timeout: 15_000 });
+  verifier(await telLea.getByText('Garde Opn-Link sur ton écran d’accueil').count() === 0, 'sans réseau, le site se rouvre depuis l’appareil, et l’écran d’accueil ne se redemande pas');
+  await pages.lea.contexte.setOffline(false);
 
   for (const page of [tel, telLea, telYanis]) await page.emulateMedia({ colorScheme: 'dark' });
   await capturer(tel, '17-formateur-clos-sombre');

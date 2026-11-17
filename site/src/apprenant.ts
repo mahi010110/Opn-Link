@@ -6,7 +6,7 @@ import { type ClasseGardee, classes, ecrire, garderClasse, lire, oublierClasse }
 import { entree } from './routes';
 import { envoyer, recevoir } from './lettres';
 import { phrase } from './textes';
-import { afficher, dateIso, demiJournee, esc, heure, horaire, ic, jour } from './vue';
+import { afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
 
 interface Garde {
   seance: string;
@@ -92,7 +92,38 @@ export function apprenant(ctx: Contexte): void {
     rendre();
   };
 
+  // Demandé une fois, juste après la première présence signée, avec la raison (conception, partie 4).
+  const proposerLAccueil = () => !surLEcranDAccueil() && !lire<number>('accueil-propose') && (surIPhone() || installable());
+  const accueil = () => {
+    if (surIPhone()) {
+      return `<section class="fen"><header class="barre"><h2 class="barre-titre">Sur cet iPhone</h2></header><div class="fen-corps">
+        <h3 class="gros">Garde Opn-Link sur ton écran d’accueil</h3>
+        <p class="lu">Sinon, l’iPhone peut effacer tes données après 7 jours sans visite.</p>
+        <ol class="pas">
+          <li><span class="mono">1</span><span>Touche <b>Partager</b> ${ic('upload')}, en bas de l’écran</span></li>
+          <li><span class="mono">2</span><span><b>Sur l’écran d’accueil</b></span></li>
+          <li><span class="mono">3</span><span><b>Ajouter</b></span></li>
+        </ol>
+        <div class="note-gestes"><button class="btn" data-geste="plusTard">Plus tard</button></div>
+      </div></section>`;
+    }
+    return `<section class="fen"><header class="barre"><h2 class="barre-titre">Sur ce téléphone</h2></header><div class="fen-corps">
+      <h3 class="gros">Garde Opn-Link sur ton écran d’accueil</h3>
+      <p class="lu">Tu le retrouves d’un geste, même sans réseau.</p>
+      <div class="note-gestes"><button class="btn" data-geste="plusTard">Plus tard</button></div>
+    </div></section>`;
+  };
+
   const gestes = {
+    plusTard: () => {
+      ecrire('accueil-propose', Date.now());
+      rendre();
+    },
+    installer: async () => {
+      await installer();
+      ecrire('accueil-propose', Date.now());
+      rendre();
+    },
     signer: () => {
       vue = { ecran: 'signer', chiffres: '' };
       rendre();
@@ -117,15 +148,20 @@ export function apprenant(ctx: Contexte): void {
     const moment = `${demi() === 'matin' ? 'Matin' : 'Après-midi'}, ${horaire(debut)} à ${horaire(fin)} · ${esc(formateur())}`;
     let reponse: string;
     let touche = '';
+    let fenetre = '';
     if (fois?.recu) {
       reponse = `${ic('checkbox-on', 'ic-32')}<div><h2 class="tres-gros">Présence signée</h2><p class="mono">${heure(fois.recu.quand)} · reçue par ${esc(fois.recu.par)}</p></div>`;
+      if (proposerLAccueil()) {
+        fenetre = accueil();
+        if (!surIPhone()) touche = `<div class="gestes"><button class="touche" data-geste="installer">${ic('download', 'ic-24')}<span>Installer</span></button></div>`;
+      }
     } else if (fois) {
       reponse = `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Présence envoyée</h2><p class="mono">${heure(fois.signee)} · ${esc(formateur())} ne l’a pas encore reçue</p></div>`;
     } else {
       reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">Ta présence</h2><p class="mono">${moment}</p></div>`;
       touche = `<div class="gestes"><button class="touche" data-geste="signer">${ic('qr-code', 'ic-24')}<span>Signer ma présence</span></button></div>`;
     }
-    afficher('tel', 'Aujourd’hui', `${barre()}${MENU}<main class="page"><section class="reponse">${reponse}</section></main><footer class="bas">${touche}${faits(relais)}</footer>`, gestes);
+    afficher('tel', 'Aujourd’hui', `${barre()}${MENU}<main class="page"><section class="reponse">${reponse}</section>${fenetre}</main><footer class="bas">${touche}${faits(relais)}</footer>`, gestes);
   };
 
   const ecranSigner = (v: Extract<Vue, { ecran: 'signer' }>) => {

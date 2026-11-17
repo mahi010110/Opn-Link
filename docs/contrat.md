@@ -322,7 +322,11 @@ part jamais vers le serveur du site.
 
 Les clés de stockage du prototype commencent par `opl_proto_`, suivies du
 nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presence`,
-`classe-de-la-salle` et `relais`. Elles disparaîtront avec lui.
+`classe-de-la-salle`, `accueil-propose` et `relais`. Elles disparaîtront
+avec lui.
+
+Le service worker garde le site dans une réserve nommée `opn-link-` suivi de
+l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.
 
 ## Ce qui n'est pas encore écrit
 

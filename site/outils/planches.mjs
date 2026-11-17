@@ -34,15 +34,16 @@ const PLANCHES = [
   {
     nom: 'planche-2-appel',
     titre: 'L’appel, avec les vrais membres',
-    sous: 'Léa signe, Yanis se trompe puis signe, Inès n’a plus de réseau et tend son QR, Noah est absent. Le réseau revenu, Inès reçoit la réponse.',
+    sous: 'Léa signe, Yanis se trompe puis signe, Inès n’a plus de réseau et tend son QR, Noah est absent. Le réseau revenu, Inès reçoit la réponse. Sans réseau, le site se rouvre depuis le téléphone.',
     colonnes: 4,
     largeur: 1360,
     images: [
-      ['14-apprenant-signee', 'Léa a signé', 'Reçue par Awa Diallo.'],
+      ['14-apprenant-signee', 'Léa a signé', 'Reçue par Awa Diallo. Sur iPhone, l’app propose une fois de la garder sur l’écran d’accueil, avec les trois pas.'],
       ['15-apprenant-sans-reseau', 'Inès n’a plus de réseau', 'Au bout de dix secondes, le QR de sa présence s’affiche seul.'],
       ['16-formateur-clos', 'Clos et signé', 'Noah est absent. Kevin n’est pas sur la feuille.'],
       ['17-formateur-clos-sombre', 'En sombre'],
       ['18-apprenant-signee-sombre', 'En sombre'],
+      ['19-icone', 'L’icône', 'Le pictogramme « lien » du matériel, clair sur l’accent.'],
     ],
   },
   {

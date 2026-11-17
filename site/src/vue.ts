@@ -59,3 +59,20 @@ export const paves = (fait: number, total: number): string =>
 
 /// Le code d'une classe tel qu'on l'affiche : trois blocs de cinq, en majuscules.
 export const codeAffiche = (code: string): string => code.replace(/[\s-]/g, '').toUpperCase().replace(/(.{5})(?=.)/g, '$1 ');
+
+/// Ajouter le site à l'écran d'accueil. Sur Android, le navigateur le propose par un événement
+/// qu'on garde pour le bon moment. Sur iPhone, il faut passer par Safari.
+let invitationAInstaller: (Event & { prompt?: () => Promise<void> }) | undefined;
+addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  invitationAInstaller = e;
+});
+
+export const surLEcranDAccueil = (): boolean =>
+  matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+export const surIPhone = (): boolean => /iPhone|iPad|iPod/.test(navigator.userAgent);
+export const installable = (): boolean => invitationAInstaller !== undefined;
+export async function installer(): Promise<void> {
+  await invitationAInstaller?.prompt?.();
+  invitationAInstaller = undefined;
+}

@@ -149,6 +149,27 @@ par un champ de texte qui lit « 9 h 30 » comme « 930 » ; et le code de la
 classe était gardé sous deux formes, si bien que le formateur ne voyait pas
 les demandes.
 
+Fait ensuite le 17 novembre 2026, le site devient installable et marche sans
+réseau une fois ouvert :
+
+- un service worker garde le site sur l'appareil : le cœur, l'interface, les
+  styles, les polices des premiers écrans et les icônes que le code emploie,
+  253 Ko en 37 fichiers. Sa version est l'empreinte de ces fichiers : elle
+  change dès que l'un d'eux change ;
+- un manifeste, et l'icône : le pictogramme « lien » du matériel, clair sur
+  l'accent, rendu en PNG à la construction. Ses couleurs viennent des jetons ;
+- après la première présence signée, l'app propose une fois de la garder sur
+  l'écran d'accueil : les trois pas de Safari sur iPhone, la touche
+  « Installer » ailleurs, quand le navigateur le permet ;
+- le scénario recharge le téléphone de Léa sans réseau : le site se rouvre
+  depuis l'appareil, avec sa présence signée.
+
+Le contrôle « rien en clair sur le relais » cherchait des prénoms dans du
+base64, où trois lettres comme « Awa » tombent par hasard. Il vérifie
+maintenant que chaque contenu est scellé ou chiffré, et qu'aucun nom complet
+ne s'y lit. Une copie de la porte publiée exprès en clair le fait bien
+échouer.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -157,9 +178,10 @@ on construit directement la première version complète
 
 1. Rejoindre une classe et être accepté, les responsables et les réglages.
    Fait en partie le 17 novembre 2026 : créer, inviter, rejoindre, accepter,
-   les membres. Reste : nommer un adjoint et passer la main, les réglages du
-   chef, corriger son nom, plusieurs classes et « Mes cours », l'ajout à
-   l'écran d'accueil de l'iPhone, refaire l'invitation.
+   les membres, et le site installable qui marche sans réseau. Reste : nommer
+   un adjoint et passer la main, les réglages du chef, corriger son nom,
+   plusieurs classes et « Mes cours », redemander l'écran d'accueil avant plus
+   de sept jours sans cours, refaire l'invitation.
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
    relais publics, l'écran d'entrée de chacun.
 3. Les annonces et les messages privés.
@@ -266,6 +288,10 @@ Pour rejoindre une classe (17 novembre 2026) :
 - une classe sans apprenant a pour touche « Inviter des apprenants » ;
 - les heures se tapent comme du texte, « 9 h 30 », plutôt qu'avec le champ
   d'heure du téléphone, dont l'affichage change d'un appareil à l'autre ;
+- l'icône de l'app est le pictogramme « lien » du matériel, clair sur
+  l'accent ;
+- le service worker ne garde d'avance que les polices des premiers écrans.
+  Les autres se gardent la première fois qu'un écran s'en sert ;
 - en attendant « relier un appareil », le téléphone et l'ordinateur du
   formateur ont les mêmes clés. C'est ainsi que l'ordinateur reçoit l'état de
   la classe et montre la salle.
