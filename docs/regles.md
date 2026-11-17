@@ -63,7 +63,8 @@ n'est pas dans ce fichier.
 ## 2. L'interface
 
 - Chaque interface s'ouvre sur la réponse à la question de sa personne.
-  Vérifié par le test des cinq secondes, sur les cinq écrans d'entrée.
+  Vérifié sur les captures des cinq écrans d'entrée : la réponse est le
+  premier texte sous la barre, et le plus gros.
 - Une seule touche pleine par écran, en bas. Sur un écran d'entrée, elle
   n'existe que si quelque chose est dû. Vérifié en comptant les boutons
   pleins de chaque écran.
@@ -146,7 +147,7 @@ La référence est le RGAA, qui suit le WCAG 2.2 au niveau AA.
   fait a un bouton qu'on voit.
 - Sur l'écran de la salle, un texte fait 4 mm de haut par mètre de salle, le
   QR fait un dixième de la distance, et il reste noir sur blanc dans les
-  deux thèmes. Mesuré sur les captures, puis dans une vraie salle.
+  deux thèmes. Mesuré sur les captures.
 - Les objets réagissent tout de suite. `prefers-reduced-motion` coupe tout
   mouvement.
 
@@ -170,9 +171,10 @@ La référence est le RGAA, qui suit le WCAG 2.2 au niveau AA.
   clair et en sombre, puis à 200 % en 360 px.
 - Un contrôle neuf se prouve : on casse exprès ce qu'il garde, et il doit
   échouer.
-- Ce qui dépend d'un vrai appareil ou d'un vrai lieu s'essaie sur place
-  avant qu'on compte dessus : un iPhone, un vieux Android, une salle, le
-  Wi-Fi d'un centre.
+- Ce qui dépend d'un vrai appareil ou d'un vrai lieu a un chemin de
+  secours : le code de six chiffres sans caméra, le QR sans réseau. Il n'y a
+  pas d'essai sur place avant la sortie (17 novembre 2026). Vérifié par les
+  scénarios qui jouent ces chemins.
 - Le site de l'apprenant pèse au plus 300 Ko compressés au premier
   chargement. Mesuré à chaque livraison.
 

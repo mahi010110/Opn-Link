@@ -427,3 +427,18 @@ refusés.
 - Le mainteneur continue dans une autre discussion. Le prototype est mis sur
   `main` avec son accord, et [prototype.md](prototype.md) dit comment le
   reprendre dans un conteneur neuf.
+
+## 17 novembre 2026 : la première version, sans bêta
+
+- Fable 5 propose de rendre le prototype utilisable par une vraie classe,
+  pour l'essayer avec un formateur volontaire. Le mainteneur : « Non non je
+  veux pas de bêta ou je sais pas quoi ou de teste. »
+- Décidé : ni bêta, ni essai avec une classe ou des usagers avant la sortie.
+  On construit directement la première version complète, dans l'ordre de
+  [prototype.md](prototype.md), partie « La suite ».
+- Les tests automatiques restent : ils vérifient le code, sans personne
+  ([regles.md](regles.md), partie 4).
+- Ce qui ne se mesure que sur place se découvrira à la première vraie
+  utilisation. Les règles qui demandaient un essai sur place, et le test
+  des cinq secondes, sont remplacées par des vérifications sur les captures
+  et par les chemins de secours.

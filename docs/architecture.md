@@ -328,13 +328,16 @@ prototype.
 - La licence est libre dès le début (MIT ou Apache-2.0), pour que d'autres
   puissent participer.
 
-## Les risques à tester tôt
+## Les risques
+
+Sans bêta ni essai avant la sortie (17 novembre 2026), ceux qui dépendent
+d'un vrai centre se découvriront à la première vraie utilisation.
 
 - Le Wi-Fi des centres de formation bloque souvent les connexions directes
   entre appareils (voir
   [identite_et_multijoueur.md](recherche/ecosysteme/identite_et_multijoueur.md),
-  partie 2). La première version passe donc par les relais, et doit être
-  essayée dans une vraie classe le plus tôt possible.
+  partie 2). La première version passe donc par les relais, et l'appel a sa
+  solution par QR.
 - Tous les téléphones d'un centre sortent par la même adresse Internet, et
   les relais publics peuvent limiter ce trafic.
 - Un message sur un relais fait au plus 64 Ko environ, et reste 30 jours au

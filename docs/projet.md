@@ -342,10 +342,10 @@ lien vers une salle Jitsi.
 - Une visio de toute la classe en direct entre appareils ne marche pas
   au-delà de 4 ou 5 personnes.
 - Tous les téléphones d'un centre sortent par la même adresse Internet, et
-  les relais publics risquent de limiter ce trafic. À tester tôt.
+  les relais publics risquent de limiter ce trafic.
 - Le Wi-Fi des centres bloque souvent les connexions directes entre
   appareils. La première version passe donc par les relais, et l'appel a sa
-  solution par QR. À tester tôt, dans une vraie classe.
+  solution par QR.
 - La signature d'Opn-Link est une signature électronique simple. Seule la
   signature « qualifiée » est présumée fiable devant un juge : avec une
   signature simple, c'est au centre de prouver. Le dossier de preuve, la

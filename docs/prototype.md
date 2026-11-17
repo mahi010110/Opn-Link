@@ -32,7 +32,7 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    - `cd ../site && npm run construire && npm run appel` : le scénario,
      sans aucun échec ;
    - `node outils/planches.mjs` : les captures en planches, à regarder.
-4. Reprendre la suite, dans l'ordre de « Reste à faire » plus bas. Les
+4. Reprendre la suite, dans l'ordre de « La suite » plus bas. Les
    questions qui attendent le mainteneur sont dans
    [questions-ouvertes.md](questions-ouvertes.md), partie « Le prototype ».
 
@@ -103,17 +103,32 @@ Ce que les captures ont montré, et qui est corrigé : les lignes de la liste
 du formateur étaient centrées et encadrées comme des boutons, et l'heure de
 l'après-midi était mal lue, ce qui affichait « Après-midi » à 9 h.
 
-Reste à faire :
+## La suite : la première version complète
 
-1. lire un QR avec la caméra (`rqrr` et `getUserMedia`), essayé avec la
-   caméra simulée de Chromium ;
-2. annoncer l'appel ouvert sur le fil de la classe, pour que la barre de
-   l'apprenant passe au marine ;
-3. les relais publics, plusieurs à la fois ;
-4. le texte agrandi à 200 %, la tablette et l'ordinateur du formateur ;
-5. WebKit et Firefox ;
-6. rejoindre une classe, à la place de la configuration posée par les
-   tests.
+Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
+on construit directement la première version complète
+([projet.md](projet.md), partie 5), dans cet ordre.
+
+1. Rejoindre une classe et être accepté, les responsables et les réglages.
+2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
+   relais publics, l'écran d'entrée de chacun.
+3. Les annonces et les messages privés.
+4. Les absences, et la page du tuteur.
+5. Les documents à signer, la feuille exportée en PDF et le registre
+   public.
+6. Les demandes suivies et la documentation partagée.
+7. Le suivi de la recherche et le tableau de bord, dans l'app pour
+   ordinateur.
+8. Plusieurs appareils et la phrase de secours.
+9. Fermer la classe.
+
+Chaque morceau se livre comme l'appel : le cœur et ses tests, puis les
+écrans des maquettes, puis le scénario joué à plusieurs appareils et ses
+captures, montrées au mainteneur avant `main`.
+
+À chaque morceau : le texte agrandi à 200 %, la tablette et l'ordinateur, et
+WebKit et Firefox dès qu'ils sont installés. La caméra s'essaie avec la
+caméra simulée de Chromium.
 
 ## Lancer les tests
 
@@ -193,8 +208,7 @@ et attendent l'avis du mainteneur
   fenêtres.
 - L'interface en TypeScript, avec React ou sans. Sans, elle pèse 6 Ko
   compressés pour trois interfaces : React n'a pas été nécessaire.
-- La durée de validité du code de 6 chiffres, vue à l'écran. Le temps qu'il
-  faut pour le taper dans une vraie salle se mesure sur place.
+- La durée de validité du code de 6 chiffres, vue à l'écran : une minute.
 
 ## Ce qui est venu avec le premier code
 

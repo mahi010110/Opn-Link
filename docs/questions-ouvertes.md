@@ -17,8 +17,7 @@ Le cœur a demandé des choix que la doc ne fixait pas. Ils sont listés dans
 [prototype.md](prototype.md), partie « Les choix du prototype, à valider »,
 et décrits dans [contrat.md](contrat.md).
 
-Recommandation : les garder pour le prototype, et mesurer dans une vraie
-salle le temps qu'il faut pour taper le code, avant de figer la minute.
+Recommandation : les garder.
 
 ### React ou pas
 
@@ -33,8 +32,7 @@ simples, et revoir la question quand viendront les grilles du centre.
 Les formats du contrat sont en version 1, mais en brouillon. Une fois figés,
 ils ne changent plus de nom.
 
-Recommandation : les figer quand l'appel aura été joué dans une vraie
-classe, pas avant.
+Recommandation : les figer à la sortie de la première version.
 
 ## La conception
 
@@ -76,10 +74,12 @@ Tranché le 16 novembre 2026 : les règles de [regles.md](regles.md) sont
 validées (« Tout est bon pour moi »). Elles remplacent `exigences.md` et les
 six règles du `CLAUDE.md`.
 
-## À mesurer sur place
+## Ce qui ne se saura qu'à l'usage
 
-Rien de tout ça ne change les écrans. Ça change le code, et ça se mesure avec
-un vrai centre.
+Il n'y a ni bêta ni essai avec une classe avant la sortie (décision du
+17 novembre 2026). Ces points se découvriront à la première vraie
+utilisation. L'app a déjà ses chemins de secours : le code de six chiffres
+quand la caméra ne marche pas, le QR quand il n'y a pas de réseau.
 
 - Le Wi-Fi d'un vrai centre : ce qu'il bloque, et si deux appareils peuvent se
   parler en direct.
@@ -107,7 +107,6 @@ un vrai centre.
   sans chemin) se réglera au premier déploiement.
 - Vérifier que le nom est libre ailleurs : nom de domaine, INPI. Des noms
   proches comme « OpenLink » existent déjà.
-- Trouver un formateur et une classe pour tester tôt.
 - Faire valider la feuille de présence exportée par deux ou trois OPCO et un
   certificateur Qualiopi avant qu'un centre compte dessus pour être payé.
 - Signaler aux auteurs d'underskrift le bug de la signature ECDSA, si le

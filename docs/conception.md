@@ -644,7 +644,11 @@ Trois choix sont venus avec ces écrans, validés avec eux et reportés dans
 téléphone, le code pour relier un appareil vaut cinq minutes, et un seul
 appareil signe la présence.
 
-### Ce qui reste à essayer avant de coder ces écrans
+### Ce qui restait à essayer avant de coder ces écrans
+
+Abandonné le 17 novembre 2026 : le mainteneur ne veut ni bêta ni essai avant
+la sortie. Ces points se découvriront à l'usage, et les captures se font
+aussi avec WebKit et Firefox dès qu'ils sont installés.
 
 - Sur un vrai iPhone : le passage des données de Safari à l'icône (partie
   8, point 1). L'écran `apprenant-iphone` montre la demande, pas ce

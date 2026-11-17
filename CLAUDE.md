@@ -15,9 +15,11 @@ sont dans `docs/contrat.md`. Ce qui reste ouvert est dans
 `docs/questions-ouvertes.md`, et ce qui s'est décidé jour après jour dans
 `docs/carnet.md`.
 
-Pour reprendre dans une nouvelle discussion, lire d'abord
-`docs/prototype.md`, partie « Reprendre le travail » : préparer les outils,
-vérifier que tout passe, puis la suite, dans l'ordre.
+La suite est la première version complète, sans bêta ni essai avec une
+classe (décision du 17 novembre 2026). Pour reprendre dans une nouvelle
+discussion, lire d'abord `docs/prototype.md`, partie « Reprendre le
+travail » : préparer les outils, vérifier que tout passe, puis la suite,
+dans l'ordre.
 
 ## Comment on travaille
 
