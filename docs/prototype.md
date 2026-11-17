@@ -193,12 +193,17 @@ marche tombe juste après l'invitation : tout le reste passe par le secours.
 Noah ouvre le lien sans réseau, puis le réseau revient. Inès recharge son
 téléphone pendant qu'elle n'a pas de réseau, et sa présence part au retour.
 À la fin, la liste par défaut se vérifie sans toucher au réseau : Playwright
-tient le rôle des quatre relais publics, et nos.lol refuse. Les défauts posés
-exprès dans le client doivent faire échouer le scénario
+tient le rôle des quatre relais publics, et nos.lol refuse.
+
+Six défauts posés exprès dans le client font chacun échouer le scénario
 (`site/tests/classe.mjs`) : un relais qui refuse et n'est pas écarté, rien de
 renvoyé à la connexion, rien de gardé sur l'appareil, les secours toujours
 ouverts, une recherche qui conclut trop tôt, un relais mort retenté en
-boucle.
+boucle. Le dernier a été trouvé en relisant le code : un secours mort était
+retenté sans délai.
+
+Mesuré le même jour : l'interface pèse 12,4 Ko compressés, et le premier
+chargement chez un apprenant 250 Ko, sous le plafond de 300 Ko.
 
 Une limite reste : un message parti seulement par les secours n'arrive à un
 appareil resté sur les principaux que si celui qui l'a envoyé retrouve un

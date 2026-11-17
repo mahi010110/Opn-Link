@@ -287,6 +287,8 @@ try {
   const gardes = [...principal.gardes, ...secours.gardes];
   verifier(principal.refuses.length + secours.refuses.length === 0, `les relais ont accepté chaque événement signé par le cœur (${gardes.length} événements)`);
   verifier(secours.gardes.length - gardesAvantLaPanne > 20, `le principal tombé, tout est passé par le relais de secours (${secours.gardes.length - gardesAvantLaPanne} événements depuis)`);
+  // Neuf appareils au plus, une tentative toutes les trois secondes chacun : trois par seconde.
+  // Retenté sans attendre, Chromium freine lui-même, et on en mesure encore six.
   const parSeconde = mort.tentatives / ((Date.now() - debut) / 1000);
   verifier(mort.tentatives > 0 && parSeconde < 4, `le relais de secours mort est retenté toutes les trois secondes, pas plus (${mort.tentatives} tentatives, ${parSeconde.toFixed(1)} par seconde pour tous les appareils)`);
   const ecrivains = ferme.connexions.filter((c) => c.evenements > 0);
