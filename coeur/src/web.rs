@@ -3,6 +3,7 @@
 
 use wasm_bindgen::prelude::*;
 
+use crate::annonce::{AnnonceDeLAppel, EtatDeLAppel};
 use crate::appel::{Demi, IdSeance, Presence, Qr};
 use crate::classe::{Acceptation, CodeDeClasse, Membre};
 use crate::cles::{CleAppareil, ClePublique};
@@ -261,6 +262,35 @@ pub fn dechiffrer_du_fil(secret: &str, chiffre: &str) -> Result<String, Erreur> 
     String::from_utf8(SecretDuFil::lire(secret)?.dechiffrer(chiffre)?).map_err(|_| Erreur::LettreIllisible)
 }
 
+/// L'état de l'appel d'une demi-journée, tel qu'un responsable l'a annoncé sur le fil.
+#[wasm_bindgen(getter_with_clone)]
+pub struct AnnonceJs {
+    pub seance: String,
+    pub date: String,
+    /// `matin` ou `apres-midi`.
+    pub demi: String,
+    /// `ouvert` ou `clos`.
+    pub etat: String,
+    pub quand: f64,
+    /// La clé du responsable qui l'a signée.
+    pub par: String,
+}
+
+/// Relit une annonce de l'appel venue du fil, et vérifie qu'un des responsables donnés l'a signée.
+#[wasm_bindgen]
+pub fn lire_annonce_de_l_appel(code: &str, fil: &str, texte: &str, responsables: Vec<String>) -> Result<AnnonceJs, Erreur> {
+    let responsables = responsables.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
+    let a = AnnonceDeLAppel::lire(&SecretDuFil::lire(fil)?, &CodeDeClasse::lire(code)?.secrets(), texte, &responsables)?;
+    Ok(AnnonceJs {
+        seance: a.seance.texte().into(),
+        date: a.date,
+        demi: a.demi.texte().into(),
+        etat: a.etat.texte().into(),
+        quand: a.quand as f64,
+        par: a.par.texte(),
+    })
+}
+
 /// Une clé publique sous sa forme courte, pour la faire tenir dans un lien.
 #[wasm_bindgen]
 pub fn cle_courte(cle: &str) -> Result<String, Erreur> {
@@ -436,6 +466,14 @@ impl Appel {
 
     pub fn close(&self) -> bool {
         self.feuille.close()
+    }
+
+    /// Ce que le formateur dit à la classe sur le fil : l'appel est ouvert, ou clos.
+    pub fn annonce(&self, fil: &str, maintenant: f64) -> Result<String, Erreur> {
+        let etat = if self.feuille.close() { EtatDeLAppel::Clos } else { EtatDeLAppel::Ouvert };
+        let fil = SecretDuFil::lire(fil)?;
+        let f = &self.feuille;
+        AnnonceDeLAppel::signer(&fil, f.seance(), f.date(), f.demi(), etat, &self.formateur, heure(maintenant))?.texte(&fil)
     }
 
     pub fn cloture_a(&self) -> Option<f64> {

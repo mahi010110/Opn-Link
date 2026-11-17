@@ -235,6 +235,40 @@ Vecteurs : un secret de 32 octets valant `09` donne
 `coeur/tests/vecteurs/fil-chiffre-v1.txt` se déchiffre en
 « Lundi 23, salle B12. ».
 
+## L'annonce de l'appel
+
+Le responsable qui tient l'appel dit à la classe, sur le fil, que l'appel
+d'une demi-journée est ouvert, puis clos. Chaque membre a le secret du fil :
+l'annonce est donc signée, pour qu'un apprenant ne puisse pas clore l'appel
+sur le téléphone des autres.
+
+```
+opn-link·appel·v1
+<étiquette du fil>
+<séance>
+<date>
+<demi-journée>
+<état>
+<heure>
+<clé du responsable>
+<signature du responsable>
+```
+
+- La date s'écrit `2026-11-17`, la demi-journée `matin` ou `apres-midi`,
+  l'état `ouvert` ou `clos`.
+- Elle ne compte que signée par un responsable de la porte, pour ce fil, et
+  si la séance est bien celle de sa date et de sa demi-journée.
+- Pour une même séance, l'annonce la plus récente compte. Annuler une
+  clôture se dit par une nouvelle annonce `ouvert`.
+- L'apprenant signe sa présence pour la séance annoncée. Sans annonce, il
+  la calcule avec l'heure et les horaires de la porte.
+
+Elle voyage chiffrée par la clé du fil (`OPC1.`), dans un événement sous
+l'étiquette du fil, qui expire au bout d'un jour.
+
+Vecteur : `coeur/tests/vecteurs/appel-v1.txt`, signé par Awa pour le fil de
+secret `09` et la classe des autres vecteurs, le matin du 17 novembre 2026.
+
 ## La feuille de présence
 
 Un journal où l'on ne peut qu'ajouter. La première ligne vaut
@@ -288,7 +322,9 @@ données possible ». Pour l'appel :
   autres, jusqu'à la fermeture de la classe ;
 - un envoi qu'aucun relais n'a encore accepté vit sur l'appareil jusqu'à ce
   qu'un relais l'accepte, au plus jusqu'à l'expiration de son événement :
-  7 jours pour une lettre, 30 pour la porte.
+  7 jours pour une lettre, 30 pour la porte ;
+- l'annonce de l'appel reste un jour sur les relais. Sur le téléphone de
+  l'apprenant, celles du jour seulement.
 
 ## L'événement Nostr
 
@@ -325,11 +361,12 @@ part jamais vers le serveur du site.
 
 Les clés de stockage du prototype commencent par `opl_proto_`, suivies du
 nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presence`,
-`classe-de-la-salle`, `accueil-propose`, `relais` et `envois`. Elles
-disparaîtront avec lui. `relais` porte la liste des relais,
+`classe-de-la-salle`, `accueil-propose`, `relais`, `envois` et
+`annonces-appel`. Elles disparaîtront avec lui. `relais` porte la liste des relais,
 `{"principaux": [...], "secours": [...]}` ; seuls les tests l'écrivent, et
 sans elle l'app prend la liste par défaut. `envois` porte les événements
-Nostr qu'aucun relais n'a encore acceptés, en texte.
+Nostr qu'aucun relais n'a encore acceptés, en texte. `annonces-appel` porte
+les annonces de l'appel du jour, une par séance, déjà vérifiées.
 
 Le service worker garde le site dans une réserve nommée `opn-link-` suivi de
 l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.
@@ -337,6 +374,5 @@ l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.
 ## Ce qui n'est pas encore écrit
 
 - Les clés de stockage, dans le navigateur et dans l'app pour ordinateur.
-- L'annonce « l'appel est ouvert » sur le fil de la classe.
 - Tout ce qui n'est pas l'appel : les annonces, les messages, les documents,
   les demandes.

@@ -95,6 +95,7 @@ const DEMANDE: &str = include_str!("vecteurs/demande-v1.txt");
 const ACCEPTATION: &str = include_str!("vecteurs/acceptation-v1.txt");
 const FIL_CHIFFRE: &str = include_str!("vecteurs/fil-chiffre-v1.txt");
 const ETIQUETTE_DU_FIL: &str = "opl-fil-68e3771df5dddf4deb00bafc6ef946a7";
+const ANNONCE_DE_L_APPEL: &str = include_str!("vecteurs/appel-v1.txt");
 
 #[test]
 fn la_porte() {
@@ -127,4 +128,17 @@ fn le_fil() {
     let fil = SecretDuFil::depuis_octets([9u8; 32]);
     assert_eq!(fil.etiquette(), ETIQUETTE_DU_FIL);
     assert_eq!(fil.dechiffrer(FIL_CHIFFRE).unwrap(), "Lundi 23, salle B12.".as_bytes());
+}
+
+#[test]
+fn l_annonce_de_l_appel() {
+    let classe = CodeDeClasse::lire(CODE).unwrap().secrets();
+    let fil = SecretDuFil::depuis_octets([9u8; 32]);
+    let annonce = AnnonceDeLAppel::lire(&fil, &classe, ANNONCE_DE_L_APPEL, &[awa().publique()]).unwrap();
+    assert_eq!((annonce.seance.texte(), annonce.etat, annonce.quand), (SEANCE_MATIN, EtatDeLAppel::Ouvert, 1_763_366_460_000));
+    assert_eq!(annonce.texte(&fil).unwrap(), ANNONCE_DE_L_APPEL);
+    let seance = classe.seance("2026-11-17", Demi::Matin).unwrap();
+    let signee =
+        AnnonceDeLAppel::signer(&fil, &seance, "2026-11-17", Demi::Matin, EtatDeLAppel::Ouvert, &awa(), 1_763_366_460_000).unwrap();
+    assert_eq!(signee.texte(&fil).unwrap(), ANNONCE_DE_L_APPEL);
 }

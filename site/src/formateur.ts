@@ -4,7 +4,7 @@
 import type { Appel } from './coeur';
 import { type Contexte, faits, nomDe } from './contexte';
 import { type ClasseGardee, type Moi, classes, ecrire, garderClasse, lire } from './etat';
-import { envoyer, lienDeLaClasse, publierPorte, recevoir } from './lettres';
+import { annoncerLAppel, envoyer, lienDeLaClasse, publierPorte, recevoir } from './lettres';
 import { codeDe, phrase } from './textes';
 import { afficher, codeAffiche, dateIso, demiJournee, esc, heure, heureCourte, horaire, ic, jour, paves } from './vue';
 
@@ -46,6 +46,10 @@ export function formateur(ctx: Contexte): void {
     const [presents, inscrits] = appel.compte();
     envoyer(coeur, relais, moi.boite(), { v: 1, t: 'compte', seance: appel.seance(), presents, inscrits });
   };
+  // Les apprenants l'apprennent sur le fil : leur téléphone montre « L'appel est ouvert », puis clos.
+  const annoncer = () => {
+    if (appel && classe.fil) annoncerLAppel(coeur, relais, classe.fil, appel.annonce(classe.fil, Date.now()));
+  };
   const montrer = (quoi: 'rejoindre' | 'rien') => envoyer(coeur, relais, moi.boite(), { v: 1, t: 'montrer', code: classe.code, quoi });
 
   if (!classe.portePubliee || Date.now() - classe.portePubliee > UN_JOUR_MS) {
@@ -59,6 +63,7 @@ export function formateur(ctx: Contexte): void {
     appel = coeur.Appel.ouvrir(classe.code, dateIso(maintenant), demiJournee(maintenant, porte.apres_midi), moi, inscrits, maintenant);
     garderAppel();
     envoyer(coeur, relais, moi.boite(), { v: 1, t: 'appel', journal: appel.journal(), secret: appel.secret()! });
+    annoncer();
     vue = { ecran: 'cours' };
     rendre();
   };
@@ -166,6 +171,7 @@ export function formateur(ctx: Contexte): void {
       const [presents, absents] = appel.clore(Date.now());
       garderAppel();
       envoyer(coeur, relais, moi.boite(), { v: 1, t: 'clos', seance: appel.seance(), presents, absents, quand: Date.now() });
+      annoncer();
       rendre();
     },
     annuler: () => {
@@ -173,6 +179,7 @@ export function formateur(ctx: Contexte): void {
       appel.annuler_cloture(Date.now());
       garderAppel();
       envoyer(coeur, relais, moi.boite(), { v: 1, t: 'reouvert', seance: appel.seance() });
+      annoncer();
       versLaSalle();
       rendre();
     },

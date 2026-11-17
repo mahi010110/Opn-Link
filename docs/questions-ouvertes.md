@@ -20,7 +20,8 @@ prototype, à valider », et décrits dans [contrat.md](contrat.md). Ceux du
 que la porte, la demande laissée dehors sans réponse, le nom du formateur
 demandé à la création. Puis les relais : ceux de secours ne servent que tant
 que moins de deux principaux répondent, et un relais qui refuse est écarté
-dix minutes.
+dix minutes. Puis l'appel annoncé sur le fil : « Pas d'appel ouvert » avant
+l'appel, « Une absence » après, et la touche gardée sans réseau.
 
 Recommandation : les garder.
 

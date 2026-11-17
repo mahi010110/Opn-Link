@@ -1,10 +1,12 @@
 // Le téléphone de l'apprenant : attendre d'être accepté, puis signer sa présence.
+// Il apprend sur le fil de la classe que l'appel est ouvert, puis clos. Sans réseau, il ne peut pas
+// le savoir : la touche « Signer ma présence » reste là pendant les heures de la classe.
 // Sans réponse au bout de dix secondes, l'écran montre seul le QR à tendre au formateur.
 
 import { type Contexte, faits, nomDe } from './contexte';
 import { type ClasseGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
 import { entree } from './routes';
-import { envoyer, recevoir } from './lettres';
+import { ecouterLeFil, envoyer, recevoir } from './lettres';
 import { phrase } from './textes';
 import { afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
 
@@ -17,7 +19,19 @@ interface Garde {
 
 type Vue = { ecran: 'jour' } | { ecran: 'signer'; chiffres: string; erreur?: string } | { ecran: 'sans-reseau' };
 
+type Annonce = ReturnType<Contexte['coeur']['lire_annonce_de_l_appel']>;
+interface AnnonceGardee {
+  seance: string;
+  date: string;
+  demi: string;
+  etat: string;
+  quand: number;
+  par: string;
+}
+
 const SANS_REPONSE_MS = 10_000;
+// Le temps de joindre un relais au démarrage, avant de conclure qu'il n'y a pas de réseau.
+const HORS_LIGNE_MS = 5_000;
 const MENU = `<nav class="menu" aria-label="Entrées"><a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#">Moi</a></nav>`;
 
 export function apprenant(ctx: Contexte): void {
@@ -26,13 +40,46 @@ export function apprenant(ctx: Contexte): void {
   let porte = coeur.lire_porte(classe.code, classe.porte);
   let garde = lire<Garde>('presence');
   let vue: Vue = { ecran: 'jour' };
+  const demarrage = Date.now();
+  // Les annonces de l'appel du jour, une par séance : la plus récente compte.
+  let annonces = (lire<AnnonceGardee[]>('annonces-appel') ?? []).filter((a) => a.date === dateIso(Date.now()));
 
   const formateur = () => nomDe(porte.responsables[0]);
   const maintenant = () => Date.now();
   const demi = () => demiJournee(maintenant(), porte.apres_midi);
   const seance = () => coeur.seance(classe.code, dateIso(maintenant()), demi());
-  const cetteFois = () => (garde?.seance === seance() ? garde : undefined);
-  const barre = () => `<header class="barre"><h1 class="barre-titre" tabindex="-1">Au centre</h1><span class="mono">${jour(maintenant())} · ${heure(maintenant())}</span></header>`;
+  const nomDuResponsable = (cle: string) => {
+    const r = porte.responsables.find((x) => x.cle === cle);
+    return r ? nomDe(r) : formateur();
+  };
+  // Un appel ouvert aujourd'hui passe d'abord ; sinon, l'annonce de la demi-journée en cours.
+  const annonceDuMoment = (): AnnonceGardee | undefined => {
+    const aujourdhui = annonces.filter((a) => a.date === dateIso(maintenant()));
+    return aujourdhui.find((a) => a.etat === 'ouvert') ?? aujourdhui.find((a) => a.demi === demi());
+  };
+  const seanceDuMoment = () => annonceDuMoment()?.seance ?? seance();
+  const cetteFois = () => (garde?.seance === seanceDuMoment() ? garde : undefined);
+  const horsLigne = () => !relais.ouvert && Date.now() - demarrage > HORS_LIGNE_MS;
+  const barre = (ouvert = false) =>
+    `<header class="barre${ouvert ? ' maintenant' : ''}"><h1 class="barre-titre" tabindex="-1">Au centre</h1><span class="mono">${jour(maintenant())} · ${heure(maintenant())}</span></header>`;
+
+  const recevoirAnnonce = (texte: string) => {
+    let a: Annonce;
+    try {
+      a = coeur.lire_annonce_de_l_appel(classe.code, classe.fil!, texte, porte.responsables.map((r) => r.cle));
+    } catch {
+      return; // Une annonce qu'un responsable n'a pas signée ne compte pas.
+    }
+    if (a.date !== dateIso(maintenant())) return;
+    const avant = annonces.find((x) => x.seance === a.seance);
+    if (avant && avant.quand >= a.quand) return;
+    annonces = [...annonces.filter((x) => x.seance !== a.seance), { seance: a.seance, date: a.date, demi: a.demi, etat: a.etat, quand: a.quand, par: a.par }];
+    ecrire('annonces-appel', annonces);
+    if (vue.ecran === 'jour') rendre();
+  };
+  const ecouterLAppel = () => {
+    if (classe.fil) ecouterLeFil(coeur, relais, classe.fil, recevoirAnnonce);
+  };
 
   const attente = () => {
     const demande = coeur.lire_demande(classe.code, classe.demande!);
@@ -59,12 +106,12 @@ export function apprenant(ctx: Contexte): void {
   const signer = (chiffres: string) => {
     let presence: string;
     try {
-      presence = moi.signer_code(seance(), chiffres, maintenant());
+      presence = moi.signer_code(seanceDuMoment(), chiffres, maintenant());
     } catch {
       vue = { ecran: 'signer', chiffres, erreur: 'code-inconnu' };
       return rendre();
     }
-    garde = { seance: seance(), presence, signee: maintenant() };
+    garde = { seance: seanceDuMoment(), presence, signee: maintenant() };
     ecrire('presence', garde);
     for (const r of porte.responsables) envoyer(coeur, relais, r.boite, { v: 1, t: 'presence', presence });
     vue = { ecran: 'jour' };
@@ -144,8 +191,14 @@ export function apprenant(ctx: Contexte): void {
 
   const ecranDuJour = () => {
     const fois = cetteFois();
-    const [debut, fin] = (demi() === 'matin' ? porte.matin : porte.apres_midi).split('-');
-    const moment = `${demi() === 'matin' ? 'Matin' : 'Après-midi'}, ${horaire(debut)} à ${horaire(fin)} · ${esc(formateur())}`;
+    const annonce = annonceDuMoment();
+    const laDemi = annonce?.demi ?? demi();
+    const qui = esc(annonce ? nomDuResponsable(annonce.par) : formateur());
+    const [debut, fin] = (laDemi === 'matin' ? porte.matin : porte.apres_midi).split('-');
+    const nomDeLaDemi = laDemi === 'matin' ? 'Matin' : 'Après-midi';
+    const moment = `${nomDeLaDemi}, ${horaire(debut)} à ${horaire(fin)} · ${qui}`;
+    const signer = `<div class="gestes"><button class="touche" data-geste="signer">${ic('qr-code', 'ic-24')}<span>Signer ma présence</span></button></div>`;
+    const ouvert = !fois && annonce?.etat === 'ouvert';
     let reponse: string;
     let touche = '';
     let fenetre = '';
@@ -157,11 +210,18 @@ export function apprenant(ctx: Contexte): void {
       }
     } else if (fois) {
       reponse = `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Présence envoyée</h2><p class="mono">${heure(fois.signee)} · ${esc(formateur())} ne l’a pas encore reçue</p></div>`;
-    } else {
+    } else if (ouvert) {
+      reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">L’appel est ouvert</h2><p class="mono">${moment}</p></div>`;
+      touche = signer;
+    } else if (annonce?.etat === 'clos') {
+      reponse = `${ic('square-alert', 'ic-32')}<div><h2 class="tres-gros">Une absence</h2><p class="mono">${nomDeLaDemi} · appel clos à ${heure(annonce.quand)} par ${qui}</p></div>`;
+    } else if (horsLigne()) {
       reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">Ta présence</h2><p class="mono">${moment}</p></div>`;
-      touche = `<div class="gestes"><button class="touche" data-geste="signer">${ic('qr-code', 'ic-24')}<span>Signer ma présence</span></button></div>`;
+      touche = signer;
+    } else {
+      reponse = `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Pas d’appel ouvert</h2><p class="mono">${moment}</p></div>`;
     }
-    afficher('tel', 'Aujourd’hui', `${barre()}${MENU}<main class="page"><section class="reponse">${reponse}</section>${fenetre}</main><footer class="bas">${touche}${faits(relais)}</footer>`, gestes);
+    afficher('tel', 'Aujourd’hui', `${barre(ouvert)}${MENU}<main class="page"><section class="reponse">${reponse}</section>${fenetre}</main><footer class="bas">${touche}${faits(relais)}</footer>`, gestes);
   };
 
   const ecranSigner = (v: Extract<Vue, { ecran: 'signer' }>) => {
@@ -217,6 +277,7 @@ export function apprenant(ctx: Contexte): void {
         classe = { code: classe.code, role: 'apprenant', porte: l.porte, fil: l.fil, acceptation: l.acceptation };
         porte = nouvellePorte;
         garderClasse(classe);
+        ecouterLAppel();
       } catch {
         return; // Une admission qu'un responsable n'a pas signée ne compte pas.
       }
@@ -237,5 +298,7 @@ export function apprenant(ctx: Contexte): void {
   relais.changement = () => {
     if (vue.ecran !== 'signer') rendre();
   };
+  setTimeout(() => vue.ecran === 'jour' && rendre(), HORS_LIGNE_MS + 100);
+  ecouterLAppel();
   rendre();
 }

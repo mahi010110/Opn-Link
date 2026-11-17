@@ -18,7 +18,8 @@ export type Lettre =
   | { v: 1; t: 'clos'; seance: string; presents: number; absents: number; quand: number }
   | { v: 1; t: 'reouvert'; seance: string };
 
-const SEPT_JOURS = 7 * 24 * 3600;
+const UN_JOUR = 24 * 3600;
+const SEPT_JOURS = 7 * UN_JOUR;
 const TRENTE_JOURS = 30 * 24 * 3600;
 const secondes = () => Math.floor(Date.now() / 1000);
 
@@ -37,6 +38,24 @@ export function recevoir(coeur: Coeur, relais: Relais, appareil: Appareil, rappe
       return; // Une lettre qui ne s'ouvre pas n'était pas pour nous.
     }
     if (lettre?.v === 1) rappel(lettre);
+  });
+}
+
+/// Un responsable dit à la classe, sur le fil, que l'appel est ouvert ou clos. L'annonce ne sert
+/// que le jour même : les relais la gardent un jour.
+export function annoncerLAppel(coeur: Coeur, relais: Relais, fil: string, annonce: string): void {
+  const maintenant = secondes();
+  relais.publier(coeur.evenement_nostr(coeur.etiquette_du_fil(fil), maintenant + UN_JOUR, coeur.chiffrer_pour_le_fil(fil, annonce), maintenant));
+}
+
+/// Ce qui arrive sur le fil de la classe, déchiffré. Celui qui le lit vérifie qui l'a signé.
+export function ecouterLeFil(coeur: Coeur, relais: Relais, fil: string, rappel: (texte: string) => void): void {
+  relais.ecouter('fil', { kinds: [8571], '#x': [coeur.etiquette_du_fil(fil)], since: secondes() - UN_JOUR }, (e) => {
+    try {
+      rappel(coeur.dechiffrer_du_fil(fil, e.content));
+    } catch {
+      // Ce qui ne se déchiffre pas n'est pas de ce fil.
+    }
   });
 }
 

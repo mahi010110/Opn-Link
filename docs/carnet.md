@@ -467,3 +467,10 @@ refusés.
   l'appareil et repart au retour du réseau. Ce sens donné à « en secours »
   est un choix de Fable 5, à valider ([prototype.md](prototype.md), partie
   « Les choix du prototype, à valider »).
+- L'appel s'annonce sur le fil de la classe : le formateur dit qu'il est
+  ouvert, puis clos, dans une annonce signée. Le téléphone de l'apprenant
+  ne montre la touche « Signer ma présence » que quand l'appel est ouvert,
+  ou quand il n'a pas de réseau et ne peut pas le savoir. Les mots « Pas
+  d'appel ouvert » et « Une absence » sont des choix de Fable 5, à valider
+  ([prototype.md](prototype.md), partie « Les choix du prototype, à
+  valider »).

@@ -1,9 +1,9 @@
 // Une classe de bout en bout, jouée par Playwright avec de vrais appareils et des relais locaux.
 // Awa crée la classe et l'invite à la salle. Léa, Inès, Noah et Kevin ouvrent le lien du QR,
 // Yanis tape le code, d'abord de travers, Noah sans réseau. Awa accepte tout le monde sauf
-// Kevin, qu'elle ne connaît pas. Puis l'appel : Léa signe, Yanis se trompe de code puis signe,
-// Inès n'a plus de réseau et tend son QR, Noah est absent. Awa clôt. Les captures vont dans
-// captures/.
+// Kevin, qu'elle ne connaît pas. Puis l'appel, annoncé sur le fil de la classe : Léa signe,
+// Yanis se trompe de code puis signe, et tente de clore l'appel avec sa propre clé. Inès n'a plus
+// de réseau et tend son QR, Noah est absent. Awa clôt. Les captures vont dans captures/.
 //
 // Les appareils ont deux relais principaux, dont un qui refuse toute écriture, et deux de
 // secours, dont un qui ne répond pas. Le principal qui marche tombe juste après l'invitation :
@@ -17,6 +17,7 @@ import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import { WebSocket } from 'ws';
 import { lancerPasserelle, lancerRelais, lancerRelaisMort } from '../outils/relais.mjs';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
@@ -210,9 +211,17 @@ try {
   await tel.getByText('Lancer l’appel').waitFor();
   verifier(await tel.getByText(/4 apprenants/).count() === 1, 'la classe a ses quatre apprenants');
 
-  await telLea.getByText('Ta présence').waitFor({ timeout: 15_000 });
+  await telLea.getByText('Pas d’appel ouvert').waitFor({ timeout: 15_000 });
   await capturer(telLea, '11-apprenant-admis');
-  for (const page of [telYanis, telInes, telNoah]) await page.getByText('Ta présence').waitFor({ timeout: 15_000 });
+  verifier(await telLea.locator('[data-geste="signer"]').count() === 0, 'avant l’appel, l’apprenant n’a pas de touche : rien n’est dû');
+  for (const page of [telYanis, telInes, telNoah]) await page.getByText('Pas d’appel ouvert').waitFor({ timeout: 15_000 });
+
+  reseauDeNoah.couper();
+  await telNoah.reload();
+  await telNoah.getByText('Ta présence').waitFor({ timeout: 15_000 });
+  verifier(await telNoah.locator('[data-geste="signer"]').count() === 1, 'sans réseau, le téléphone ne peut pas savoir si l’appel est ouvert : la touche reste');
+  reseauDeNoah.retablir();
+  await telNoah.getByText('Pas d’appel ouvert').waitFor({ timeout: 15_000 });
   await telKevin.waitForTimeout(1500);
   verifier(await telKevin.getByText('Demande envoyée').count() === 1, 'Kevin, laissé dehors, attend toujours : rien ne lui est envoyé');
   const classeDeKevin = await telKevin.evaluate(() => localStorage.getItem('opl_proto_kevin_classes'));
@@ -229,6 +238,13 @@ try {
   await capturer(salle, '13-salle-appel');
   await sansNom(salle, 'pendant l’appel');
   const codeDeLAppel = () => salle.locator('.salle-code[data-code]').getAttribute('data-code');
+  for (const page of [telLea, telYanis, telInes, telNoah]) await page.getByText('L’appel est ouvert').waitFor({ timeout: 15_000 });
+  await capturer(telLea, '13b-apprenant-appel-ouvert');
+  verifier(
+    (await telLea.locator('header.barre.maintenant').count()) === 1 && (await telLea.getByText('Matin, 9 h à 12 h 30 · Awa Diallo').count()) === 1,
+    'le fil annonce l’appel : la barre passe en marine, avec la demi-journée et qui l’a ouvert',
+  );
+  verifier(await telKevin.getByText('Demande envoyée').count() === 1, 'Kevin, laissé dehors, ne voit pas l’appel');
 
   await telLea.click('[data-geste="signer"]');
   await taper(telLea, await codeDeLAppel());
@@ -244,6 +260,22 @@ try {
   await telYanis.locator('#erreur').waitFor({ timeout: 15_000 });
   await taper(telYanis, await codeDeLAppel());
   await telYanis.getByText('Présence signée').waitFor({ timeout: 15_000 });
+
+  // Yanis a le secret du fil, comme tout membre. Il annonce l'appel clos, signé de sa propre clé.
+  const clesDeYanis = JSON.parse(await telYanis.evaluate(() => localStorage.getItem('opl_proto_yanis_cles')));
+  const [classeDeYanis] = JSON.parse(await telYanis.evaluate(() => localStorage.getItem('opl_proto_yanis_classes')));
+  const plusTard = NEUF_HEURES.getTime() + 10 * 60_000;
+  const fauxAppel = coeur.Appel.ouvrir(classeDeYanis.code, '2026-11-17', 'matin', coeur.Appareil.relire(clesDeYanis), '', NEUF_HEURES.getTime());
+  fauxAppel.clore(plusTard);
+  const fausseAnnonce = coeur.chiffrer_pour_le_fil(classeDeYanis.fil, fauxAppel.annonce(classeDeYanis.fil, plusTard));
+  const seconde = Math.floor(Date.now() / 1000);
+  const parYanis = new WebSocket(secours.url);
+  await new Promise((ok) => parYanis.on('open', ok));
+  parYanis.send(`["EVENT",${coeur.evenement_nostr(coeur.etiquette_du_fil(classeDeYanis.fil), seconde + 3600, fausseAnnonce, seconde)}]`);
+  await new Promise((ok) => parYanis.on('message', ok));
+  parYanis.close();
+  await telNoah.waitForTimeout(1500);
+  verifier(await telNoah.getByText('L’appel est ouvert').count() === 1, 'un apprenant ne peut pas clore l’appel des autres : son annonce n’est pas signée par un responsable');
 
   reseauDInes.couper();
   await telInes.click('[data-geste="signer"]');
@@ -270,6 +302,9 @@ try {
   await salle.getByText('Appel clos').waitFor({ timeout: 15_000 });
   await sansNom(salle, 'à la clôture');
   verifier(await tel.getByText('Noah Petit').count() === 1, 'Noah, qui n’a pas signé, est noté absent');
+  await telNoah.getByText('Une absence').waitFor({ timeout: 15_000 });
+  await capturer(telNoah, '16b-apprenant-absence');
+  verifier(await telNoah.getByText(/Matin · appel clos à 9\sh\s0\d par Awa Diallo/).count() === 1, 'l’appel clos, le téléphone de Noah dit « Une absence », et qui a clos');
 
   reseauDInes.retablir();
   await telInes.getByText('Présence signée').waitFor({ timeout: 20_000 });

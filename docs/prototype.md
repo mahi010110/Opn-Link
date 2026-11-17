@@ -26,7 +26,7 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
    --depth=1 origin <version>`.
 3. Vérifier que tout passe, comme le 17 novembre 2026 :
-   - `cd coeur && cargo test` : 48 tests ;
+   - `cd coeur && cargo test` : 54 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
    - `cd ../site && npm run verifier && npm run construire && npm run
@@ -209,6 +209,31 @@ Une limite reste : un message parti seulement par les secours n'arrive à un
 appareil resté sur les principaux que si celui qui l'a envoyé retrouve un
 principal pendant qu'il a l'app ouverte.
 
+Fait ensuite le 17 novembre 2026, l'appel annoncé sur le fil de la classe :
+
+- le cœur écrit et lit l'annonce de l'appel ([contrat.md](contrat.md),
+  partie « L'annonce de l'appel ») : signée par le responsable, pour ce fil
+  et cette séance. Six tests de plus, dont un vecteur ;
+- le formateur l'envoie quand il lance l'appel, quand il le clôt, et quand
+  il annule la clôture ;
+- le téléphone de l'apprenant écoute le fil. Avant l'appel, il dit « Pas
+  d'appel ouvert », sans touche. Quand l'appel s'ouvre, la barre passe en
+  marine, l'écran dit « L'appel est ouvert », avec la demi-journée et qui
+  l'a ouvert, et la touche « Signer ma présence » apparaît. Clos sans sa
+  présence, il dit « Une absence » et qui a clos ;
+- l'apprenant signe pour la séance annoncée : un appel lancé un peu avant
+  l'heure de l'après-midi ne se trompe plus de séance ;
+- sans réseau, le téléphone ne peut pas savoir si l'appel est ouvert : au
+  bout de cinq secondes sans relais, l'écran dit « Ta présence » et garde la
+  touche, pour signer quand même.
+
+Le scénario le joue : Léa avant l'appel, puis l'appel ouvert sur les quatre
+téléphones, Kevin qui ne voit rien, Noah sans réseau qui garde la touche,
+puis absent. Yanis, qui a le secret du fil comme tout membre, annonce
+l'appel clos avec sa propre clé : le téléphone de Noah n'en tient pas
+compte. Sans la vérification du responsable dans le cœur, ce contrôle
+échoue. Mesuré : le premier chargement chez un apprenant pèse 253 Ko.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -224,8 +249,8 @@ on construit directement la première version complète
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
    relais publics, l'écran d'entrée de chacun. Il passe avant la fin du 1 :
    sans les relais publics, rien ne marchait hors des tests. Les relais
-   publics sont faits le 17 novembre 2026. Reste, dans cet ordre : l'appel
-   annoncé sur le fil, la caméra, l'écran d'entrée de chacun.
+   publics et l'appel annoncé sur le fil sont faits le 17 novembre 2026.
+   Reste, dans cet ordre : la caméra, l'écran d'entrée de chacun.
 3. Les annonces et les messages privés.
 4. Les absences, et la page du tuteur.
 5. Les documents à signer, la feuille exportée en PDF et le registre
@@ -350,6 +375,17 @@ Pour les relais (17 novembre 2026) :
 - l'appareil garde au plus 300 envois en mémoire pour les relais qui se
   connectent plus tard. Ce qu'aucun relais n'a accepté n'est jamais écarté
   avant son expiration.
+
+Pour l'appel annoncé sur le fil (17 novembre 2026) :
+
+- avant l'appel, l'écran dit « Pas d'appel ouvert » plutôt qu'« En règle » :
+  sans « Ma semaine », le téléphone ne sait pas si une demi-journée
+  d'avant manque ;
+- clos sans présence, l'écran dit « Une absence », le mot de la conception,
+  sans rouge et sans geste pour l'instant : « Justifier » viendra avec les
+  absences ;
+- sans réseau, la touche revient au bout de cinq secondes sans relais ;
+- l'annonce reste un jour sur les relais.
 
 ## Ce qu'il tranche
 
