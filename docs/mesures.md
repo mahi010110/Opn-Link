@@ -150,6 +150,20 @@ réaliste :
 Le QR de l'appel reste lisible projeté au fond d'une salle. Un téléphone lira
 plus lentement qu'un ordinateur, mais la marge est large.
 
+Le 23 novembre 2026, avec le lecteur du cœur (quircs), sur des images de 640
+× 480 pixels en niveaux de gris, le QR penché de 3 degrés sur un mur gris,
+quarante contenus tirés au hasard pour chaque cas :
+
+| QR | Filmé sur | Ratés |
+|---|---|---|
+| une présence sans réseau, 172 caractères | 250 pixels | 1 sur 40 |
+| une présence sans réseau, 172 caractères | 380 pixels | 0 sur 40 |
+| le lien d'une classe, 96 caractères | 250 pixels | 0 sur 40 |
+
+Une image ratée ne l'est que pour elle : la caméra en lit cinq par seconde,
+et la main qui tient le téléphone bouge. Le scénario de la classe filme donc
+cinq poses un peu différentes.
+
 ## Les PDF
 
 Sur une convention fictive faite avec un autre outil (pyHanko), qui contient

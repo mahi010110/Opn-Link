@@ -14,7 +14,10 @@ dans `site/`. Le 17 novembre 2026, on y crée une classe, on la rejoint, on
 accepte les apprenants, puis on fait l'appel : le scénario se joue de bout
 en bout à huit appareils. Le site passe par les relais publics de
 `docs/architecture.md`, avec ceux de secours, l'appel s'annonce sur le fil
-de la classe, et l'apprenant signe en visant le QR de la salle. Les formats
+de la classe, et l'apprenant signe en visant le QR de la salle. Le 23
+novembre 2026, le formateur lit le QR d'un apprenant sans réseau avec sa
+caméra, l'apprenant voit sa semaine et « En règle », et le prochain cours
+s'annonce à la clôture. Les formats
 sont dans `docs/contrat.md`. Ce qui reste ouvert est dans
 `docs/questions-ouvertes.md`, et ce qui s'est décidé jour après jour dans
 `docs/carnet.md`.

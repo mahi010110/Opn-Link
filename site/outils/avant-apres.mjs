@@ -5,9 +5,13 @@
 // npm run construire, puis :
 //   node outils/avant-apres.mjs jour      l'écran du jour de l'apprenant : avant l'appel, ouvert, clos
 //   node outils/avant-apres.mjs signer    l'écran « Signer » : avec la caméra, sans caméra
+//   node outils/avant-apres.mjs semaine   l'écran du jour de l'apprenant : en règle, puis en entreprise
+//   node outils/avant-apres.mjs lire      « Lire son QR », chez le formateur
+//   node outils/avant-apres.mjs prochain  le formateur après la clôture, et « Changer »
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
 //
-// Léa est posée dans le stockage, déjà acceptée. Les annonces de l'appel partent d'un relais local.
+// Léa et Awa sont posées dans le stockage, Léa déjà acceptée. Les annonces partent d'un relais local.
+// Un geste qui n'existe pas dans une version laisse l'écran tel quel.
 // Un cas neuf s'ajoute à CAS : ses états, et le geste qui mène à l'écran.
 
 import { execSync } from 'node:child_process';
@@ -69,6 +73,12 @@ const porte = coeur.signer_porte(code, 'BTS SIO 2', 'Centre Exemple', '9:00-12:3
 const acceptation = awa.accepter(code, lea.demander_entree(code, 'Léa', 'Martin', OUVERTURE - 3000_000), OUVERTURE - 2000_000);
 const fil = coeur.nouveau_secret_du_fil();
 const appel = coeur.Appel.ouvrir(code, '2026-11-17', 'matin', awa, ['Léa', 'Martin', lea.cle(), lea.boite()].join('\t'), OUVERTURE);
+const appelOuvert = { journal: appel.journal(), secret: appel.secret() };
+const JEUDI = new Date('2026-11-19T10:00:00+01:00').getTime();
+const seance = coeur.seance(code, '2026-11-17', 'matin');
+const signee = OUVERTURE + 60_000;
+const presenceDeLea = lea.signer_code(seance, '123456', signee);
+const recu = { quand: signee + 2000, par: 'Awa Diallo' };
 
 async function relaisAvec(...annonces) {
   const relais = await lancerRelais();
@@ -86,6 +96,20 @@ const relaisVide = await relaisAvec();
 const relaisOuvert = await relaisAvec(appel.annonce(fil, OUVERTURE));
 appel.clore(CLOTURE);
 const relaisClos = await relaisAvec(appel.annonce(fil, CLOTURE));
+const relaisProchain = await relaisAvec(appel.annonce(fil, CLOTURE), awa.prochain_cours(fil, '2026-11-23', 'matin', CLOTURE));
+const appelClos = { journal: appel.journal(), secret: appel.secret() };
+
+// Ce que gardent les appareils, sous les clés d'avant et d'après : chaque version y lit les siennes.
+const leaASigne = {
+  presence: { seance, presence: presenceDeLea, signee, recu },
+  presences: [{ seance, date: '2026-11-17', demi: 'matin', presence: presenceDeLea, signee, recu }],
+};
+const awaTientLaClasse = (heure, appelGarde, enPlus = {}) => ({
+  cles: awa.secrets(),
+  moi: { prenom: 'Awa', nom: 'Diallo' },
+  classes: [{ code, role: 'chef', porte, fil, membres: [acceptation], portePubliee: heure, ...enPlus }],
+  appel: appelGarde,
+});
 
 // La caméra simulée de Chromium filme un mur gris, sans QR : le viseur reste ouvert.
 const MUR = join(SORTIE, 'mur.y4m');
@@ -93,6 +117,12 @@ writeFileSync(MUR, Buffer.concat([Buffer.from('YUV4MPEG2 W640 H480 F10:1 Ip A1:1
 const navigateur = await chromium.launch();
 const navigateurCamera = await chromium.launch({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', `--use-file-for-fake-video-capture=${MUR}`] });
 
+const lireSonQr = async (page) => {
+  await page.locator('[data-geste="nom"]').first().click({ timeout: 5000 });
+  await page.locator('[data-geste="lireQr"]').click({ timeout: 5000 });
+  await page.waitForTimeout(1500);
+};
+const changerLeProchain = (page) => page.locator('[data-geste="changerProchain"]').click({ timeout: 5000 });
 const signer = async (page) => {
   await page.locator('[data-geste="signer"]').click({ timeout: 15_000 });
   await page.waitForFunction(() => !document.querySelector('.viseur video') || document.querySelector('.viseur video').readyState >= 2, null, { timeout: 15_000 });
@@ -111,6 +141,26 @@ const CAS = {
     etats: [
       { nom: 'Avec la caméra (elle filme un mur gris)', relais: relaisOuvert, heure: OUVERTURE + 4 * 60_000, camera: true, geste: signer },
       { nom: 'Sans caméra', relais: relaisOuvert, heure: OUVERTURE + 4 * 60_000, geste: signer },
+    ],
+  },
+  semaine: {
+    titre: 'L’écran du jour de l’apprenant, sa semaine',
+    etats: [
+      { nom: 'L’appel clos, sa présence reçue, le prochain cours lundi', relais: relaisProchain, heure: CLOTURE + 3 * 60_000, stockage: leaASigne },
+      { nom: 'Jeudi, en entreprise', relais: relaisProchain, heure: JEUDI, stockage: leaASigne },
+    ],
+  },
+  lire: {
+    titre: '« Lire son QR », chez le formateur',
+    etats: [
+      { nom: 'Avec la caméra (elle filme un mur gris)', qui: 'awa', relais: relaisVide, heure: OUVERTURE + 4 * 60_000, camera: true, stockage: awaTientLaClasse(OUVERTURE, appelOuvert), geste: lireSonQr },
+    ],
+  },
+  prochain: {
+    titre: 'Le formateur après la clôture, et le prochain cours',
+    etats: [
+      { nom: 'Clos et signé', qui: 'awa', relais: relaisVide, heure: CLOTURE + 40_000, stockage: awaTientLaClasse(CLOTURE, appelClos, { cours: ['2026-11-17 matin'], prochain: { date: '2026-11-23', demi: 'matin', quand: CLOTURE } }) },
+      { nom: '« Changer »', qui: 'awa', relais: relaisVide, heure: CLOTURE + 40_000, stockage: awaTientLaClasse(CLOTURE, appelClos, { cours: ['2026-11-17 matin'], prochain: { date: '2026-11-23', demi: 'matin', quand: CLOTURE } }), geste: changerLeProchain },
     ],
   },
 };
@@ -134,20 +184,20 @@ for (const [n, etat] of CAS[cas].etats.entries()) {
         const nav = etat.camera ? navigateurCamera : navigateur;
         const contexte = await nav.newContext({ ...options, colorScheme: theme, locale: 'fr-FR', timezoneId: 'Europe/Paris', ...(etat.camera ? { permissions: ['camera'] } : {}) });
         await contexte.clock.setSystemTime(new Date(etat.heure));
+        const qui = etat.qui ?? 'lea';
+        const stockage = qui === 'lea' ? { cles: lea.secrets(), classes: [classe], 'accueil-propose': 1, ...etat.stockage } : etat.stockage;
         await contexte.addInitScript(
-          ([cles, classe, liste]) => {
-            localStorage.setItem('opl_proto_lea_cles', JSON.stringify(cles));
-            localStorage.setItem('opl_proto_lea_classes', JSON.stringify([classe]));
-            localStorage.setItem('opl_proto_lea_relais', JSON.stringify(liste));
-            localStorage.setItem('opl_proto_lea_accueil-propose', '1');
+          ([qui, stockage, liste]) => {
+            for (const [cle, valeur] of Object.entries(stockage)) localStorage.setItem(`opl_proto_${qui}_${cle}`, JSON.stringify(valeur));
+            localStorage.setItem(`opl_proto_${qui}_relais`, JSON.stringify(liste));
           },
-          [lea.secrets(), classe, { principaux: [etat.relais.url], secours: [] }],
+          [qui, stockage, { principaux: [etat.relais.url], secours: [] }],
         );
         const page = await contexte.newPage();
-        await page.goto(`${site.url}/index.html?appareil=lea`);
+        await page.goto(`${site.url}/index.html?appareil=${qui}`);
         await page.waitForLoadState('networkidle');
         await page.waitForTimeout(1500);
-        await etat.geste?.(page);
+        await etat.geste?.(page).catch(() => {});
         await page.waitForTimeout(500);
         const fichier = join(SORTIE, `${n}-${version}-${ecran}-${theme}.png`);
         await page.screenshot({ path: fichier });
@@ -176,7 +226,7 @@ const planche = join(CAPTURES, `avant-apres-${cas}.png`);
 await page.screenshot({ path: planche, fullPage: true });
 await navigateur.close();
 await navigateurCamera.close();
-for (const r of [relaisVide, relaisOuvert, relaisClos]) await r.fermer();
+for (const r of [relaisVide, relaisOuvert, relaisClos, relaisProchain]) await r.fermer();
 for (const [, , site] of VERSIONS) site.fermer();
 rmSync(AVANT, { recursive: true, force: true });
 console.log(`✓ captures/avant-apres-${cas}.png`);

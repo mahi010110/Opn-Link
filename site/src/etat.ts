@@ -21,6 +21,10 @@ export interface ClasseGardee {
   demandes?: string[];
   dehors?: string[];
   portePubliee?: number;
+  /// Le chef : les demi-journées où l'appel a été clos, huit semaines au plus, et le prochain cours
+  /// annoncé à la classe.
+  cours?: string[];
+  prochain?: { date: string; demi: string; quand: number };
 }
 
 const parametres = new URLSearchParams(location.search);

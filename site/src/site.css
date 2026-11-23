@@ -43,3 +43,27 @@ button.rangee:first-child {
 [tabindex="-1"]:focus {
   outline: none;
 }
+
+/* Les choix des maquettes, avec de vrais boutons radio : le clavier et les lecteurs d'écran les
+   connaissent. Le rond dit lequel est coché, et la ligne porte le focus. */
+.choix label {
+  position: relative;
+  cursor: pointer;
+}
+.choix input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.choix input:checked + .rond::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.choix label:has(input:focus-visible) {
+  outline: var(--focus-outline);
+  outline-offset: -4px;
+}

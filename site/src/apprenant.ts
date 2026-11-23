@@ -1,17 +1,20 @@
 // Le téléphone de l'apprenant : attendre d'être accepté, puis signer sa présence.
-// Il apprend sur le fil de la classe que l'appel est ouvert, puis clos. Sans réseau, il ne peut pas
-// le savoir : la touche « Signer ma présence » reste là pendant les heures de la classe.
-// Sans réponse au bout de dix secondes, l'écran montre seul le QR à tendre au formateur.
+// Il apprend sur le fil de la classe que l'appel est ouvert, puis clos, et le prochain cours.
+// Sans réseau, il ne peut pas savoir si l'appel est ouvert : la touche « Signer ma présence »
+// reste là pendant les heures de la classe. Sans réponse au bout de dix secondes, l'écran montre
+// seul le QR à tendre au formateur.
 
 import { arreter, poser, viser } from './camera';
 import { type Contexte, faits, nomDe } from './contexte';
+import { type Creneau, type Demi, enJour, ouvre, plusJours, rang, sansCours } from './creneaux';
 import { type ClasseGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
 import { entree } from './routes';
 import { ecouterLeFil, envoyer, recevoir } from './lettres';
+import { type CeQueSaitLeTelephone, absences, ajusterLaSemaine, semaineHtml } from './semaine';
 import { phrase } from './textes';
 import { afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
 
-interface Garde {
+interface Garde extends Creneau {
   seance: string;
   presence: string;
   signee: number;
@@ -21,16 +24,22 @@ interface Garde {
 type Vue = { ecran: 'jour' } | { ecran: 'signer'; chiffres: string; erreur?: string; erreurQr?: string; sansCamera?: boolean } | { ecran: 'sans-reseau' };
 
 type Annonce = ReturnType<Contexte['coeur']['lire_annonce_de_l_appel']>;
-interface AnnonceGardee {
+interface AnnonceGardee extends Creneau {
   seance: string;
-  date: string;
-  demi: string;
   etat: string;
+  quand: number;
+  par: string;
+}
+interface Prochain extends Creneau {
   quand: number;
   par: string;
 }
 
 const SANS_REPONSE_MS = 10_000;
+// Les présences signées se gardent huit semaines, les annonces de l'appel une semaine : de quoi
+// dessiner la semaine, et bientôt les semaines d'avant.
+const HUIT_SEMAINES = 56;
+const UNE_SEMAINE = 7;
 // Le temps de joindre un relais au démarrage, avant de conclure qu'il n'y a pas de réseau.
 const HORS_LIGNE_MS = 5_000;
 const MENU = `<nav class="menu" aria-label="Entrées"><a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#">Moi</a></nav>`;
@@ -39,15 +48,21 @@ export function apprenant(ctx: Contexte): void {
   const { coeur, relais, moi } = ctx;
   let classe = classes().find((c) => c.role === 'apprenant') as ClasseGardee;
   let porte = coeur.lire_porte(classe.code, classe.porte);
-  let garde = lire<Garde>('presence');
   let vue: Vue = { ecran: 'jour' };
   const demarrage = Date.now();
-  // Les annonces de l'appel du jour, une par séance : la plus récente compte.
-  let annonces = (lire<AnnonceGardee[]>('annonces-appel') ?? []).filter((a) => a.date === dateIso(Date.now()));
+  const depuis = (jours: number) => plusJours(dateIso(Date.now()), -jours);
+  let presences = (lire<Garde[]>('presences') ?? []).filter((p) => p.date >= depuis(HUIT_SEMAINES));
+  // Avant le 23 novembre 2026, le prototype gardait la seule présence du moment sous cette clé.
+  ecrire('presence', null);
+  // Les annonces de l'appel, une par séance : la plus récente compte.
+  let annonces = (lire<AnnonceGardee[]>('annonces-appel') ?? []).filter((a) => a.date >= depuis(UNE_SEMAINE));
+  let prochain = lire<Prochain>('prochain');
+  if (prochain && prochain.date < depuis(UNE_SEMAINE)) prochain = undefined;
 
   const formateur = () => nomDe(porte.responsables[0]);
   const maintenant = () => Date.now();
   const demi = () => demiJournee(maintenant(), porte.apres_midi);
+  const creneau = (ms: number): Creneau => ({ date: dateIso(ms), demi: demiJournee(ms, porte.apres_midi) });
   const seance = () => coeur.seance(classe.code, dateIso(maintenant()), demi());
   const nomDuResponsable = (cle: string) => {
     const r = porte.responsables.find((x) => x.cle === cle);
@@ -67,27 +82,71 @@ export function apprenant(ctx: Contexte): void {
     const date = dateIso(maintenant());
     return [coeur.seance(classe.code, date, 'matin'), coeur.seance(classe.code, date, 'apres-midi')];
   };
-  const cetteFois = () => (garde?.seance === seanceDuMoment() ? garde : undefined);
+  const cetteFois = () => presences.find((p) => p.seance === seanceDuMoment());
+  const garderPresences = () => ecrire('presences', presences);
+  // La demi-journée d'une séance que le téléphone vient de signer : celle d'une annonce, ou du jour.
+  const creneauDe = (s: string): Creneau => {
+    const a = annonces.find((x) => x.seance === s);
+    if (a) return { date: a.date, demi: a.demi };
+    const date = dateIso(maintenant());
+    return { date, demi: coeur.seance(classe.code, date, 'matin') === s ? 'matin' : 'apres-midi' };
+  };
+  const sait = (): CeQueSaitLeTelephone => ({
+    maintenant: creneau(maintenant()),
+    presences,
+    appels: annonces,
+    prochain: prochain && { annonce: creneau(prochain.quand), cours: prochain },
+  });
+  const sansCoursMaintenant = () => !ouvre(dateIso(maintenant())) || (!!prochain && sansCours(creneau(maintenant()), creneau(prochain.quand), prochain));
+  // Un appel peut venir : un jour de cours, avant la fin de la demi-journée en cours.
+  const appelAttendu = () => {
+    if (sansCoursMaintenant()) return false;
+    const fin = (demi() === 'matin' ? porte.matin : porte.apres_midi).split('-')[1];
+    const [h, m] = fin.split(':').map(Number);
+    const d = new Date(maintenant());
+    return d.getHours() * 60 + d.getMinutes() < h * 60 + m;
+  };
+  const debutDe = (c: Creneau) => horaire((c.demi === 'matin' ? porte.matin : porte.apres_midi).split('-')[0]);
+  const nomDeLaDemi = (d: string) => (d === 'matin' ? 'matin' : 'après-midi');
   const horsLigne = () => !relais.ouvert && Date.now() - demarrage > HORS_LIGNE_MS;
-  const barre = (ouvert = false) =>
-    `<header class="barre${ouvert ? ' maintenant' : ''}"><h1 class="barre-titre" tabindex="-1">Au centre</h1><span class="mono">${jour(maintenant())} · ${heure(maintenant())}</span></header>`;
+  // La barre dit où l'app croit que tu es : au centre, en entreprise, ou le centre fermé le week-end.
+  const barre = (ouvert = false) => {
+    if (sansCoursMaintenant()) {
+      const lieu = ouvre(dateIso(maintenant())) ? 'En entreprise' : 'Centre fermé';
+      return `<header class="barre pas-maintenant"><h1 class="barre-titre" tabindex="-1">${lieu}</h1><span class="mono">${jour(maintenant())}</span></header>`;
+    }
+    return `<header class="barre${ouvert ? ' maintenant' : ''}"><h1 class="barre-titre" tabindex="-1">Au centre</h1><span class="mono">${jour(maintenant())} · ${heure(maintenant())}</span></header>`;
+  };
 
-  const recevoirAnnonce = (texte: string) => {
+  const responsables = () => porte.responsables.map((r) => r.cle);
+  const recevoirProchain = (texte: string) => {
+    let p;
+    try {
+      p = coeur.lire_prochain_cours(classe.fil!, texte, responsables());
+    } catch {
+      return; // Un prochain cours qu'un responsable n'a pas signé ne compte pas.
+    }
+    if (prochain && prochain.quand >= p.quand) return;
+    prochain = { date: p.date, demi: p.demi as Demi, quand: p.quand, par: p.par };
+    ecrire('prochain', prochain);
+    if (vue.ecran === 'jour') rendre();
+  };
+  const recevoirDuFil = (texte: string) => {
     let a: Annonce;
     try {
-      a = coeur.lire_annonce_de_l_appel(classe.code, classe.fil!, texte, porte.responsables.map((r) => r.cle));
+      a = coeur.lire_annonce_de_l_appel(classe.code, classe.fil!, texte, responsables());
     } catch {
-      return; // Une annonce qu'un responsable n'a pas signée ne compte pas.
+      return recevoirProchain(texte); // Le fil porte aussi le prochain cours.
     }
-    if (a.date !== dateIso(maintenant())) return;
+    if (a.date < depuis(UNE_SEMAINE)) return;
     const avant = annonces.find((x) => x.seance === a.seance);
     if (avant && avant.quand >= a.quand) return;
-    annonces = [...annonces.filter((x) => x.seance !== a.seance), { seance: a.seance, date: a.date, demi: a.demi, etat: a.etat, quand: a.quand, par: a.par }];
+    annonces = [...annonces.filter((x) => x.seance !== a.seance), { seance: a.seance, date: a.date, demi: a.demi as Demi, etat: a.etat, quand: a.quand, par: a.par }];
     ecrire('annonces-appel', annonces);
     if (vue.ecran === 'jour') rendre();
   };
   const ecouterLAppel = () => {
-    if (classe.fil) ecouterLeFil(coeur, relais, classe.fil, recevoirAnnonce);
+    if (classe.fil) ecouterLeFil(coeur, relais, classe.fil, recevoirDuFil);
   };
 
   const attente = () => {
@@ -156,13 +215,14 @@ export function apprenant(ctx: Contexte): void {
 
   const envoyerPresence = (seanceSignee: string, presence: string) => {
     arreter();
-    garde = { seance: seanceSignee, presence, signee: maintenant() };
-    ecrire('presence', garde);
+    const garde: Garde = { seance: seanceSignee, ...creneauDe(seanceSignee), presence, signee: maintenant() };
+    presences = [...presences.filter((p) => p.seance !== seanceSignee), garde];
+    garderPresences();
     for (const r of porte.responsables) envoyer(coeur, relais, r.boite, { v: 1, t: 'presence', presence });
     vue = { ecran: 'jour' };
-    const signee = garde.signee;
     setTimeout(() => {
-      if (garde?.signee === signee && !garde.recu && vue.ecran === 'jour') {
+      const encore = presences.find((p) => p.seance === seanceSignee);
+      if (encore?.signee === garde.signee && !encore.recu && vue.ecran === 'jour') {
         vue = { ecran: 'sans-reseau' };
         rendre();
       }
@@ -185,7 +245,8 @@ export function apprenant(ctx: Contexte): void {
   };
 
   // Demandé une fois, juste après la première présence signée, avec la raison (conception, partie 4).
-  const proposerLAccueil = () => !surLEcranDAccueil() && !lire<number>('accueil-propose') && (surIPhone() || installable());
+  const proposerLAccueil = () =>
+    !surLEcranDAccueil() && !lire<number>('accueil-propose') && presences.some((p) => p.recu) && (surIPhone() || installable());
   const accueil = () => {
     if (surIPhone()) {
       return `<section class="fen"><header class="barre"><h2 class="barre-titre">Sur cet iPhone</h2></header><div class="fen-corps">
@@ -238,33 +299,49 @@ export function apprenant(ctx: Contexte): void {
     const laDemi = annonce?.demi ?? demi();
     const qui = esc(annonce ? nomDuResponsable(annonce.par) : formateur());
     const [debut, fin] = (laDemi === 'matin' ? porte.matin : porte.apres_midi).split('-');
-    const nomDeLaDemi = laDemi === 'matin' ? 'Matin' : 'Après-midi';
-    const moment = `${nomDeLaDemi}, ${horaire(debut)} à ${horaire(fin)} · ${qui}`;
+    const nomDeLaDemiCourante = laDemi === 'matin' ? 'Matin' : 'Après-midi';
+    const moment = `${nomDeLaDemiCourante}, ${horaire(debut)} à ${horaire(fin)} · ${qui}`;
     const toucheSigner = `<div class="gestes"><button class="touche" data-geste="signer">${ic('qr-code', 'ic-24')}<span>Signer ma présence</span></button></div>`;
     const ouvert = !fois && annonce?.etat === 'ouvert';
+    const clos = annonce?.etat === 'clos';
+    const absence = absences(sait())[0];
     let reponse: string;
     let touche = '';
     let fenetre = '';
-    if (fois?.recu) {
-      reponse = `${ic('checkbox-on', 'ic-32')}<div><h2 class="tres-gros">Présence signée</h2><p class="mono">${heure(fois.recu.quand)} · reçue par ${esc(fois.recu.par)}</p></div>`;
-      if (proposerLAccueil()) {
-        fenetre = accueil();
-        if (!surIPhone()) touche = `<div class="gestes"><button class="touche" data-geste="installer">${ic('download', 'ic-24')}<span>Installer</span></button></div>`;
-      }
-    } else if (fois) {
-      reponse = `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Présence envoyée</h2><p class="mono">${heure(fois.signee)} · ${esc(formateur())} ne l’a pas encore reçue</p></div>`;
+    if (fois && (!fois.recu || !clos)) {
+      reponse = fois.recu
+        ? `${ic('checkbox-on', 'ic-32')}<div><h2 class="tres-gros">Présence signée</h2><p class="mono">${heure(fois.recu.quand)} · reçue par ${esc(fois.recu.par)}</p></div>`
+        : `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Présence envoyée</h2><p class="mono">${heure(fois.signee)} · ${esc(formateur())} ne l’a pas encore reçue</p></div>`;
     } else if (ouvert) {
       reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">L’appel est ouvert</h2><p class="mono">${moment}</p></div>`;
       touche = toucheSigner;
-    } else if (annonce?.etat === 'clos') {
-      reponse = `${ic('square-alert', 'ic-32')}<div><h2 class="tres-gros">Une absence</h2><p class="mono">${nomDeLaDemi} · appel clos à ${heure(annonce.quand)} par ${qui}</p></div>`;
-    } else if (horsLigne()) {
+    } else if (clos && !fois) {
+      reponse = `${ic('square-alert', 'ic-32')}<div><h2 class="tres-gros">Une absence</h2><p class="mono">${nomDeLaDemiCourante} · appel clos à ${heure(annonce.quand)} par ${qui}</p></div>`;
+    } else if (!fois && horsLigne() && appelAttendu()) {
       reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">Ta présence</h2><p class="mono">${moment}</p></div>`;
       touche = toucheSigner;
-    } else {
+    } else if (absence) {
+      const a = annonces.find((x) => x.date === absence.date && x.demi === absence.demi)!;
+      reponse = `${ic('square-alert', 'ic-32')}<div><h2 class="tres-gros">Une absence</h2><p class="mono">${jour(enJour(absence.date).getTime())}, ${nomDeLaDemi(absence.demi)} · appel clos par ${esc(nomDuResponsable(a.par))}</p></div>`;
+    } else if (appelAttendu() && !fois) {
       reponse = `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Pas d’appel ouvert</h2><p class="mono">${moment}</p></div>`;
+    } else {
+      const avenir = prochain && rang(prochain) > rang(creneau(maintenant())) ? prochain : undefined;
+      const quand = avenir ? `${sansCoursMaintenant() ? 'Retour au centre' : 'Prochain appel'} : ${jour(enJour(avenir.date).getTime())}, ${debutDe(avenir)}` : '';
+      reponse = `${ic('checkbox-on', 'ic-32')}<div><h2 class="tres-gros">En règle</h2>${quand ? `<p class="mono">${quand}</p>` : ''}</div>`;
     }
-    afficher('tel', 'Aujourd’hui', `${barre(ouvert)}${MENU}<main class="page"><section class="reponse">${reponse}</section>${fenetre}</main><footer class="bas">${touche}${faits(relais)}</footer>`, gestes);
+    if (proposerLAccueil() && fois?.recu) {
+      fenetre = accueil();
+      if (!surIPhone()) touche = `<div class="gestes"><button class="touche" data-geste="installer">${ic('download', 'ic-24')}<span>Installer</span></button></div>`;
+    }
+    const semaine = `<section class="bloc" aria-label="Ma semaine"><p class="etiquette">Ma semaine</p>${semaineHtml(sait())}</section>`;
+    afficher(
+      'tel',
+      'Aujourd’hui',
+      `${barre(ouvert)}${MENU}<main class="page"><section class="reponse">${reponse}</section>${fenetre}${semaine}</main><footer class="bas">${touche}${faits(relais)}</footer>`,
+      gestes,
+    );
+    ajusterLaSemaine(sait());
   };
 
   const ecranSigner = (v: Extract<Vue, { ecran: 'signer' }>) => {
@@ -329,15 +406,15 @@ export function apprenant(ctx: Contexte): void {
       } catch {
         return; // Une admission qu'un responsable n'a pas signée ne compte pas.
       }
-    } else if (garde && 'seance' in l && l.seance === garde.seance && l.t === 'recu') {
-      garde = { ...garde, recu: { quand: l.quand, par: l.par } };
-      ecrire('presence', garde);
+    } else if (l.t === 'recu' && presences.some((p) => p.seance === l.seance)) {
+      presences = presences.map((p) => (p.seance === l.seance ? { ...p, recu: { quand: l.quand, par: l.par } } : p));
+      garderPresences();
       vue = { ecran: 'jour' };
-    } else if (garde && 'seance' in l && l.seance === garde.seance && l.t === 'refus' && !garde.recu) {
-      const chiffres = garde.presence.split('.')[2] ?? '';
-      garde = undefined;
-      ecrire('presence', null);
-      return versSigner(chiffres, l.raison);
+    } else if (l.t === 'refus' && presences.some((p) => p.seance === l.seance && !p.recu)) {
+      const refusee = presences.find((p) => p.seance === l.seance)!;
+      presences = presences.filter((p) => p !== refusee);
+      garderPresences();
+      return versSigner(refusee.presence.split('.')[2] ?? '', l.raison);
     } else {
       return;
     }

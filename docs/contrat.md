@@ -269,6 +269,38 @@ l'étiquette du fil, qui expire au bout d'un jour.
 Vecteur : `coeur/tests/vecteurs/appel-v1.txt`, signé par Awa pour le fil de
 secret `09` et la classe des autres vecteurs, le matin du 17 novembre 2026.
 
+## Le prochain cours
+
+À la clôture, le responsable dit à la classe, sur le fil, la demi-journée du
+prochain cours. C'est ainsi que le téléphone de l'apprenant sait quand
+revient l'appel, et que les demi-journées d'ici là sont sans cours.
+
+```
+opn-link·prochain·v1
+<étiquette du fil>
+<date>
+<demi-journée>
+<heure>
+<clé du responsable>
+<signature du responsable>
+```
+
+- La date s'écrit `2026-11-23`, la demi-journée `matin` ou `apres-midi`.
+  Une date écrite autrement ne se signe pas.
+- Il ne compte que signé par un responsable de la porte, pour ce fil.
+- Le plus récent compte. Changer le prochain cours, c'est en signer un
+  nouveau.
+- Les demi-journées entre son heure et le cours qu'il annonce sont sans
+  cours : elles s'affichent en trame dans la semaine de l'apprenant.
+
+Il voyage chiffré par la clé du fil (`OPC1.`), dans un événement sous
+l'étiquette du fil, qui expire le surlendemain du cours, et au plus tôt un
+jour après son envoi. Le téléphone relit le fil sur huit semaines : en
+alternance, le prochain cours est parfois loin.
+
+Vecteur : `coeur/tests/vecteurs/prochain-v1.txt`, signé par Awa pour le même
+fil, à la clôture du 17 novembre 2026 à 9 h 12, pour le lundi 23 au matin.
+
 ## La feuille de présence
 
 Un journal où l'on ne peut qu'ajouter. La première ligne vaut
@@ -324,7 +356,15 @@ données possible ». Pour l'appel :
   qu'un relais l'accepte, au plus jusqu'à l'expiration de son événement :
   7 jours pour une lettre, 30 pour la porte ;
 - l'annonce de l'appel reste un jour sur les relais. Sur le téléphone de
-  l'apprenant, celles du jour seulement.
+  l'apprenant, sept jours, pour dessiner sa semaine ;
+- le prochain cours reste sur les relais jusqu'au surlendemain du cours. Sur
+  le téléphone de l'apprenant, le plus récent seulement, jusqu'à sept jours
+  après sa date ;
+- les présences signées restent huit semaines sur le téléphone de
+  l'apprenant ;
+- les demi-journées où l'appel a été clos restent huit semaines chez le
+  formateur : l'app y apprend le rythme de la classe pour proposer le
+  prochain cours.
 
 ## L'événement Nostr
 
@@ -360,13 +400,19 @@ Le lien du QR de la classe : l'adresse du site, puis
 part jamais vers le serveur du site.
 
 Les clés de stockage du prototype commencent par `opl_proto_`, suivies du
-nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presence`,
-`classe-de-la-salle`, `accueil-propose`, `relais`, `envois` et
-`annonces-appel`. Elles disparaîtront avec lui. `relais` porte la liste des relais,
+nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presences`,
+`classe-de-la-salle`, `accueil-propose`, `relais`, `envois`,
+`annonces-appel` et `prochain`. Elles disparaîtront avec lui. `presence`,
+qui gardait la seule présence du moment, est remplacée par `presences` le
+23 novembre 2026 : une clé du prototype, que personne n'a encore. `relais` porte la liste des relais,
 `{"principaux": [...], "secours": [...]}` ; seuls les tests l'écrivent, et
 sans elle l'app prend la liste par défaut. `envois` porte les événements
 Nostr qu'aucun relais n'a encore acceptés, en texte. `annonces-appel` porte
-les annonces de l'appel du jour, une par séance, déjà vérifiées.
+les annonces de l'appel des sept derniers jours, une par séance, déjà
+vérifiées. `presences` porte les présences signées, avec leur demi-journée
+et leur réception. `prochain` porte le dernier prochain cours vérifié. Chez
+le chef, `classes` garde aussi `cours`, les demi-journées où l'appel a été
+clos, et `prochain`, le dernier annoncé.
 
 Le service worker garde le site dans une réserve nommée `opn-link-` suivi de
 l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.

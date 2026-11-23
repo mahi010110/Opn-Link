@@ -4,8 +4,9 @@
 import { arreter, poser, viser } from './camera';
 import type { Appel } from './coeur';
 import { type Contexte, faits, nomDe } from './contexte';
+import { type Creneau, type Demi, enJour, enTexte, lireCreneau, lundiDe, ouvre, plusJours, proposerLeProchain, rang, suivant } from './creneaux';
 import { type ClasseGardee, type Moi, classes, ecrire, garderClasse, lire } from './etat';
-import { annoncerLAppel, envoyer, lienDeLaClasse, publierPorte, recevoir } from './lettres';
+import { annoncerLAppel, annoncerLeProchain, envoyer, lienDeLaClasse, publierPorte, recevoir } from './lettres';
 import { codeDe, phrase } from './textes';
 import { afficher, codeAffiche, dateIso, demiJournee, esc, heure, heureCourte, horaire, ic, jour, paves } from './vue';
 
@@ -15,9 +16,17 @@ type Vue =
   | { ecran: 'accepter'; dehors: Set<string> }
   | { ecran: 'membres' }
   | { ecran: 'nom'; cle: string }
-  | { ecran: 'lire'; cle: string; erreur?: string; sansCamera?: boolean };
+  | { ecran: 'lire'; cle: string; erreur?: string; sansCamera?: boolean }
+  | { ecran: 'prochain'; choix: Creneau };
 
 const ANNULER_MS = 30_000;
+const HUIT_SEMAINES = 56;
+// « Changer » propose les trois semaines qui viennent : une alternance tient dedans.
+const JOURS_PROPOSES = 21;
+
+/// « lundi 23, matin »
+const leCours = (c: Creneau): string =>
+  `${new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric' }).format(enJour(c.date))}, ${c.demi === 'matin' ? 'matin' : 'après-midi'}`;
 
 // Le formateur lit le QR d'un autre : les phrases du cœur s'adressent à l'apprenant, celles-ci à lui.
 const phraseDuQr = (code: string, formateur: string): string =>
@@ -62,6 +71,21 @@ export function formateur(ctx: Contexte): void {
     if (appel && classe.fil) annoncerLAppel(coeur, relais, classe.fil, appel.annonce(classe.fil, Date.now()));
   };
   const montrer = (quoi: 'rejoindre' | 'rien') => envoyer(coeur, relais, moi.boite(), { v: 1, t: 'montrer', code: classe.code, quoi });
+  // Le prochain cours, dit à la classe sur le fil : c'est ainsi que les apprenants savent quand
+  // revient l'appel, et que leur téléphone sait les jours sans cours.
+  const annoncerProchain = (c: Creneau) => {
+    if (!classe.fil) return;
+    const quand = Date.now();
+    annoncerLeProchain(coeur, relais, classe.fil, moi.prochain_cours(classe.fil, c.date, c.demi, quand), c.date);
+    changer({ ...classe, prochain: { ...c, quand } });
+  };
+  const proposerALaCloture = (a: Appel) => {
+    const ce: Creneau = { date: a.date(), demi: a.demi() as Demi };
+    const limite = plusJours(ce.date, -HUIT_SEMAINES);
+    const cours = [...new Set([...(classe.cours ?? []), enTexte(ce)])].filter((t) => t >= limite).sort();
+    classe = { ...classe, cours };
+    annoncerProchain(proposerLeProchain(cours.map(lireCreneau), ce));
+  };
 
   if (!classe.portePubliee || Date.now() - classe.portePubliee > UN_JOUR_MS) {
     publierPorte(coeur, relais, classe.code, classe.porte);
@@ -196,7 +220,17 @@ export function formateur(ctx: Contexte): void {
       garderAppel();
       envoyer(coeur, relais, moi.boite(), { v: 1, t: 'clos', seance: appel.seance(), presents, absents, quand: Date.now() });
       annoncer();
+      proposerALaCloture(appel);
       rendre();
+    },
+    changerProchain: () => {
+      const actuel = classe.prochain;
+      vers({ ecran: 'prochain', choix: actuel ? { date: actuel.date, demi: actuel.demi as Demi } : suivant(creneauDuMoment()) });
+    },
+    annoncerProchain: () => {
+      if (vue.ecran !== 'prochain') return;
+      annoncerProchain(vue.choix);
+      vers({ ecran: 'cours' });
     },
     annuler: () => {
       if (!appel) return;
@@ -213,6 +247,7 @@ export function formateur(ctx: Contexte): void {
   const barre = (maintenant: number, ouvert: boolean) =>
     `<header class="barre${ouvert ? ' maintenant' : ''}"><h1 class="barre-titre" tabindex="-1">${esc(porte.centre)}</h1><span class="mono">${jour(maintenant)} · ${heure(maintenant)}</span></header>`;
   const retour = `<button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button>`;
+  const creneauDuMoment = (): Creneau => ({ date: dateIso(Date.now()), demi: demiJournee(Date.now(), porte.apres_midi) });
   const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
 
   const avant = (maintenant: number) => {
@@ -382,6 +417,7 @@ export function formateur(ctx: Contexte): void {
            <h2 class="tres-gros" tabindex="-1">Clos et signé</h2>
            <p class="mono">${esc(porte.nom)} · ${heure(cloture)} · ${pluriel(presents, 'présent')}, ${pluriel(inscrits - presents, 'absent')}</p>
          </div></section>
+         ${classe.prochain ? `<div class="liste"><div class="rangee">${ic('calendar', 'ic-20')}<div><b>Prochain cours : ${esc(leCours({ date: classe.prochain.date, demi: classe.prochain.demi as Demi }))}</b><span class="mono">les apprenants le voient</span></div><button class="btn" data-geste="changerProchain">Changer</button></div></div>` : ''}
          ${absents.length ? `<section class="bloc"><p class="etiquette">À suivre</p><div class="liste">${absents
            .map((l) => `<div class="rangee"><div><b>${esc(l.prenom)} ${esc(l.nom)}</b><span class="mono">une absence ce ${a.demi() === 'matin' ? 'matin' : 'après-midi'}</span></div></div>`)
            .join('')}</div></section>` : ''}
@@ -392,8 +428,48 @@ export function formateur(ctx: Contexte): void {
     );
   };
 
+  // Les demi-journées des trois semaines qui viennent, groupées par semaine. Le choix vit dans la
+  // page tant qu'on n'annonce pas : un redessin ne le perd pas, la vue le suit.
+  const ecranProchain = (v: Extract<Vue, { ecran: 'prochain' }>) => {
+    const premier = suivant(creneauDuMoment());
+    const semaines = new Map<string, Creneau[]>();
+    for (let n = 0; n < JOURS_PROPOSES; n++) {
+      const date = plusJours(premier.date, n);
+      if (!ouvre(date)) continue;
+      const lundi = lundiDe(date);
+      const creneaux = (['matin', 'apres-midi'] as Demi[]).map((demi) => ({ date, demi })).filter((c) => rang(c) >= rang(premier));
+      semaines.set(lundi, [...(semaines.get(lundi) ?? []), ...creneaux]);
+    }
+    const titre = (lundi: string) =>
+      lundi === lundiDe(dateIso(Date.now()))
+        ? 'Cette semaine'
+        : `Semaine du ${new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).format(enJour(lundi))}`;
+    const ligne = (c: Creneau) =>
+      `<label><input type="radio" name="prochain" value="${enTexte(c)}"${rang(c) === rang(v.choix) ? ' checked' : ''}><span class="rond"></span>${esc(leCours(c))}</label>`;
+    afficher(
+      'tel',
+      'Prochain cours',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Prochain cours</h1><span class="mono">${esc(porte.nom)}</span></header>
+       <main class="page">
+         <p class="mono">Les apprenants de la classe le voient sur leur téléphone.</p>
+         ${[...semaines]
+           .map(([lundi, creneaux]) => `<section class="bloc"><p class="etiquette">${esc(titre(lundi))}</p><div class="choix" role="radiogroup" aria-label="${esc(titre(lundi))}">${creneaux.map(ligne).join('')}</div></section>`)
+           .join('')}
+       </main>
+       <footer class="bas"><div class="gestes">${retour}<button class="touche" data-geste="annoncerProchain">${ic('send', 'ic-24')}<span>Annoncer à la classe</span></button></div>${faits(relais)}</footer>`,
+      gestes,
+      true,
+    );
+    for (const radio of document.querySelectorAll<HTMLInputElement>('input[name="prochain"]')) {
+      radio.onchange = () => {
+        if (vue.ecran === 'prochain') vue = { ...vue, choix: lireCreneau(radio.value) };
+      };
+    }
+  };
+
   const rendre = () => {
     const maintenant = Date.now();
+    if (vue.ecran === 'prochain') return ecranProchain(vue);
     if (vue.ecran === 'inviter') return inviter(vue);
     if (vue.ecran === 'accepter') return ecranAccepter(vue);
     if (vue.ecran === 'membres') return ecranMembres();

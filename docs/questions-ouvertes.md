@@ -22,7 +22,10 @@ demandé à la création. Puis les relais : ceux de secours ne servent que tant
 que moins de deux principaux répondent, et un relais qui refuse est écarté
 dix minutes. Puis l'appel annoncé sur le fil : « Pas d'appel ouvert » avant
 l'appel, « Une absence » après, et la touche gardée sans réseau. Puis la
-caméra : quircs au lieu de rqrr pour lire les QR, à cause du poids.
+caméra : quircs au lieu de rqrr pour lire les QR, à cause du poids. Puis,
+le 23 novembre 2026, l'écran d'entrée : le prochain cours annoncé à part
+sur le fil, proposé en reprenant l'écart de la dernière fois, « En règle »
+une fois l'appel clos, et les durées de vie sur le téléphone.
 
 Recommandation : les garder.
 

@@ -26,8 +26,8 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    Si son clone est trop court pour la version voulue (`VERSION_OC` dans
    `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
    --depth=1 origin <version>`.
-3. Vérifier que tout passe, comme le 17 novembre 2026 :
-   - `cd coeur && cargo test` : 57 tests ;
+3. Vérifier que tout passe, comme le 23 novembre 2026 :
+   - `cd coeur && cargo test` : 63 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
    - `cd ../site && npm run construire && npm run verifier && npm run
@@ -256,6 +256,50 @@ Fait ensuite le 17 novembre 2026, la caméra :
 Le scénario fait signer Léa avec la caméra simulée de Chromium : elle vise
 d'abord le QR de la classe, puis celui que montre la salle.
 
+Fait le 23 novembre 2026, la fin de l'appel complet :
+
+- le scénario échouait depuis le 18 novembre : il simule le mardi 17, mais
+  le relais local jugeait l'expiration avec la vraie date, et l'annonce de
+  l'appel, qui dure un jour, était refusée. Le relais prend maintenant
+  l'horloge du scénario ;
+- « Lire son QR », chez le formateur, ouvre la caméra de son téléphone au
+  lieu du texte qu'on collait. Un autre QR se dit sous le viseur, et rien
+  n'entre. Sans caméra, l'apprenant signe sur le téléphone du formateur ;
+- le cœur signe et relit le prochain cours ([contrat.md](contrat.md),
+  partie « Le prochain cours »), avec son vecteur. 63 tests ;
+- à la clôture, l'app propose le prochain cours et l'annonce sur le fil.
+  « Changer » ouvre la liste des demi-journées des trois semaines qui
+  viennent ;
+- l'écran du jour de l'apprenant montre sa semaine en dix cases : ses
+  présences avec l'heure, ses absences en rouge, l'appel ouvert en marine,
+  et en trame les demi-journées sans cours jusqu'au prochain. Avec le texte
+  agrandi, elle passe en rangs ;
+- la réponse devient « En règle » quand rien n'est dû, avec « Prochain
+  appel » ou, les jours sans cours, « Retour au centre ». La barre dit alors
+  « En entreprise », en trame, ou « Centre fermé » le week-end ;
+- un écran qui n'a pas changé n'est plus redessiné : une reconnexion de
+  relais remplaçait la page sous le doigt.
+
+Le scénario le joue : Awa lit le QR d'Inès avec sa caméra, après avoir visé
+celui de la salle. Elle clôt, l'app propose mardi après-midi, Awa choisit
+lundi 23 au matin. Léa voit sa présence, puis la trame jusqu'à lundi. Noah
+voit sa case rouge. Yanis annonce un autre prochain cours avec sa propre
+clé : personne n'en tient compte. Jeudi, Léa est en entreprise, puis son
+écran se relit avec le texte à 200 %, à 360 pixels.
+
+Trois défauts posés exprès font échouer le scénario : la clé lue dans le
+texte du prochain cours au lieu de celles des responsables, les jours sans
+cours oubliés, la semaine qui ne passe pas en rangs.
+
+Le scénario échouait aussi une fois sur cinq environ : la caméra simulée
+filmait une seule image fixe, et quircs rate une présence filmée à 250
+pixels et de travers une fois sur quarante (mesuré). Une image ratée l'était
+pour toujours. La caméra simulée filme maintenant cinq poses un peu
+différentes, comme une main qui bouge.
+
+Mesuré : l'interface pèse 16,3 Ko compressés, et le premier chargement chez
+un apprenant 269 Ko, sous le plafond de 300 Ko.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -272,9 +316,11 @@ on construit directement la première version complète
    relais publics, l'écran d'entrée de chacun. Il passe avant la fin du 1 :
    sans les relais publics, rien ne marchait hors des tests. Les relais
    publics, l'appel annoncé sur le fil et la caméra sont faits le 17
-   novembre 2026. Reste : l'écran d'entrée de chacun, et la caméra du
-   formateur pour lire le QR d'un apprenant sans réseau, qui se colle encore
-   en texte.
+   novembre 2026. La caméra du formateur, la semaine de l'apprenant, « En
+   règle » et le prochain cours sont faits le 23 novembre 2026. Reste, pour
+   l'écran d'entrée : « Ensuite » et « À lire », qui viendront avec les
+   documents et les annonces, et l'écran d'entrée du centre et du tuteur,
+   qui viendront avec eux.
 3. Les annonces et les messages privés.
 4. Les absences, et la page du tuteur.
 5. Les documents à signer, la feuille exportée en PDF et le registre
@@ -417,6 +463,34 @@ Pour la caméra (17 novembre 2026) :
 - cinq images lues par seconde, réduites à 640 pixels de large ;
 - sans annonce de l'appel, un QR du matin ou de l'après-midi du jour est
   accepté : un appel se lance parfois un peu avant l'heure.
+
+Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
+
+- le prochain cours est sa propre annonce sur le fil, signée, plutôt qu'un
+  champ de l'annonce de clôture : il reste sur les relais jusqu'au cours,
+  alors que l'annonce de l'appel n'y reste qu'un jour ;
+- l'app propose le prochain cours en reprenant l'écart de la dernière fois :
+  la dernière fois que la classe a eu cours ce jour-là, à cette
+  demi-journée, et le cours qui a suivi. Sans rien de tel, la demi-journée
+  suivante. Une alternance revient ainsi d'elle-même ;
+- « Changer » propose les demi-journées des trois semaines qui viennent,
+  groupées par semaine ;
+- « Présence signée » reste à l'écran tant que l'appel n'est pas clos. Clos,
+  la réponse devient « En règle », et la preuve reste dans la case de la
+  semaine, comme dans les maquettes `apprenant-jour-signe` et
+  `apprenant-jour-en-regle` ;
+- une absence de la semaine passe avant « Pas d'appel ouvert » et « En
+  règle » : « Une absence », avec le jour. « Justifier » viendra avec les
+  absences ;
+- une demi-journée passée dont le téléphone ne sait rien reste une case
+  vide : ni présence, ni absence ;
+- le week-end, la barre dit « Centre fermé » ;
+- les présences signées restent huit semaines sur le téléphone, les
+  annonces de l'appel sept jours, et les demi-journées de cours huit
+  semaines chez le formateur. « Mes présences », avec les semaines d'avant,
+  dira s'il faut garder les présences plus longtemps ;
+- « Ma semaine » n'ouvre pas encore « Mes présences » : le chevron des
+  maquettes viendra avec cette fenêtre.
 
 ## Ce qu'il tranche
 

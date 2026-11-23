@@ -20,6 +20,8 @@ export type Lettre =
 
 const UN_JOUR = 24 * 3600;
 const SEPT_JOURS = 7 * UN_JOUR;
+// Le prochain cours peut être à plusieurs semaines, en alternance : le fil se relit sur huit.
+const HUIT_SEMAINES = 56 * UN_JOUR;
 const TRENTE_JOURS = 30 * 24 * 3600;
 const secondes = () => Math.floor(Date.now() / 1000);
 
@@ -48,9 +50,17 @@ export function annoncerLAppel(coeur: Coeur, relais: Relais, fil: string, annonc
   relais.publier(coeur.evenement_nostr(coeur.etiquette_du_fil(fil), maintenant + UN_JOUR, coeur.chiffrer_pour_le_fil(fil, annonce), maintenant));
 }
 
+/// Un responsable dit le prochain cours. Les relais le gardent jusqu'au lendemain de ce cours.
+export function annoncerLeProchain(coeur: Coeur, relais: Relais, fil: string, prochain: string, date: string): void {
+  const maintenant = secondes();
+  const [a, m, j] = date.split('-').map(Number);
+  const lendemain = Math.floor(new Date(a, m - 1, j + 2).getTime() / 1000);
+  relais.publier(coeur.evenement_nostr(coeur.etiquette_du_fil(fil), Math.max(lendemain, maintenant + UN_JOUR), coeur.chiffrer_pour_le_fil(fil, prochain), maintenant));
+}
+
 /// Ce qui arrive sur le fil de la classe, déchiffré. Celui qui le lit vérifie qui l'a signé.
 export function ecouterLeFil(coeur: Coeur, relais: Relais, fil: string, rappel: (texte: string) => void): void {
-  relais.ecouter('fil', { kinds: [8571], '#x': [coeur.etiquette_du_fil(fil)], since: secondes() - UN_JOUR }, (e) => {
+  relais.ecouter('fil', { kinds: [8571], '#x': [coeur.etiquette_du_fil(fil)], since: secondes() - HUIT_SEMAINES }, (e) => {
     try {
       rappel(coeur.dechiffrer_du_fil(fil, e.content));
     } catch {

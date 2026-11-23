@@ -478,3 +478,25 @@ refusés.
   les QR, le prototype prend quircs au lieu de rqrr : rqrr ajoutait 85 Ko et
   faisait passer le premier chargement au-dessus du plafond de 300 Ko
   (mesuré). C'est un choix de Fable 5, à valider.
+
+## 23 novembre 2026 : la fin de l'appel complet
+
+- Le mainteneur : « J'aimerais que tu continues le projet. » Le travail
+  reprend dans l'ordre de [prototype.md](prototype.md), partie « La suite » :
+  la fin de l'appel complet.
+- Le scénario de la classe échouait depuis le 18 novembre : il vit le
+  17 novembre, mais le relais local lisait la vraie date, et l'annonce de
+  l'appel, qui dure un jour, lui semblait expirée. Corrigé dans le relais
+  des tests.
+- Le formateur lit le QR d'un apprenant sans réseau avec la caméra de son
+  téléphone.
+- L'écran du jour de l'apprenant montre sa semaine en dix cases, et répond
+  « En règle » quand rien n'est dû. À la clôture, l'app propose le prochain
+  cours, que le formateur peut changer, et l'annonce à la classe. Les jours
+  sans cours s'apprennent ainsi, comme le prévoit la conception.
+- Choisis en codant, à valider : le prochain cours comme annonce à part sur
+  le fil, la façon de le proposer (reprendre l'écart de la dernière fois),
+  « En règle » une fois l'appel clos, « Centre fermé » le week-end, et les
+  durées de vie sur le téléphone. Le détail est dans
+  [prototype.md](prototype.md), partie « Les choix du prototype, à
+  valider ».

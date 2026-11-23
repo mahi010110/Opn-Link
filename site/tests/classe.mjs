@@ -3,7 +3,8 @@
 // Yanis tape le code, d'abord de travers, Noah sans réseau. Awa accepte tout le monde sauf
 // Kevin, qu'elle ne connaît pas. Puis l'appel, annoncé sur le fil de la classe : Léa signe en
 // visant le QR de la salle avec la caméra simulée de Chromium, Yanis se trompe de code puis signe, et tente de clore l'appel avec sa propre clé. Inès n'a plus
-// de réseau et tend son QR, qu'Awa lit avec la caméra de son téléphone, Noah est absent. Awa clôt. Les captures vont dans captures/.
+// de réseau et tend son QR, qu'Awa lit avec la caméra de son téléphone, Noah est absent. Awa clôt,
+// et annonce le prochain cours : lundi 23. Jeudi, Léa est en entreprise. Les captures vont dans captures/.
 //
 // Les appareils ont deux relais principaux, dont un qui refuse toute écriture, et deux de
 // secours, dont un qui ne répond pas. Le principal qui marche tombe juste après l'invitation :
@@ -53,6 +54,7 @@ const site = `http://127.0.0.1:${serveur.address().port}`;
 // relais avec eux.
 const MARDI_MATIN = new Date('2026-11-17T08:55:00+01:00');
 const NEUF_HEURES = new Date('2026-11-17T09:01:00+01:00');
+const JEUDI = new Date('2026-11-19T10:00:00+01:00');
 let ecart = MARDI_MATIN - Date.now();
 const horloge = () => Date.now() + ecart;
 
@@ -78,47 +80,61 @@ const reseauDeNoah = await reseau();
 
 const navigateur = await chromium.launch();
 // La caméra simulée de Chromium filme un fichier. On y écrit, au moment de signer, l'image du QR
-// que montre la salle : Chromium lit le fichier quand la page ouvre la caméra.
+// que montre la salle : Chromium lit le fichier quand la page ouvre la caméra, et passe ses images
+// en boucle.
 const CAMERA = join(CAPTURES, '.camera.y4m');
 const LARGEUR_CAMERA = 640;
 const HAUTEUR_CAMERA = 480;
-const filmer = (gris) =>
+const filmer = (images) =>
   writeFileSync(
     CAMERA,
     Buffer.concat([
-      Buffer.from(`YUV4MPEG2 W${LARGEUR_CAMERA} H${HAUTEUR_CAMERA} F10:1 Ip A1:1 C420jpeg\nFRAME\n`),
-      Buffer.from(gris),
-      Buffer.alloc((LARGEUR_CAMERA * HAUTEUR_CAMERA) / 2, 128),
+      Buffer.from(`YUV4MPEG2 W${LARGEUR_CAMERA} H${HAUTEUR_CAMERA} F10:1 Ip A1:1 C420jpeg\n`),
+      ...images.flatMap((gris) => [Buffer.from('FRAME\n'), Buffer.from(gris), Buffer.alloc((LARGEUR_CAMERA * HAUTEUR_CAMERA) / 2, 128)]),
     ]),
   );
-filmer(new Uint8Array(LARGEUR_CAMERA * HAUTEUR_CAMERA).fill(200));
+filmer([new Uint8Array(LARGEUR_CAMERA * HAUTEUR_CAMERA).fill(200)]);
 const navigateurCamera = await chromium.launch({
   args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', `--use-file-for-fake-video-capture=${CAMERA}`],
 });
-// Le QR de la salle, posé de travers sur un mur, comme dans le viseur de la maquette.
+// Un QR posé de travers, comme dans le viseur de la maquette, filmé par une main qui bouge un peu :
+// cinq poses. Une seule image fixe, ratée par le lecteur, l'était pour toujours (une présence
+// filmée à 250 pixels et de travers rate une fois sur quarante, mesuré le 23 novembre 2026).
+const POSES = [
+  [-0.05, 250, 0, 0],
+  [-0.03, 256, 6, -4],
+  [-0.07, 244, -5, 3],
+  [-0.04, 262, 3, 5],
+  [-0.06, 248, -3, -6],
+];
 async function filmerLeQr(texte) {
   const page = await navigateur.newPage();
-  const gris = await page.evaluate(
-    async ([svg, l, h]) => {
-      const toile = Object.assign(document.createElement('canvas'), { width: l, height: h });
-      const ctx = toile.getContext('2d');
-      ctx.fillStyle = '#8a8478';
-      ctx.fillRect(0, 0, l, h);
-      const image = new Image();
-      image.src = `data:image/svg+xml;base64,${btoa(svg)}`;
-      await image.decode();
-      ctx.translate(l / 2, h / 2);
-      ctx.rotate(-0.05);
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(-150, -150, 300, 300);
-      ctx.drawImage(image, -125, -125, 250, 250);
-      const rvb = ctx.getImageData(0, 0, l, h).data;
-      return Array.from({ length: l * h }, (_, i) => Math.round(rvb[i * 4] * 0.299 + rvb[i * 4 + 1] * 0.587 + rvb[i * 4 + 2] * 0.114));
-    },
-    [coeur.svg_du_qr(texte), LARGEUR_CAMERA, HAUTEUR_CAMERA],
-  );
+  const images = [];
+  for (const pose of POSES) {
+    images.push(
+      await page.evaluate(
+        async ([svg, l, h, [angle, taille, dx, dy]]) => {
+          const toile = Object.assign(document.createElement('canvas'), { width: l, height: h });
+          const ctx = toile.getContext('2d');
+          ctx.fillStyle = '#8a8478';
+          ctx.fillRect(0, 0, l, h);
+          const image = new Image();
+          image.src = `data:image/svg+xml;base64,${btoa(svg)}`;
+          await image.decode();
+          ctx.translate(l / 2 + dx, h / 2 + dy);
+          ctx.rotate(angle);
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(-taille / 2 - 25, -taille / 2 - 25, taille + 50, taille + 50);
+          ctx.drawImage(image, -taille / 2, -taille / 2, taille, taille);
+          const rvb = ctx.getImageData(0, 0, l, h).data;
+          return Array.from({ length: l * h }, (_, i) => Math.round(rvb[i * 4] * 0.299 + rvb[i * 4 + 1] * 0.587 + rvb[i * 4 + 2] * 0.114));
+        },
+        [coeur.svg_du_qr(texte), LARGEUR_CAMERA, HAUTEUR_CAMERA, pose],
+      ),
+    );
+  }
   await page.close();
-  filmer(gris);
+  filmer(images);
 }
 const TEL = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
 const ORDI = { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 };
@@ -373,10 +389,39 @@ try {
   await telNoah.getByText('Une absence').waitFor({ timeout: 15_000 });
   await capturer(telNoah, '16b-apprenant-absence');
   verifier(await telNoah.getByText(/Matin · appel clos à 9\sh\s0\d par Awa Diallo/).count() === 1, 'l’appel clos, le téléphone de Noah dit « Une absence », et qui a clos');
+  verifier(await telNoah.locator('.case.absent').count() === 1, 'sa semaine le montre : une case rouge, mardi matin');
+
+  verifier(await tel.getByText('Prochain cours : mardi 17, après-midi').count() === 1, 'à la clôture, l’app propose le prochain cours : sans rien appris, la demi-journée suivante');
+  await telLea.getByText('Prochain appel : mar. 17 nov., 13 h 30').waitFor({ timeout: 15_000 });
+  await tel.click('[data-geste="changerProchain"]');
+  await tel.check('input[value="2026-11-23 matin"]');
+  await capturer(tel, '16c-formateur-prochain');
+  await tel.click('[data-geste="annoncerProchain"]');
+  verifier(await tel.getByText('Prochain cours : lundi 23, matin').count() === 1, '« Changer » : Awa choisit lundi 23 au matin, et l’annonce à la classe');
+  await telLea.getByText('Prochain appel : lun. 23 nov., 9 h').waitFor({ timeout: 15_000 });
+  await capturer(telLea, '16d-apprenant-en-regle');
+  const casesDeLea = await telLea.locator('.semaine .case').evaluateAll((cases) => cases.map((c) => `${c.className.replace('case', '').trim() || '-'}:${c.textContent}`));
+  verifier(
+    casesDeLea.join(' ') === '-: faite:9:01 ailleurs: ailleurs: ailleurs: -: ailleurs: ailleurs: ailleurs: ailleurs:',
+    `la semaine de Léa : sa présence mardi matin, puis pas de cours jusqu’à lundi (${casesDeLea.join(' ')})`,
+  );
+  verifier(await telLea.getByText('En règle').count() === 1, 'l’appel clos et sa présence reçue, Léa est en règle');
+
+  // Yanis, qui a le secret du fil, annonce un autre prochain cours, signé de sa propre clé.
+  const fauxProchain = coeur.Appareil.relire(clesDeYanis).prochain_cours(classeDeYanis.fil, '2026-11-18', 'matin', horloge() + 60_000);
+  const parYanisEncore = new WebSocket(secours.url);
+  await new Promise((ok) => parYanisEncore.on('open', ok));
+  const aLaSeconde = Math.floor(horloge() / 1000);
+  parYanisEncore.send(`["EVENT",${coeur.evenement_nostr(coeur.etiquette_du_fil(classeDeYanis.fil), aLaSeconde + 86_400, coeur.chiffrer_pour_le_fil(classeDeYanis.fil, fauxProchain), aLaSeconde)}]`);
+  await new Promise((ok) => parYanisEncore.on('message', ok));
+  parYanisEncore.close();
+  await telLea.waitForTimeout(1500);
+  verifier(await telLea.getByText('Prochain appel : lun. 23 nov., 9 h').count() === 1, 'un apprenant ne fixe pas le prochain cours : le sien n’est pas signé par un responsable');
 
   reseauDInes.retablir();
-  await telInes.getByText('Présence signée').waitFor({ timeout: 20_000 });
-  verifier(true, 'le réseau revenu, Inès reçoit la réponse : sa présence est signée');
+  await telInes.waitForFunction(() => localStorage.getItem('opl_proto_ines_presences')?.includes('"recu"'), null, { timeout: 20_000 });
+  await telInes.getByText('En règle').waitFor({ timeout: 15_000 });
+  verifier((await telInes.locator('.case.faite').count()) === 1, 'le réseau revenu, Inès reçoit la réponse : sa présence est signée, et elle est en règle');
   await telInes.waitForFunction(() => localStorage.getItem('opl_proto_ines_envois') === '[]', null, { timeout: 15_000 });
   const idDeLaPresence = JSON.parse(enAttente[0]).id;
   verifier(secours.gardes.some((e) => e.id === idDeLaPresence), 'la présence gardée part d’elle-même au retour du réseau, rechargement compris');
@@ -409,13 +454,34 @@ try {
   await telLea.evaluate(() => navigator.serviceWorker.ready.then(() => true));
   await pages.lea.contexte.setOffline(true);
   await telLea.reload();
-  await telLea.getByText('Présence signée').waitFor({ timeout: 15_000 });
+  await telLea.getByText('En règle').waitFor({ timeout: 15_000 });
   verifier(await telLea.getByText('Garde Opn-Link sur ton écran d’accueil').count() === 0, 'sans réseau, le site se rouvre depuis l’appareil, et l’écran d’accueil ne se redemande pas');
   await pages.lea.contexte.setOffline(false);
 
   for (const page of [tel, telLea, telYanis]) await page.emulateMedia({ colorScheme: 'dark' });
   await capturer(tel, '17-formateur-clos-sombre');
-  await capturer(telLea, '18-apprenant-signee-sombre');
+  await capturer(telLea, '18-apprenant-en-regle-sombre');
+
+  // Jeudi, Léa est en entreprise : son téléphone le sait par le prochain cours.
+  ecart = JEUDI - Date.now();
+  await pages.lea.contexte.clock.setSystemTime(JEUDI);
+  await telLea.emulateMedia({ colorScheme: 'light' });
+  await telLea.reload();
+  await telLea.getByText('Retour au centre : lun. 23 nov., 9 h').waitFor({ timeout: 15_000 });
+  await capturer(telLea, '20-apprenant-entreprise');
+  verifier(
+    (await telLea.locator('header.barre.pas-maintenant', { hasText: 'En entreprise' }).count()) === 1 && (await telLea.locator('.case.ailleurs.ici').count()) === 1,
+    'jeudi, la barre dit « En entreprise », en trame, et la case du moment aussi',
+  );
+  verifier(await telLea.locator('[data-geste="signer"]').count() === 0, 'en entreprise, rien n’est dû : pas de touche');
+
+  // Le texte agrandi à 200 %, à 360 pixels : la semaine passe en rangs, et rien ne sort de l'écran.
+  await pages.lea.contexte.addInitScript(() => document.addEventListener('DOMContentLoaded', () => (document.documentElement.style.fontSize = '200%')));
+  await telLea.setViewportSize({ width: 360, height: 640 });
+  await telLea.reload();
+  await telLea.locator('.semaine.en-rangs').waitFor({ timeout: 15_000 });
+  await capturer(telLea, '21-apprenant-texte-200');
+  verifier(await telLea.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'le texte agrandi à 200 %, la semaine se lit en rangs, et rien ne sort de l’écran');
 
   const poids = [];
   const premier = await navigateur.newContext({ ...TEL });
