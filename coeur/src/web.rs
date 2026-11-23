@@ -3,7 +3,7 @@
 
 use wasm_bindgen::prelude::*;
 
-use crate::annonce::{AnnonceDeLAppel, EtatDeLAppel};
+use crate::annonce::{AnnonceDeLAppel, EtatDeLAppel, ProchainCours};
 use crate::appel::{Demi, IdSeance, Presence, Qr};
 use crate::classe::{Acceptation, CodeDeClasse, Membre};
 use crate::cles::{CleAppareil, ClePublique};
@@ -90,6 +90,12 @@ impl Appareil {
     /// Signe sa présence avec les six chiffres tapés.
     pub fn signer_code(&self, seance: &str, code: &str, maintenant: f64) -> Result<String, Erreur> {
         Ok(Presence::depuis_code(&self.0, IdSeance::lire(seance)?, code, heure(maintenant))?.texte())
+    }
+
+    /// Le responsable dit à la classe, sur le fil, la date et la demi-journée du prochain cours.
+    pub fn prochain_cours(&self, fil: &str, date: &str, demi_journee: &str, maintenant: f64) -> Result<String, Erreur> {
+        let fil = SecretDuFil::lire(fil)?;
+        ProchainCours::signer(&fil, date, demi(demi_journee)?, &self.0, heure(maintenant))?.texte(&fil)
     }
 }
 
@@ -281,6 +287,24 @@ pub struct AnnonceJs {
     pub quand: f64,
     /// La clé du responsable qui l'a signée.
     pub par: String,
+}
+
+/// Le prochain cours d'une classe, tel qu'un responsable l'a annoncé sur le fil.
+#[wasm_bindgen(getter_with_clone)]
+pub struct ProchainJs {
+    pub date: String,
+    /// `matin` ou `apres-midi`.
+    pub demi: String,
+    pub quand: f64,
+    pub par: String,
+}
+
+/// Relit le prochain cours venu du fil, et vérifie qu'un des responsables donnés l'a signé.
+#[wasm_bindgen]
+pub fn lire_prochain_cours(fil: &str, texte: &str, responsables: Vec<String>) -> Result<ProchainJs, Erreur> {
+    let responsables = responsables.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
+    let p = ProchainCours::lire(&SecretDuFil::lire(fil)?, texte, &responsables)?;
+    Ok(ProchainJs { date: p.date, demi: p.demi.texte().into(), quand: p.quand as f64, par: p.par.texte() })
 }
 
 /// Relit une annonce de l'appel venue du fil, et vérifie qu'un des responsables donnés l'a signée.

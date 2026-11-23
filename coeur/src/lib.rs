@@ -22,7 +22,7 @@ mod nostr;
 #[cfg(target_arch = "wasm32")]
 mod web;
 
-pub use annonce::{AnnonceDeLAppel, EtatDeLAppel};
+pub use annonce::{AnnonceDeLAppel, EtatDeLAppel, ProchainCours};
 pub use appel::{Demi, IdSeance, PAS_DU_QR_MS, Presence, Qr, SecretDeSeance, VALIDITE_DU_CODE_MS, code_du_qr};
 pub use classe::{Acceptation, CodeDeClasse, Membre, SecretsDeClasse};
 pub use cles::{CleAppareil, ClePublique, Signature};

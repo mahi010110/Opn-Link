@@ -96,6 +96,7 @@ const ACCEPTATION: &str = include_str!("vecteurs/acceptation-v1.txt");
 const FIL_CHIFFRE: &str = include_str!("vecteurs/fil-chiffre-v1.txt");
 const ETIQUETTE_DU_FIL: &str = "opl-fil-68e3771df5dddf4deb00bafc6ef946a7";
 const ANNONCE_DE_L_APPEL: &str = include_str!("vecteurs/appel-v1.txt");
+const PROCHAIN_COURS: &str = include_str!("vecteurs/prochain-v1.txt");
 
 #[test]
 fn la_porte() {
@@ -141,4 +142,16 @@ fn l_annonce_de_l_appel() {
     let signee =
         AnnonceDeLAppel::signer(&fil, &seance, "2026-11-17", Demi::Matin, EtatDeLAppel::Ouvert, &awa(), 1_763_366_460_000).unwrap();
     assert_eq!(signee.texte(&fil).unwrap(), ANNONCE_DE_L_APPEL);
+}
+
+#[test]
+fn le_prochain_cours() {
+    let fil = SecretDuFil::depuis_octets([9u8; 32]);
+    let prochain = ProchainCours::lire(&fil, PROCHAIN_COURS, &[awa().publique()]).unwrap();
+    assert_eq!((prochain.date.as_str(), prochain.demi, prochain.quand), ("2026-11-23", Demi::Matin, 1_763_367_120_000));
+    assert_eq!(prochain.texte(&fil).unwrap(), PROCHAIN_COURS);
+    assert_eq!(
+        ProchainCours::signer(&fil, "2026-11-23", Demi::Matin, &awa(), 1_763_367_120_000).unwrap().texte(&fil).unwrap(),
+        PROCHAIN_COURS
+    );
 }
