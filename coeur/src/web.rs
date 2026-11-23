@@ -1,11 +1,13 @@
 //! Ce que le cœur expose au navigateur. Les heures arrivent en millisecondes (`Date.now()`),
 //! les erreurs repartent avec leur code, que l'écran traduit.
 
+use std::cell::RefCell;
+
 use wasm_bindgen::prelude::*;
 
 use crate::annonce::{AnnonceDeLAppel, EtatDeLAppel, ProchainCours};
 use crate::appel::{Demi, IdSeance, Presence, Qr};
-use crate::classe::{Acceptation, CodeDeClasse, Membre};
+use crate::classe::{Acceptation, CodeDeClasse, Membre, SecretsDeClasse};
 use crate::cles::{CleAppareil, ClePublique};
 use crate::encodage::{b64, de_b64};
 use crate::entree::{Demande, Porte, Responsable, Role};
@@ -19,6 +21,25 @@ impl From<Erreur> for JsValue {
     fn from(e: Erreur) -> Self {
         JsError::new(e.code()).into()
     }
+}
+
+thread_local! {
+    static SECRETS: RefCell<Vec<(String, SecretsDeClasse)>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Les secrets d'une classe se tirent de son code par PBKDF2, 100 000 tours : un calcul long dans
+/// le navigateur, dont l'écran a besoin à chaque dessin. On les garde le temps de la page.
+fn secrets(code: &str) -> Result<SecretsDeClasse, Erreur> {
+    let code = CodeDeClasse::lire(code)?;
+    SECRETS.with(|gardes| {
+        let mut gardes = gardes.borrow_mut();
+        if let Some((_, s)) = gardes.iter().find(|(c, _)| c == code.texte()) {
+            return Ok(s.clone());
+        }
+        let s = code.secrets();
+        gardes.push((code.texte().to_owned(), s.clone()));
+        Ok(s)
+    })
 }
 
 fn heure(ms: f64) -> u64 {
@@ -78,12 +99,12 @@ impl Appareil {
 
     /// Demande à entrer dans la classe : le prénom, le nom, et les clés de cet appareil, signés par lui.
     pub fn demander_entree(&self, code: &str, prenom: &str, nom: &str, maintenant: f64) -> Result<String, Erreur> {
-        Demande::signer(&CodeDeClasse::lire(code)?.secrets(), prenom, nom, &self.0, heure(maintenant))
+        Demande::signer(&secrets(code)?, prenom, nom, &self.0, heure(maintenant))
     }
 
     /// Accepte une demande d'entrée. Rend l'acceptation signée, à remettre à l'apprenant.
     pub fn accepter(&self, code: &str, demande: &str, maintenant: f64) -> Result<String, Erreur> {
-        let classe = CodeDeClasse::lire(code)?.secrets();
+        let classe = secrets(code)?;
         let demande = Demande::lire(&classe, demande)?;
         Acceptation::signer(&classe, demande.membre, &self.0, heure(maintenant))?.texte(&classe)
     }
@@ -95,12 +116,12 @@ impl Appareil {
 
     /// Le chef passe la main à un autre responsable. La passation voyage comme la porte.
     pub fn passer_la_main(&self, code: &str, nouveau: &str, maintenant: f64) -> Result<String, Erreur> {
-        Passation::signer(&CodeDeClasse::lire(code)?.secrets(), &self.0, &ClePublique::lire(nouveau)?, heure(maintenant))
+        Passation::signer(&secrets(code)?, &self.0, &ClePublique::lire(nouveau)?, heure(maintenant))
     }
 
     /// Une lettre aux autres responsables, signée : leurs boîtes sont dans la porte, que tous lisent.
     pub fn ecrire_aux_responsables(&self, code: &str, contenu: &str, maintenant: f64) -> Result<String, Erreur> {
-        EntreResponsables::signer(&CodeDeClasse::lire(code)?.secrets(), &self.0, contenu, heure(maintenant))
+        EntreResponsables::signer(&secrets(code)?, &self.0, contenu, heure(maintenant))
     }
 
     /// Le responsable dit à la classe, sur le fil, la date et la demi-journée du prochain cours.
@@ -113,13 +134,13 @@ impl Appareil {
 /// L'étiquette de la classe, que voient les relais.
 #[wasm_bindgen]
 pub fn etiquette_de_classe(code: &str) -> Result<String, Erreur> {
-    Ok(CodeDeClasse::lire(code)?.secrets().etiquette().to_owned())
+    Ok(secrets(code)?.etiquette().to_owned())
 }
 
 /// L'identifiant d'une demi-journée de la classe, calculé sans rien échanger.
 #[wasm_bindgen]
 pub fn seance(code: &str, date: &str, demi_journee: &str) -> Result<String, Erreur> {
-    Ok(CodeDeClasse::lire(code)?.secrets().seance(date, demi(demi_journee)?)?.texte().to_owned())
+    Ok(secrets(code)?.seance(date, demi(demi_journee)?)?.texte().to_owned())
 }
 
 /// Un code de classe neuf, tel qu'on l'affiche.
@@ -218,7 +239,7 @@ pub fn signer_porte(
             _ => Err(Erreur::ChampInvalide),
         })
         .collect::<Result<Vec<_>, Erreur>>()?;
-    Porte::signer(&CodeDeClasse::lire(code)?.secrets(), nom, centre, matin, apres_midi, &responsables, &chef.0, heure(maintenant))
+    Porte::signer(&secrets(code)?, nom, centre, matin, apres_midi, &responsables, &chef.0, heure(maintenant))
 }
 
 /// Choisit la porte parmi celles que rendent les relais. `chef` vient du lien du QR, s'il y en a un.
@@ -226,12 +247,12 @@ pub fn signer_porte(
 pub fn choisir_porte(code: &str, textes: Vec<String>, chef: Option<String>) -> Result<PorteJs, Erreur> {
     let chef = chef.map(|c| ClePublique::lire(&c)).transpose()?;
     let textes: Vec<&str> = textes.iter().map(String::as_str).collect();
-    Ok(crate::entree::choisir_porte(&CodeDeClasse::lire(code)?.secrets(), &textes, chef.as_ref())?.into())
+    Ok(crate::entree::choisir_porte(&secrets(code)?, &textes, chef.as_ref())?.into())
 }
 
 #[wasm_bindgen]
 pub fn lire_porte(code: &str, texte: &str) -> Result<PorteJs, Erreur> {
-    Ok(Porte::lire(&CodeDeClasse::lire(code)?.secrets(), texte)?.into())
+    Ok(Porte::lire(&secrets(code)?, texte)?.into())
 }
 
 /// Qui a passé la main, à qui, et quand.
@@ -245,14 +266,14 @@ pub struct PassationJs {
 /// Relit une passation, et vérifie que l'ancien chef l'a signée.
 #[wasm_bindgen]
 pub fn lire_passation(code: &str, texte: &str) -> Result<PassationJs, Erreur> {
-    let p = Passation::lire(&CodeDeClasse::lire(code)?.secrets(), texte)?;
+    let p = Passation::lire(&secrets(code)?, texte)?;
     Ok(PassationJs { ancien: p.ancien.texte(), nouveau: p.nouveau.texte(), quand: p.quand as f64 })
 }
 
 /// Le chef actuel : on suit les passations, parmi les textes donnés, à partir du chef qu'on connaît.
 #[wasm_bindgen]
 pub fn chef_actuel(code: &str, textes: Vec<String>, depart: &str) -> Result<String, Erreur> {
-    let classe = CodeDeClasse::lire(code)?.secrets();
+    let classe = secrets(code)?;
     let passations: Vec<Passation> = textes.iter().filter_map(|t| Passation::lire(&classe, t).ok()).collect();
     let regnes = crate::responsables::lignee(&passations, &ClePublique::lire(depart)?);
     Ok(regnes.last().expect("une lignée a toujours un chef").chef.texte())
@@ -270,13 +291,13 @@ pub struct EntreResponsablesJs {
 #[wasm_bindgen]
 pub fn lire_entre_responsables(code: &str, texte: &str, responsables: Vec<String>) -> Result<EntreResponsablesJs, Erreur> {
     let responsables = responsables.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
-    let l = EntreResponsables::lire(&CodeDeClasse::lire(code)?.secrets(), texte, &responsables)?;
+    let l = EntreResponsables::lire(&secrets(code)?, texte, &responsables)?;
     Ok(EntreResponsablesJs { de: l.de.texte(), quand: l.quand as f64, contenu: l.contenu })
 }
 
 #[wasm_bindgen]
 pub fn lire_demande(code: &str, demande: &str) -> Result<MembreJs, Erreur> {
-    let d = Demande::lire(&CodeDeClasse::lire(code)?.secrets(), demande)?;
+    let d = Demande::lire(&secrets(code)?, demande)?;
     Ok(membre_js(d.membre, d.quand))
 }
 
@@ -284,19 +305,19 @@ pub fn lire_demande(code: &str, demande: &str) -> Result<MembreJs, Erreur> {
 #[wasm_bindgen]
 pub fn lire_acceptation(code: &str, acceptation: &str, responsables: Vec<String>) -> Result<MembreJs, Erreur> {
     let responsables = responsables.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
-    let a = Acceptation::lire(&CodeDeClasse::lire(code)?.secrets(), acceptation, &responsables)?;
+    let a = Acceptation::lire(&secrets(code)?, acceptation, &responsables)?;
     Ok(membre_js(a.membre, a.quand))
 }
 
 /// Chiffre pour qui a le code de la classe : c'est ainsi que voyage la porte.
 #[wasm_bindgen]
 pub fn chiffrer_pour_la_classe(code: &str, texte: &str) -> Result<String, Erreur> {
-    CodeDeClasse::lire(code)?.secrets().chiffrer(texte.as_bytes())
+    secrets(code)?.chiffrer(texte.as_bytes())
 }
 
 #[wasm_bindgen]
 pub fn dechiffrer_pour_la_classe(code: &str, chiffre: &str) -> Result<String, Erreur> {
-    String::from_utf8(CodeDeClasse::lire(code)?.secrets().dechiffrer(chiffre)?).map_err(|_| Erreur::LettreIllisible)
+    String::from_utf8(secrets(code)?.dechiffrer(chiffre)?).map_err(|_| Erreur::LettreIllisible)
 }
 
 #[wasm_bindgen]
@@ -362,7 +383,7 @@ pub fn lire_prochain_cours(fil: &str, texte: &str, responsables: Vec<String>) ->
 #[wasm_bindgen]
 pub fn lire_annonce_de_l_appel(code: &str, fil: &str, texte: &str, responsables: Vec<String>) -> Result<AnnonceJs, Erreur> {
     let responsables = responsables.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
-    let a = AnnonceDeLAppel::lire(&SecretDuFil::lire(fil)?, &CodeDeClasse::lire(code)?.secrets(), texte, &responsables)?;
+    let a = AnnonceDeLAppel::lire(&SecretDuFil::lire(fil)?, &secrets(code)?, texte, &responsables)?;
     Ok(AnnonceJs {
         seance: a.seance.texte().into(),
         date: a.date,
@@ -484,7 +505,7 @@ impl Appel {
         inscrits: &str,
         maintenant: f64,
     ) -> Result<Appel, Erreur> {
-        let secrets = CodeDeClasse::lire(code)?.secrets();
+        let secrets = secrets(code)?;
         let feuille = Feuille::ouvrir(&secrets, date, demi(demi_journee)?, &formateur.0, &lire_inscrits(inscrits)?, heure(maintenant))?;
         Ok(Appel { feuille, formateur: formateur.0.clone() })
     }

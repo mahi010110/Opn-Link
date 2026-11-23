@@ -136,6 +136,20 @@ Mesuré le 17 novembre 2026, pour lire les QR avec la caméra : rqrr ajoute
 337 Ko. quircs, un portage en Rust de la bibliothèque quirc, sous licence
 MIT, en ajoute 11,5 : le premier chargement reste à 265 Ko.
 
+## Le code de la classe, dans le navigateur
+
+Le cœur tire les secrets d'une classe de son code par PBKDF2-SHA-256, 100 000
+tours, comme OpenContact. Mesuré le 23 novembre 2026, dans le cœur compilé en
+WebAssembly, sous Node, sur la machine de l'environnement cloud : 210 ms par
+code, en moyenne sur cinq codes.
+
+L'écran en a besoin pour relire la porte, chaque acceptation et chaque
+demande, à chaque dessin. Avec un adjoint, l'écran du formateur recalculait
+plusieurs fois par seconde, et la page ne répondait plus. Le cœur garde
+maintenant ces secrets le temps de la page : le calcul se fait une fois par
+classe, puis il prend 0,1 ms. Sur un vieux téléphone, ce premier calcul sera
+plus long : à mesurer sur place.
+
 ## Les QR codes
 
 Mesurés sur un ordinateur, avec une correction d'erreur moyenne et un contenu
