@@ -5,6 +5,7 @@ use crate::classe::{Membre, SecretsDeClasse};
 use crate::cles::{CleAppareil, ClePublique};
 use crate::encodage::{champ, lire_signe, texte_signe};
 use crate::erreur::Erreur;
+use crate::responsables::{Passation, Regne, lignee};
 
 const PORTE: &str = "opn-link·porte·v1";
 const ENTREE: &str = "opn-link·entree·v1";
@@ -120,17 +121,38 @@ impl Porte {
     }
 }
 
-/// Choisit la porte d'une classe parmi celles que les relais rendent pour son étiquette.
-/// Le lien du QR donne la clé du chef : seule une porte signée par lui compte. Un code tapé
-/// à la main ne la donne pas : si deux chefs différents ont publié une porte, on ne choisit pas.
+/// Choisit la porte d'une classe parmi ce que les relais rendent pour son étiquette : des portes,
+/// et les passations de ses chefs. Le lien du QR donne la clé du chef : on suit ses passations, et
+/// seule une porte signée par un chef de cette lignée, pendant qu'il l'était, compte. Le chef
+/// actuel publie la sienne dès qu'il reçoit la main ; d'ici là, celle de son prédécesseur vaut.
+/// Un code tapé à la main ne donne pas de chef : si les portes ne mènent pas au même chef, on ne
+/// choisit pas.
 pub fn choisir_porte(classe: &SecretsDeClasse, textes: &[&str], chef: Option<&ClePublique>) -> Result<Porte, Erreur> {
-    let portes: Vec<Porte> =
-        textes.iter().filter_map(|t| Porte::lire(classe, t).ok()).filter(|p| chef.is_none_or(|c| &p.chef().cle == c)).collect();
-    let premiere = portes.first().ok_or(Erreur::PorteInconnue)?;
-    if portes.iter().any(|p| p.chef().cle != premiere.chef().cle) {
-        return Err(Erreur::PorteAmbigue);
-    }
-    Ok(portes.into_iter().max_by_key(|p| p.quand).expect("au moins une porte"))
+    let portes: Vec<Porte> = textes.iter().filter_map(|t| Porte::lire(classe, t).ok()).collect();
+    let passations: Vec<Passation> = textes.iter().filter_map(|t| Passation::lire(classe, t).ok()).collect();
+    let regnes = match chef {
+        Some(c) => lignee(&passations, c),
+        None => {
+            let lignees: Vec<Vec<Regne>> = portes.iter().map(|p| lignee(&passations, &p.chef().cle)).collect();
+            let actuel = |l: &Vec<Regne>| l.last().map(|r| r.chef.clone());
+            let premiere = lignees.first().ok_or(Erreur::PorteInconnue)?;
+            if lignees.iter().any(|l| actuel(l) != actuel(premiere)) {
+                return Err(Erreur::PorteAmbigue);
+            }
+            lignees.into_iter().max_by_key(Vec::len).expect("au moins une lignée")
+        }
+    };
+    regnes
+        .iter()
+        .rev()
+        .find_map(|r| {
+            portes
+                .iter()
+                .filter(|p| p.chef().cle == r.chef && p.quand >= r.depuis && r.jusqua.is_none_or(|j| p.quand <= j))
+                .max_by_key(|p| p.quand)
+        })
+        .cloned()
+        .ok_or(Erreur::PorteInconnue)
 }
 
 /// La demande d'entrée d'un apprenant, signée par l'appareil qui signera sa présence.
@@ -247,6 +269,31 @@ mod tests {
         assert_eq!(choisir_porte(&classe, &[&vraie, &fausse], None), Err(Erreur::PorteAmbigue));
         assert_eq!(choisir_porte(&classe, &[&vraie, &fausse, &plus_neuve], Some(&awa.publique())).unwrap().quand, 5);
         assert_eq!(choisir_porte(&classe, &[], None), Err(Erreur::PorteInconnue));
+    }
+
+    #[test]
+    fn la_porte_suit_le_chef_qui_a_recu_la_main() {
+        let classe = CodeDeClasse::nouveau().unwrap().secrets();
+        let awa = CleAppareil::nouvelle().unwrap();
+        let julien = CleAppareil::nouvelle().unwrap();
+        let (r_awa, r_julien) =
+            (responsable("Awa", "Diallo", Role::Formateur, &awa), responsable("Julien", "Morel", Role::Formateur, &julien));
+        let porte = |responsables: &[Responsable], chef: &CleAppareil, quand: u64| {
+            Porte::signer(&classe, "BTS SIO 2", "Centre", "9:00-12:30", "13:30-17:00", responsables, chef, quand).unwrap()
+        };
+        let d_awa = porte(&[r_awa.clone(), r_julien.clone()], &awa, 5);
+        let passation = Passation::signer(&classe, &awa, &julien.publique(), 6).unwrap();
+        let tardive_d_awa = porte(&[r_awa.clone(), r_julien.clone()], &awa, 8);
+        let de_julien = porte(&[r_julien, r_awa], &julien, 7);
+        let awa_cle = Some(awa.publique());
+
+        let tant_que_julien_n_a_rien_publie = choisir_porte(&classe, &[&d_awa, &passation, &tardive_d_awa], awa_cle.as_ref()).unwrap();
+        assert_eq!(tant_que_julien_n_a_rien_publie.quand, 5);
+        let ensuite = choisir_porte(&classe, &[&d_awa, &passation, &tardive_d_awa, &de_julien], awa_cle.as_ref()).unwrap();
+        assert_eq!((ensuite.chef().cle.clone(), ensuite.quand), (julien.publique(), 7));
+        assert_eq!(choisir_porte(&classe, &[&d_awa, &de_julien, &passation], None).unwrap().quand, 7);
+        assert_eq!(choisir_porte(&classe, &[&d_awa, &de_julien], None), Err(Erreur::PorteAmbigue));
+        assert_eq!(choisir_porte(&classe, &[&d_awa, &de_julien], awa_cle.as_ref()).unwrap().quand, 5);
     }
 
     #[test]

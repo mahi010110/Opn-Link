@@ -12,6 +12,7 @@ use crate::entree::{Demande, Porte, Responsable, Role};
 use crate::erreur::Erreur;
 use crate::feuille::{EtatPresence, Feuille, Recu, Voie};
 use crate::fil::SecretDuFil;
+use crate::responsables::{EntreResponsables, Passation};
 use crate::{appel, feuille, lettre};
 
 impl From<Erreur> for JsValue {
@@ -90,6 +91,16 @@ impl Appareil {
     /// Signe sa présence avec les six chiffres tapés.
     pub fn signer_code(&self, seance: &str, code: &str, maintenant: f64) -> Result<String, Erreur> {
         Ok(Presence::depuis_code(&self.0, IdSeance::lire(seance)?, code, heure(maintenant))?.texte())
+    }
+
+    /// Le chef passe la main à un autre responsable. La passation voyage comme la porte.
+    pub fn passer_la_main(&self, code: &str, nouveau: &str, maintenant: f64) -> Result<String, Erreur> {
+        Passation::signer(&CodeDeClasse::lire(code)?.secrets(), &self.0, &ClePublique::lire(nouveau)?, heure(maintenant))
+    }
+
+    /// Une lettre aux autres responsables, signée : leurs boîtes sont dans la porte, que tous lisent.
+    pub fn ecrire_aux_responsables(&self, code: &str, contenu: &str, maintenant: f64) -> Result<String, Erreur> {
+        EntreResponsables::signer(&CodeDeClasse::lire(code)?.secrets(), &self.0, contenu, heure(maintenant))
     }
 
     /// Le responsable dit à la classe, sur le fil, la date et la demi-journée du prochain cours.
@@ -221,6 +232,46 @@ pub fn choisir_porte(code: &str, textes: Vec<String>, chef: Option<String>) -> R
 #[wasm_bindgen]
 pub fn lire_porte(code: &str, texte: &str) -> Result<PorteJs, Erreur> {
     Ok(Porte::lire(&CodeDeClasse::lire(code)?.secrets(), texte)?.into())
+}
+
+/// Qui a passé la main, à qui, et quand.
+#[wasm_bindgen(getter_with_clone)]
+pub struct PassationJs {
+    pub ancien: String,
+    pub nouveau: String,
+    pub quand: f64,
+}
+
+/// Relit une passation, et vérifie que l'ancien chef l'a signée.
+#[wasm_bindgen]
+pub fn lire_passation(code: &str, texte: &str) -> Result<PassationJs, Erreur> {
+    let p = Passation::lire(&CodeDeClasse::lire(code)?.secrets(), texte)?;
+    Ok(PassationJs { ancien: p.ancien.texte(), nouveau: p.nouveau.texte(), quand: p.quand as f64 })
+}
+
+/// Le chef actuel : on suit les passations, parmi les textes donnés, à partir du chef qu'on connaît.
+#[wasm_bindgen]
+pub fn chef_actuel(code: &str, textes: Vec<String>, depart: &str) -> Result<String, Erreur> {
+    let classe = CodeDeClasse::lire(code)?.secrets();
+    let passations: Vec<Passation> = textes.iter().filter_map(|t| Passation::lire(&classe, t).ok()).collect();
+    let regnes = crate::responsables::lignee(&passations, &ClePublique::lire(depart)?);
+    Ok(regnes.last().expect("une lignée a toujours un chef").chef.texte())
+}
+
+/// Une lettre d'un responsable aux autres.
+#[wasm_bindgen(getter_with_clone)]
+pub struct EntreResponsablesJs {
+    pub de: String,
+    pub quand: f64,
+    pub contenu: String,
+}
+
+/// Relit une lettre entre responsables. Elle ne compte que signée par l'un des responsables donnés.
+#[wasm_bindgen]
+pub fn lire_entre_responsables(code: &str, texte: &str, responsables: Vec<String>) -> Result<EntreResponsablesJs, Erreur> {
+    let responsables = responsables.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
+    let l = EntreResponsables::lire(&CodeDeClasse::lire(code)?.secrets(), texte, &responsables)?;
+    Ok(EntreResponsablesJs { de: l.de.texte(), quand: l.quand as f64, contenu: l.contenu })
 }
 
 #[wasm_bindgen]

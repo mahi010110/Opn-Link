@@ -173,13 +173,65 @@ opn-link·porte·v1
 
 - Le rôle vaut `formateur` ou `centre`.
 - Les horaires s'écrivent `9:00-12:30`.
-- Le lien du QR de la classe porte la clé du chef : seule une porte signée
-  par lui compte. Un code tapé à la main ne la porte pas : si deux chefs
-  différents ont publié une porte pour le même code, l'app ne choisit pas.
-  Sinon, elle prend la plus récente.
+- Le lien du QR de la classe porte la clé du chef. L'app suit ses
+  passations (partie suivante) jusqu'au chef actuel, et prend la porte la
+  plus récente qu'il a signée. Tant qu'il n'en a pas publié, celle de son
+  prédécesseur vaut, si elle date d'avant la passation. Une porte signée par
+  un ancien chef après sa passation ne compte pas.
+- Un code tapé à la main ne porte pas de clé : si les portes publiées pour
+  ce code ne mènent pas au même chef, l'app ne choisit pas.
+- Nommer un adjoint, c'est signer une nouvelle porte qui le compte.
 
 Vecteurs : `coeur/tests/vecteurs/porte-v1.txt`, et la même chiffrée,
 `porte-chiffree-v1.txt`.
+
+## La passation
+
+Le chef passe la main à un autre responsable. Il signe seul : c'est sa clé
+qui fait foi.
+
+```
+opn-link·passation·v1
+<étiquette de la classe>
+<clé de l'ancien chef>
+<clé du nouveau chef>
+<heure>
+<signature de l'ancien chef>
+```
+
+- Un chef ne passe la main qu'une fois : sa première passation compte, et ce
+  qu'il signe ensuite comme chef ne compte plus. Seul le nouveau chef peut la
+  lui rendre, par une passation à lui.
+- Le nouveau chef signe aussitôt une porte où il est en premier. L'ancien y
+  reste, comme adjoint.
+- Elle voyage comme la porte : sous l'étiquette de la classe, chiffrée par
+  sa clé. Chaque responsable la republie avec la porte, et l'apprenant la
+  garde avec elle.
+
+Vecteur : `coeur/tests/vecteurs/passation-v1.txt`, Awa passe la main à la
+clé tirée des octets `31` et `32`, le 17 novembre 2026 à midi.
+
+## La lettre entre responsables
+
+Les responsables s'écrivent pour partager l'état de la classe. Leurs boîtes
+sont dans la porte, que tout apprenant peut lire : la lettre est donc signée
+par celui qui l'écrit.
+
+```
+opn-link·responsables·v1
+<étiquette de la classe>
+<clé de celui qui écrit>
+<heure>
+<contenu, sur une ligne>
+<signature>
+```
+
+- Elle ne compte que signée par un responsable de la porte.
+- Le contenu est du JSON, sans retour à la ligne (partie « Les lettres du
+  prototype »).
+
+Vecteur : `coeur/tests/vecteurs/responsables-v1.txt`, signée par Awa le 17
+novembre 2026 à 9 h 30, pour le contenu `{"v":1,"t":"classe"}`.
 
 ## La demande d'entrée
 

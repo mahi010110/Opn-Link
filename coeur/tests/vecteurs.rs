@@ -33,6 +33,10 @@ fn lea() -> CleAppareil {
     CleAppareil::depuis_octets(&[0x21; 32], &[0x22; 32]).unwrap()
 }
 
+fn julien() -> CleAppareil {
+    CleAppareil::depuis_octets(&[0x31; 32], &[0x32; 32]).unwrap()
+}
+
 #[test]
 fn la_classe_et_ses_seances() {
     let secrets = CodeDeClasse::lire(CODE).unwrap().secrets();
@@ -97,6 +101,9 @@ const FIL_CHIFFRE: &str = include_str!("vecteurs/fil-chiffre-v1.txt");
 const ETIQUETTE_DU_FIL: &str = "opl-fil-68e3771df5dddf4deb00bafc6ef946a7";
 const ANNONCE_DE_L_APPEL: &str = include_str!("vecteurs/appel-v1.txt");
 const PROCHAIN_COURS: &str = include_str!("vecteurs/prochain-v1.txt");
+const PASSATION: &str = include_str!("vecteurs/passation-v1.txt");
+const ENTRE_RESPONSABLES: &str = include_str!("vecteurs/responsables-v1.txt");
+const JULIEN_CLE: &str = "BHQxsY8FWshzset9dNhxatHj3waQiwDML5ARU_jrZCgYSGfA_asznGxJCjmucE0ptbTC8SRDUKKQWWIs9JtCEVU";
 
 #[test]
 fn la_porte() {
@@ -154,4 +161,24 @@ fn le_prochain_cours() {
         ProchainCours::signer(&fil, "2026-11-23", Demi::Matin, &awa(), 1_763_367_120_000).unwrap().texte(&fil).unwrap(),
         PROCHAIN_COURS
     );
+}
+
+#[test]
+fn la_passation() {
+    let classe = CodeDeClasse::lire(CODE).unwrap().secrets();
+    let passation = Passation::lire(&classe, PASSATION).unwrap();
+    assert_eq!(
+        (passation.ancien.clone(), passation.nouveau.texte(), passation.quand),
+        (awa().publique(), JULIEN_CLE.into(), 1_763_377_200_000)
+    );
+    assert_eq!(passation.nouveau, julien().publique());
+    assert_eq!(Passation::signer(&classe, &awa(), &julien().publique(), 1_763_377_200_000).unwrap(), PASSATION);
+}
+
+#[test]
+fn la_lettre_entre_responsables() {
+    let classe = CodeDeClasse::lire(CODE).unwrap().secrets();
+    let lettre = EntreResponsables::lire(&classe, ENTRE_RESPONSABLES, &[awa().publique(), julien().publique()]).unwrap();
+    assert_eq!((lettre.de, lettre.quand, lettre.contenu.as_str()), (awa().publique(), 1_763_368_200_000, r#"{"v":1,"t":"classe"}"#));
+    assert_eq!(EntreResponsables::signer(&classe, &awa(), r#"{"v":1,"t":"classe"}"#, 1_763_368_200_000).unwrap(), ENTRE_RESPONSABLES);
 }
