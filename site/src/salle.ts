@@ -8,6 +8,7 @@ import { lienDeLaClasse, recevoir } from './lettres';
 import { afficher, codeAffiche, esc, heure, jour, paves } from './vue';
 
 const AFFICHER_CLOS_MS = 3000;
+const CLOTURE_RECENTE_MS = 60_000;
 
 export function salle(ctx: Contexte): void {
   const { coeur, relais, moi } = ctx;
@@ -109,7 +110,8 @@ export function salle(ctx: Contexte): void {
       if (l.t === 'reouvert') clos = undefined;
       if (l.t === 'clos') {
         compte = [l.presents, l.presents + l.absents];
-        if (Date.now() - l.quand < AFFICHER_CLOS_MS) {
+        // Une lettre arrivée un peu en retard montre encore la clôture, trois secondes à partir de là.
+        if (Date.now() - l.quand < CLOTURE_RECENTE_MS) {
           clos = l.quand;
           setTimeout(() => {
             if (clos === l.quand) {
