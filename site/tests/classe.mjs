@@ -589,8 +589,10 @@ try {
   );
   await tel.locator('[data-geste="nommer"]').waitFor({ state: 'detached', timeout: 15_000 });
   verifier(
-    (await tel.locator('[data-geste="passer"]').count()) === 0 && (await tel.getByText('formateur · adjoint').count()) === 1,
-    'Awa est adjoint : les gestes du chef ont quitté son écran',
+    (await tel.locator('[data-geste="passer"]').count()) === 0 &&
+      (await tel.locator('[data-geste="reglages"]').count()) === 0 &&
+      (await tel.getByText('formateur · adjoint').count()) === 1,
+    'Awa est adjoint : les gestes du chef, réglages compris, ont quitté son écran',
   );
   const chefChezLea = async () =>
     coeur.lire_porte(code, JSON.parse(await telLea.evaluate(() => localStorage.getItem('opl_proto_lea_classes')))[0].porte).responsables[0].prenom;
@@ -625,6 +627,22 @@ try {
   await telLea.reload();
   await telLea.getByText('Retour au centre : lun. 30 nov., 9 h').waitFor({ timeout: 15_000 });
   verifier(await telLea.getByText('Garde Opn-Link sur ton écran d’accueil').count() === 0, '« Plus tard », et la demande ne revient plus : une seule fois');
+
+  // Julien, chef, avance le matin à 8 h 30. Trente secondes pour annuler, puis la porte part.
+  await telJulien.click('[data-geste="classe"]');
+  await telJulien.click('[data-geste="reglages"]');
+  await telJulien.click('[data-geste="horaires"]');
+  await telJulien.fill('#matin-debut', 'neuf heures');
+  await telJulien.click('[data-geste="enregistrerHoraires"]');
+  verifier(await telJulien.locator('#erreur-horaires').count() === 1, 'une heure illisible est refusée sous les horaires, comme à la création');
+  await capturer(telJulien, '20c-julien-horaires');
+  await telJulien.fill('#matin-debut', '8h30');
+  await telJulien.click('[data-geste="enregistrerHoraires"]');
+  const delaiDesHoraires = Number((await telJulien.getByText(/8\sh\s30 à 12\sh\s30 · 13\sh\s30 à 17\sh · dans \d+\ss/).textContent()).match(/dans (\d+)/)[1]);
+  verifier(delaiDesHoraires >= 25 && (await telJulien.locator('[data-geste="annulerHoraires"]').count()) === 1, `les horaires attendent trente secondes, avec « Annuler » (${delaiDesHoraires} s)`);
+  await capturer(telJulien, '20d-julien-reglages');
+  await telLea.getByText('Retour au centre : lun. 30 nov., 8 h 30').waitFor({ timeout: 60_000 });
+  verifier(true, 'le téléphone de Léa suit les nouveaux horaires : « Retour au centre : lun. 30 nov., 8 h 30 »');
 
   // Le texte agrandi à 200 %, à 360 pixels : la semaine passe en rangs, et rien ne sort de l'écran.
   await pages.lea.contexte.addInitScript(() => document.addEventListener('DOMContentLoaded', () => (document.documentElement.style.fontSize = '200%')));

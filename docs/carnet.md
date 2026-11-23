@@ -514,3 +514,6 @@ refusés.
 - Nommer un adjoint et passer la main sont faits. Choisis en codant, à
   valider : l'invitation porte un jeton valable sept jours, et la fusion de
   l'état partagé entre responsables ne retire jamais rien.
+- Les réglages du chef sont faits avec les horaires. Choisi en codant, à
+  valider : « Réglages » ne montre que ce qui marche déjà, et s'ouvre depuis
+  « Membres » en attendant l'écran « Classe ».

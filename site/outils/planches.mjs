@@ -72,6 +72,8 @@ const PLANCHES = [
       ['17b-formateur-passer', 'Passer la main', 'Le nouveau chef, parmi les adjoints.'],
       ['17c-formateur-passation-attend', 'Trente secondes pour annuler', 'Ensuite, seul le nouveau chef pourra la rendre.'],
       ['17d-julien-chef', 'Julien est chef', 'Il publie la porte où il est en premier. Awa y reste, comme adjoint.'],
+      ['20c-julien-horaires', 'Les horaires', 'Dans les réglages, que seul le chef voit. Une heure illisible est refusée sous le champ, comme à la création.'],
+      ['20d-julien-reglages', 'Trente secondes pour annuler', 'Puis la porte part, et les téléphones des apprenants la suivent.'],
     ],
   },
   {

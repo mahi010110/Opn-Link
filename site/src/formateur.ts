@@ -7,6 +7,7 @@ import type { Appel } from './coeur';
 import { type Contexte, faits, nomDe } from './contexte';
 import { type Creneau, type Demi, enJour, enTexte, lireCreneau, lundiDe, ouvre, plusJours, proposerLeProchain, rang, suivant } from './creneaux';
 import { type ClasseGardee, type Moi, classes, ecrire, estResponsable, garderClasse, lire } from './etat';
+import { type Horaires, champsDesHoraires, lireLesHoraires } from './horaires';
 import { annoncerLAppel, annoncerLeProchain, ecouterLaPorte, envoyer, lienDAdjoint, lienDeLaClasse, nouveauJeton, publierPorte, recevoir } from './lettres';
 import { aDeQuoiRepondre, chefActuel, ecrireAuxResponsables, etatChange, fusionner, passationsDe, porteAJour } from './responsables';
 import { codeDe, phrase } from './textes';
@@ -21,7 +22,9 @@ type Vue =
   | { ecran: 'lire'; cle: string; erreur?: string; sansCamera?: boolean }
   | { ecran: 'prochain'; choix: Creneau }
   | { ecran: 'adjoint'; jeton: string; role: 'formateur' | 'centre'; montre: boolean; copie?: boolean }
-  | { ecran: 'passer'; vers: string };
+  | { ecran: 'passer'; vers: string }
+  | { ecran: 'reglages' }
+  | { ecran: 'horaires'; saisis?: Horaires; erreur?: string; heuresFausses?: string[] };
 
 const ANNULER_MS = 30_000;
 const HUIT_SEMAINES = 56;
@@ -75,8 +78,8 @@ export function formateur(ctx: Contexte): void {
   // l'horloge de cet appareil retarde sur celle d'un autre responsable : sinon, elle ne compterait pas.
   const heureSuivante = () =>
     Math.max(Date.now(), porte.quand + 1, ...(classe.passations ?? []).map((t) => coeur.lire_passation(classe.code, t).quand + 1));
-  const signerLaPorte = (lignes: string[]) =>
-    coeur.signer_porte(classe.code, porte.nom, porte.centre, porte.matin, porte.apres_midi, lignes.join('\n'), moi, heureSuivante());
+  const signerLaPorte = (lignes: string[], matin = porte.matin, apresMidi = porte.apres_midi) =>
+    coeur.signer_porte(classe.code, porte.nom, porte.centre, matin, apresMidi, lignes.join('\n'), moi, heureSuivante());
   // Le nouveau chef publie aussitôt une porte où il est en premier : l'ancien y reste, comme adjoint.
   const prendreLaMain = () => {
     if (!estChef() || porte.responsables[0].cle === moi.cle()) return;
@@ -133,6 +136,17 @@ export function formateur(ctx: Contexte): void {
     publierPorte(coeur, relais, classe.code, passation);
     changer({ ...classe, role: 'adjoint', passations: [...(classe.passations ?? []), passation], passationEnAttente: undefined });
   };
+  // Les nouveaux horaires remplacent ceux de toute la classe : trente secondes pour annuler, puis
+  // la porte qui les porte part, et les téléphones des apprenants la suivent.
+  const changerLesHorairesALHeure = () => {
+    const attente = classe.horairesEnAttente;
+    if (!attente || Date.now() < attente.part) return;
+    if (!estChef()) return changer({ ...classe, horairesEnAttente: undefined });
+    const nouvelle = signerLaPorte(porte.responsables.map(enLigne), attente.matin, attente.apresMidi);
+    publierPorte(coeur, relais, classe.code, nouvelle);
+    changer({ ...classe, porte: nouvelle, portePubliee: Date.now(), horairesEnAttente: undefined });
+  };
+
   const adjoints = () => {
     const chef = chefActuel(ctx, classe);
     return porte.responsables.filter((r) => r.cle !== chef);
@@ -289,6 +303,25 @@ export function formateur(ctx: Contexte): void {
       changer({ ...classe, passationEnAttente: { vers: vue.vers, part: Date.now() + ANNULER_MS } });
       vers({ ecran: 'membres' });
     },
+    reglages: () => {
+      if (estChef()) vers({ ecran: 'reglages' });
+    },
+    horaires: () => {
+      if (estChef()) vers({ ecran: 'horaires' });
+    },
+    enregistrerHoraires: () => {
+      if (vue.ecran !== 'horaires' || !estChef()) return;
+      const { saisis, lus, erreur, heuresFausses } = lireLesHoraires();
+      if (!lus) return vers({ ecran: 'horaires', saisis, erreur, heuresFausses });
+      const [matin, apresMidi] = [lus.matin.join('-'), lus.apresMidi.join('-')];
+      const inchanges = matin === porte.matin && apresMidi === porte.apres_midi;
+      changer({ ...classe, horairesEnAttente: inchanges ? undefined : { matin, apresMidi, part: Date.now() + ANNULER_MS } });
+      vers({ ecran: 'reglages' });
+    },
+    annulerHoraires: () => {
+      changer({ ...classe, horairesEnAttente: undefined });
+      rendre();
+    },
     annulerPassation: () => {
       changer({ ...classe, passationEnAttente: undefined });
       rendre();
@@ -309,7 +342,14 @@ export function formateur(ctx: Contexte): void {
       rendre();
     },
     nom: (c: HTMLElement) => vers({ ecran: 'nom', cle: c.dataset.cle! }),
-    retour: () => vers(vue.ecran === 'adjoint' || vue.ecran === 'passer' ? { ecran: 'membres' } : { ecran: 'cours' }),
+    retour: () =>
+      vers(
+        vue.ecran === 'horaires'
+          ? { ecran: 'reglages' }
+          : vue.ecran === 'adjoint' || vue.ecran === 'passer' || vue.ecran === 'reglages'
+            ? { ecran: 'membres' }
+            : { ecran: 'cours' },
+      ),
     ici: () => {
       if ((vue.ecran !== 'nom' && vue.ecran !== 'lire') || !appel) return;
       appel.signer_ici(vue.cle, Date.now());
@@ -471,6 +511,7 @@ export function formateur(ctx: Contexte): void {
          <div class="note-gestes">
            <button class="btn" data-geste="inviter">${ic('qr-code')}Inviter des apprenants</button>
            ${estChef() ? `<button class="btn" data-geste="nommer">${ic('plus')}Nommer un adjoint</button>` : ''}
+           ${estChef() ? `<button class="btn" data-geste="reglages">${ic('settings-2')}Réglages</button>` : ''}
          </div>
          ${estChef() && adjoints().length && !attente ? `<section class="bloc"><p class="etiquette">La fin</p><div class="note-gestes"><button class="btn" data-geste="passer">${ic('switch')}Passer la main</button></div></section>` : ''}
        </main>
@@ -508,6 +549,44 @@ export function formateur(ctx: Contexte): void {
         rendre();
       };
     }
+  };
+
+  // Les réglages ne montrent que ce qui marche déjà : les horaires. Les interrupteurs de la maquette
+  // (l'identité, les documents, le suivi) viendront avec leurs fonctions.
+  const ecranReglages = () => {
+    const attente = classe.horairesEnAttente;
+    const texte = (matin: string, apresMidi: string) =>
+      [matin, apresMidi].map((h) => h.split('-').map(horaire).join(' à ')).join(' · ');
+    const ligne = attente
+      ? `<div class="rangee"><div><b>Les horaires</b><span class="mono">${texte(attente.matin, attente.apresMidi)} · dans ${Math.max(1, Math.ceil((attente.part - Date.now()) / 1000))}\u00a0s</span></div><button class="btn" data-geste="annulerHoraires">${ic('undo')}Annuler</button></div>`
+      : `<button class="rangee" data-geste="horaires"><div><b>Les horaires</b><span class="mono">${texte(porte.matin, porte.apres_midi)}</span></div>${ic('chevron-right')}</button>`;
+    afficher(
+      'tel',
+      'Réglages',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Réglages</h1><span class="mono">${esc(porte.nom)} · chef</span></header>
+       <main class="page">
+         <div class="liste">${ligne}</div>
+         <p class="mono">Seul le chef voit cet écran.</p>
+       </main>
+       <footer class="bas"><div class="gestes">${retour}</div>${faits(relais)}</footer>`,
+      gestes,
+    );
+  };
+
+  const ecranHoraires = (v: Extract<Vue, { ecran: 'horaires' }>) => {
+    const actuels: Horaires = { matin: porte.matin.split('-') as [string, string], apresMidi: porte.apres_midi.split('-') as [string, string] };
+    afficher(
+      'tel',
+      'Horaires',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Horaires</h1><span class="mono">${esc(porte.nom)} · chef</span></header>
+       <main class="page">
+         ${champsDesHoraires(v.saisis ?? actuels, v.erreur, v.heuresFausses)}
+         <p class="mono">Les responsables et les apprenants de la classe verront les nouveaux horaires.</p>
+       </main>
+       <footer class="bas"><div class="gestes">${retour}<button class="touche" data-geste="enregistrerHoraires">${ic('check', 'ic-24')}<span>Enregistrer</span></button></div>${faits(relais)}</footer>`,
+      gestes,
+      true,
+    );
   };
 
   // Le chef invite un formateur ou le centre. L'invitation est un lien, avec un jeton tiré pour
@@ -693,6 +772,8 @@ export function formateur(ctx: Contexte): void {
     if (vue.ecran === 'prochain') return ecranProchain(vue);
     if (vue.ecran === 'adjoint') return ecranAdjoint(vue);
     if (vue.ecran === 'passer') return ecranPasser(vue);
+    if (vue.ecran === 'reglages') return ecranReglages();
+    if (vue.ecran === 'horaires') return ecranHoraires(vue);
     if (vue.ecran === 'inviter') return inviter(vue);
     if (vue.ecran === 'accepter') return ecranAccepter(vue);
     if (vue.ecran === 'membres') return ecranMembres();
@@ -747,13 +828,17 @@ export function formateur(ctx: Contexte): void {
   setInterval(() => {
     const avant = classe.prochainEnAttente;
     const passation = classe.passationEnAttente;
+    const horaires = classe.horairesEnAttente;
     envoyerLeProchainALHeure();
     passerLaMainALHeure();
+    changerLesHorairesALHeure();
+    if (horaires && vue.ecran === 'reglages') rendre();
     const decompte = (appel?.close() && !appel.definitive(Date.now() - 2000)) || avant;
     if (decompte && vue.ecran === 'cours') rendre();
     if (passation && vue.ecran === 'membres') rendre();
   }, 1000);
   envoyerLeProchainALHeure();
   passerLaMainALHeure();
+  changerLesHorairesALHeure();
   rendre();
 }

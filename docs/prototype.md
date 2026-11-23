@@ -351,6 +351,15 @@ porte que l'apprenant ne suit plus, une porte acceptée sans suivre le chef,
 une passation sans délai, un « Annuler » sans effet, une passation que
 l'apprenant ne suit pas.
 
+Fait ensuite le 23 novembre 2026, les réglages du chef, avec ce qui marche
+déjà : les horaires. « Réglages » s'ouvre depuis « Membres », chez le chef
+seulement. Les horaires se tapent comme à la création, et remplacent ceux de
+toute la classe : trente secondes pour annuler, puis la porte qui les porte
+part, et les téléphones des apprenants la suivent. Le scénario le joue : Julien,
+devenu chef, avance le matin à 8 h 30, et Léa lit « Retour au centre : lun.
+30 nov., 8 h 30 ». Deux défauts posés exprès le font échouer : des horaires
+sans délai, et « Réglages » chez un adjoint.
+
 Le scénario regardait « Appel clos » à la salle après la capture du
 formateur, alors que la salle ne le montre que trois secondes : une machine
 chargée le manquait. Il guette maintenant la salle avant de clore.
@@ -374,9 +383,11 @@ on construit directement la première version complète
    Fait en partie le 17 novembre 2026 : créer, inviter, rejoindre, accepter,
    les membres, et le site installable qui marche sans réseau. L'écran
    d'accueil redemandé avant plus de sept jours sans cours est fait le 23
-   novembre 2026. Nommer un adjoint et passer la main sont faits le même
-   jour. Reste : les réglages du chef, corriger son nom, plusieurs classes et
-   « Mes cours », refaire l'invitation.
+   novembre 2026. Nommer un adjoint, passer la main et les horaires dans les
+   réglages du chef sont faits le même jour. Reste : corriger son nom,
+   plusieurs classes et « Mes cours », refaire l'invitation. Les
+   interrupteurs des réglages viendront avec leurs fonctions : l'identité avec
+   « Moi », les documents à l'étape 5, le suivi à l'étape 6.
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
    relais publics, l'écran d'entrée de chacun. Il passe avant la fin du 1 :
    sans les relais publics, rien ne marchait hors des tests. Les relais
@@ -563,6 +574,11 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
   avec leurs étapes ;
 - « accepté le » devient « depuis le », dans « Membres » : l'app ne connaît
   pas le genre de la personne ;
+- « Réglages » s'ouvre depuis « Membres », chez le chef, en attendant
+  l'écran « Classe » de la conception. Il ne montre que les horaires : un
+  interrupteur qui ne fait encore rien ne s'affiche pas ;
+- les nouveaux horaires attendent trente secondes, avec « Annuler » : ils
+  remplacent ceux de toute la classe ;
 - l'écran d'accueil se redemande dès que le prochain cours est à plus de
   sept jours, et pas seulement à la dernière demi-journée avant : un
   apprenant qui ouvre l'app le lendemain court le même risque. Ailleurs que

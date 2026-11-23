@@ -493,7 +493,8 @@ attend la fin des trente secondes pour partir. Chez chacun, `classes` garde
 `passations`, les passations du chef. Chez le chef, `invitations`, les
 invitations d'adjoint de moins de sept jours, `candidats`, les demandes
 d'adjoint qui attendent son accord, et `passationEnAttente`, la main qu'il
-passe dans trente secondes. Le rôle `adjoint` marque un responsable qui
+passe dans trente secondes, et `horairesEnAttente`, les horaires qui
+changent dans trente secondes. Le rôle `adjoint` marque un responsable qui
 n'est pas chef, ou qui attend l'accord du chef tant qu'il n'a pas le secret
 du fil.
 

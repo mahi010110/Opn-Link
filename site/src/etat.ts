@@ -36,6 +36,8 @@ export interface ClasseGardee {
   candidats?: { demande: string; role: string; jeton: string }[];
   /// Le chef qui passe la main : à qui, et quand la passation part, après le délai pour annuler.
   passationEnAttente?: { vers: string; part: number };
+  /// Le chef qui change les horaires : les nouveaux, et quand la porte qui les porte part.
+  horairesEnAttente?: { matin: string; apresMidi: string; part: number };
 }
 
 export const estResponsable = (c: ClasseGardee): boolean => c.role === 'chef' || c.role === 'adjoint';
