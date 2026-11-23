@@ -7,7 +7,8 @@
 import { arreter, poser, viser } from './camera';
 import { type Contexte, faits, nomDe } from './contexte';
 import { type Creneau, type Demi, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
-import { type ClasseGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
+import { type Erreurs, champDuNom, nomTape } from './entree';
+import { type ClasseGardee, type Theme, appliquerLeTheme, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
 import { entree } from './routes';
 import { ecouterLaPorte, ecouterLeFil, envoyer, recevoir } from './lettres';
 import { passationsDe, porteAJour } from './responsables';
@@ -22,7 +23,12 @@ interface Garde extends Creneau {
   recu?: { quand: number; par: string };
 }
 
-type Vue = { ecran: 'jour' } | { ecran: 'signer'; chiffres: string; erreur?: string; erreurQr?: string; sansCamera?: boolean } | { ecran: 'sans-reseau' };
+type Vue =
+  | { ecran: 'jour' }
+  | { ecran: 'signer'; chiffres: string; erreur?: string; erreurQr?: string; sansCamera?: boolean }
+  | { ecran: 'sans-reseau' }
+  | { ecran: 'moi' }
+  | { ecran: 'nom'; prenom: string; nom: string; erreurs?: Erreurs };
 
 type Annonce = ReturnType<Contexte['coeur']['lire_annonce_de_l_appel']>;
 interface AnnonceGardee extends Creneau {
@@ -45,7 +51,8 @@ const UNE_SEMAINE = 7;
 const SANS_VISITE_JOURS = 7;
 // Le temps de joindre un relais au démarrage, avant de conclure qu'il n'y a pas de réseau.
 const HORS_LIGNE_MS = 5_000;
-const MENU = `<nav class="menu" aria-label="Entrées"><a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#">Moi</a></nav>`;
+const MENU = `<nav class="menu" aria-label="Entrées"><a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#" data-geste="moi">Moi</a></nav>`;
+const ANNULER_MS = 30_000;
 
 export function apprenant(ctx: Contexte): void {
   const { coeur, relais, moi } = ctx;
@@ -288,6 +295,25 @@ export function apprenant(ctx: Contexte): void {
     </div></section>`;
   };
 
+  // Le nom que voient les responsables : la dernière correction signée, sinon celui de l'acceptation.
+  const monNom = (): { prenom: string; nom: string } => {
+    try {
+      if (classe.nom) return coeur.lire_correction_de_nom(classe.code, classe.nom);
+      return coeur.lire_acceptation(classe.code, classe.acceptation!, responsables());
+    } catch {
+      return { prenom: '', nom: '' };
+    }
+  };
+  // Le nom corrigé part à chaque responsable trente secondes après, le temps d'annuler (règle 6).
+  const envoyerLeNomALHeure = () => {
+    const attente = classe.nomEnAttente;
+    if (!attente || Date.now() < attente.part) return;
+    const correction = moi.corriger_son_nom(classe.code, attente.prenom, attente.nom, Date.now());
+    for (const r of porte.responsables) envoyer(coeur, relais, r.boite, { v: 1, t: 'nom', code: classe.code, correction });
+    classe = { ...classe, nom: correction, nomEnAttente: undefined };
+    garderClasse(classe);
+  };
+
   const gestes = {
     plusTard: () => {
       const demande = demandeDAccueil();
@@ -305,7 +331,35 @@ export function apprenant(ctx: Contexte): void {
     effacer,
     retour: () => {
       arreter();
-      vue = { ecran: 'jour' };
+      vue = vue.ecran === 'nom' ? { ecran: 'moi' } : { ecran: 'jour' };
+      rendre();
+    },
+    moi: () => {
+      vue = { ecran: 'moi' };
+      rendre();
+    },
+    corrigerNom: () => {
+      const n = monNom();
+      vue = { ecran: 'nom', prenom: n.prenom, nom: n.nom };
+      rendre();
+    },
+    corriger: () => {
+      const { prenom, nom, erreurs } = nomTape();
+      if (erreurs) {
+        vue = { ecran: 'nom', prenom, nom, erreurs };
+        return rendre();
+      }
+      const actuel = monNom();
+      if (prenom !== actuel.prenom || nom !== actuel.nom) {
+        classe = { ...classe, nomEnAttente: { prenom, nom, part: Date.now() + ANNULER_MS } };
+        garderClasse(classe);
+      }
+      vue = { ecran: 'moi' };
+      rendre();
+    },
+    annulerNom: () => {
+      classe = { ...classe, nomEnAttente: undefined };
+      garderClasse(classe);
       rendre();
     },
   };
@@ -411,9 +465,57 @@ export function apprenant(ctx: Contexte): void {
     );
   };
 
+  // « Moi » : le nom que voient les responsables, et le thème. Mes appareils et la phrase de
+  // secours viendront avec l'étape « Plusieurs appareils ».
+  const ecranMoi = () => {
+    const attente = classe.nomEnAttente;
+    const choisi = lire<Theme>('theme');
+    const choix = (valeur: string, libelle: string, coche: boolean) =>
+      `<label><input type="radio" name="theme" value="${valeur}"${coche ? ' checked' : ''}><span class="rond"></span>${libelle}</label>`;
+    const ligneDuNom = attente
+      ? `<div class="rangee"><div><b>${esc(nomDe(attente))}</b><span class="mono">part aux responsables dans ${Math.max(1, Math.ceil((attente.part - Date.now()) / 1000))}\u00a0s</span></div><button class="btn" data-geste="annulerNom">${ic('undo')}Annuler</button></div>`
+      : `<div class="rangee"><div><b>${esc(nomDe(monNom()))}</b><span class="mono">le nom que voient les responsables</span></div><button class="btn" data-geste="corrigerNom">Corriger</button></div>`;
+    afficher(
+      'tel',
+      'Moi',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Moi</h1><span class="mono">${esc(porte.nom)}</span></header>
+       <main class="page">
+         <div class="liste">${ligneDuNom}</div>
+         <section class="bloc"><p class="etiquette">Thème</p><div class="choix" role="radiogroup" aria-label="Thème">${choix('telephone', 'Comme le téléphone', !choisi)}${choix('clair', 'Clair', choisi === 'clair')}${choix('sombre', 'Sombre', choisi === 'sombre')}</div></section>
+       </main>
+       <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button></div>${faits(relais)}</footer>`,
+      gestes,
+    );
+    for (const radio of document.querySelectorAll<HTMLInputElement>('input[name="theme"]')) {
+      radio.onchange = () => {
+        ecrire('theme', radio.value === 'telephone' ? null : radio.value);
+        appliquerLeTheme();
+      };
+    }
+  };
+
+  const ecranNom = (v: Extract<Vue, { ecran: 'nom' }>) => {
+    const erreurs = v.erreurs ?? {};
+    afficher(
+      'tel',
+      'Nom',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Nom</h1><span class="mono">${esc(porte.nom)}</span></header>
+       <main class="page">
+         <div class="bloc">${champDuNom(erreurs, 'prenom', 'Prénom', v.prenom, 'given-name')}</div>
+         <div class="bloc">${champDuNom(erreurs, 'nom', 'Nom', v.nom, 'family-name')}</div>
+         <p class="mono">Les responsables de la classe verront ton nouveau nom, et l’ancien à côté.</p>
+       </main>
+       <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button><button class="touche" data-geste="corriger">${ic('pencil', 'ic-24')}<span>Corriger</span></button></div>${faits(relais)}</footer>`,
+      gestes,
+      true,
+    );
+  };
+
   const rendre = () => {
     if (!classe.acceptation) return attente();
     if (vue.ecran === 'signer') return ecranSigner(vue);
+    if (vue.ecran === 'moi') return ecranMoi();
+    if (vue.ecran === 'nom') return ecranNom(vue);
     if (vue.ecran === 'sans-reseau') return ecranSansReseau();
     return ecranDuJour();
   };
@@ -444,9 +546,16 @@ export function apprenant(ctx: Contexte): void {
     }
     rendre();
   });
+  // Un redessin pendant qu'on tape remettrait le nom d'avant dans les champs.
   relais.changement = () => {
-    if (vue.ecran !== 'signer') rendre();
+    if (vue.ecran !== 'signer' && vue.ecran !== 'nom') rendre();
   };
+  setInterval(() => {
+    const avant = classe.nomEnAttente;
+    envoyerLeNomALHeure();
+    if (avant && vue.ecran === 'moi') rendre();
+  }, 1000);
+  envoyerLeNomALHeure();
   setTimeout(() => vue.ecran === 'jour' && rendre(), HORS_LIGNE_MS + 100);
   ecouterLAppel();
   ecouterLaPorte(coeur, relais, classe.code, suivreLaPorte);

@@ -9,7 +9,7 @@ import { type Creneau, type Demi, enJour, enTexte, lireCreneau, lundiDe, ouvre, 
 import { type ClasseGardee, type Moi, classes, ecrire, estResponsable, garderClasse, lire } from './etat';
 import { type Horaires, champsDesHoraires, lireLesHoraires } from './horaires';
 import { annoncerLAppel, annoncerLeProchain, ecouterLaPorte, envoyer, lienDAdjoint, lienDeLaClasse, nouveauJeton, publierPorte, recevoir } from './lettres';
-import { aDeQuoiRepondre, chefActuel, ecrireAuxResponsables, etatChange, fusionner, passationsDe, porteAJour } from './responsables';
+import { aDeQuoiRepondre, chefActuel, ecrireAuxResponsables, etatChange, fusionner, nomsAJour, passationsDe, porteAJour } from './responsables';
 import { codeDe, phrase } from './textes';
 import { afficher, codeAffiche, dateIso, demiJournee, esc, heure, heureCourte, horaire, ic, jour, paves } from './vue';
 
@@ -60,6 +60,14 @@ export function formateur(ctx: Contexte): void {
 
   const membres = () => (classe.membres ?? []).map((a) => coeur.lire_acceptation(classe.code, a, responsables()));
   const demandes = () => (classe.demandes ?? []).map((d) => coeur.lire_demande(classe.code, d));
+  // Le nom qu'un apprenant a corrigé, s'il l'a fait : les nouveaux appels le prennent.
+  const nomActuel = (m: { cle: string; prenom: string; nom: string }): { prenom: string; nom: string } => {
+    for (const texte of classe.noms ?? []) {
+      const c = coeur.lire_correction_de_nom(classe.code, texte);
+      if (c.cle === m.cle) return { prenom: c.prenom, nom: c.nom };
+    }
+    return { prenom: m.prenom, nom: m.nom };
+  };
   const lien = () => lienDeLaClasse(coeur, classe.code, porte.responsables[0].cle);
 
   const estChef = () => chefActuel(ctx, classe) === moi.cle();
@@ -168,7 +176,12 @@ export function formateur(ctx: Contexte): void {
 
   const lancer = () => {
     const maintenant = Date.now();
-    const inscrits = membres().map((m) => [m.prenom, m.nom, m.cle, m.boite].join('\t')).join('\n');
+    const inscrits = membres()
+      .map((m) => {
+        const { prenom, nom } = nomActuel(m);
+        return [prenom, nom, m.cle, m.boite].join('\t');
+      })
+      .join('\n');
     appel = coeur.Appel.ouvrir(classe.code, dateIso(maintenant), demiJournee(maintenant, porte.apres_midi), moi, inscrits, maintenant);
     garderAppel();
     envoyer(coeur, relais, moi.boite(), { v: 1, t: 'appel', journal: appel.journal(), secret: appel.secret()! });
@@ -490,7 +503,9 @@ export function formateur(ctx: Contexte): void {
 
   // Une personne ne voit que les gestes de son rôle : nommer un adjoint reste au chef.
   const ecranMembres = () => {
-    const liste = membres().sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+    const liste = membres()
+      .map((m) => ({ ...nomActuel(m), avant: nomDe(m), corrige: nomDe(nomActuel(m)) !== nomDe(m), quand: m.quand }))
+      .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
     const chef = chefActuel(ctx, classe);
     const attente = classe.passationEnAttente;
     afficher(
@@ -506,7 +521,7 @@ export function formateur(ctx: Contexte): void {
            })
            .join('')}</div></section>
          ${liste.length ? `<section class="bloc"><p class="etiquette">${pluriel(liste.length, 'apprenant')}</p><div class="liste">${liste
-           .map((m) => `<div class="rangee"><div><b>${esc(nomDe(m))}</b><span class="mono">depuis le ${jour(m.quand)}</span></div></div>`)
+           .map((m) => `<div class="rangee"><div><b>${esc(nomDe(m))}</b><span class="mono">${m.corrige ? `avant : ${esc(m.avant)} · ` : ''}depuis le ${jour(m.quand)}</span></div></div>`)
            .join('')}</div></section>` : ''}
          <div class="note-gestes">
            <button class="btn" data-geste="inviter">${ic('qr-code')}Inviter des apprenants</button>
@@ -798,6 +813,15 @@ export function formateur(ctx: Contexte): void {
       const connue = [...membres(), ...demandes()].some((m) => m.cle === demande.cle) || (classe.dehors ?? []).includes(demande.cle);
       if (connue) return;
       changer({ ...classe, demandes: [...(classe.demandes ?? []), l.demande] });
+    } else if (l.t === 'nom' && l.code === classe.code) {
+      let cle;
+      try {
+        cle = coeur.lire_correction_de_nom(classe.code, l.correction).cle;
+      } catch {
+        return; // Une correction que la personne n'a pas signée ne compte pas.
+      }
+      if (!membres().some((m) => m.cle === cle)) return;
+      changer({ ...classe, noms: nomsAJour(ctx, classe.code, [...(classe.noms ?? []), l.correction]) });
     } else if (l.t === 'adjoint' && l.code === classe.code) {
       // Sans un jeton que le chef a donné, il y a sept jours au plus, la demande ne s'affiche pas.
       const invitation = (classe.invitations ?? []).find((i) => i.jeton === l.jeton && Date.now() - i.quand < SEPT_JOURS_MS);

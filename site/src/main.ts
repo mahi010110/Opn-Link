@@ -1,16 +1,13 @@
 import { chargerCoeur } from './coeur';
 import { creer } from './creer';
 import { rejoindreCommeAdjoint, rejoindreParLien } from './entree';
-import { clesDeLAppareil, ecran, ecrire, lire, listeDesRelais } from './etat';
+import { appliquerLeTheme, clesDeLAppareil, ecran, ecrire, lire, listeDesRelais } from './etat';
 import { lireLien, lireLienDAdjoint } from './lettres';
 import { Relais } from './relais';
 import { entree } from './routes';
 import { salle } from './salle';
 
-const theme = matchMedia('(prefers-color-scheme: dark)');
-const suivreTheme = () => (document.documentElement.dataset.theme = theme.matches ? 'dark' : 'light');
-theme.addEventListener('change', suivreTheme);
-suivreTheme();
+appliquerLeTheme();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 

@@ -38,6 +38,11 @@ export interface ClasseGardee {
   passationEnAttente?: { vers: string; part: number };
   /// Le chef qui change les horaires : les nouveaux, et quand la porte qui les porte part.
   horairesEnAttente?: { matin: string; apresMidi: string; part: number };
+  /// L'apprenant : son dernier nom corrigé, signé, et celui qui attend la fin du délai pour annuler.
+  nom?: string;
+  nomEnAttente?: { prenom: string; nom: string; part: number };
+  /// Les responsables : les noms corrigés des membres, le plus récent de chacun.
+  noms?: string[];
 }
 
 export const estResponsable = (c: ClasseGardee): boolean => c.role === 'chef' || c.role === 'adjoint';
@@ -90,3 +95,13 @@ const RELAIS_PAR_DEFAUT = {
   secours: ['wss://nostr-relay.corb.net', 'wss://nostr-01.yakihonne.com'],
 };
 export const listeDesRelais = (): { principaux: string[]; secours: string[] } => lire('relais') ?? RELAIS_PAR_DEFAUT;
+
+/// Le thème choisi dans « Moi », ou rien pour suivre le téléphone.
+export type Theme = 'clair' | 'sombre' | undefined;
+const sombre = matchMedia('(prefers-color-scheme: dark)');
+export function appliquerLeTheme(): void {
+  const choix = lire<Theme>('theme');
+  const fonce = choix === 'sombre' || (choix !== 'clair' && sombre.matches);
+  document.documentElement.dataset.theme = fonce ? 'dark' : 'light';
+}
+sombre.addEventListener('change', appliquerLeTheme);

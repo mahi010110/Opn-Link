@@ -13,6 +13,7 @@
 //   node outils/avant-apres.mjs adjoint   la fenêtre « Adjoint »
 //   node outils/avant-apres.mjs passer    la fenêtre « Passer la main »
 //   node outils/avant-apres.mjs reglages  les réglages du chef, puis les horaires
+//   node outils/avant-apres.mjs moi       « Moi » chez l'apprenant, puis la fenêtre « Nom »
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
 //
 // Léa et Awa sont posées dans le stockage, Léa déjà acceptée. Les annonces partent d'un relais local.
@@ -183,6 +184,22 @@ const CAS = {
   passer: {
     titre: 'La fenêtre « Passer la main »',
     etats: [{ nom: 'Passer la main à Julien', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { porte: porteAvecJulien }), geste: puis('passer') }],
+  },
+  moi: {
+    titre: '« Moi », chez l’apprenant',
+    etats: [
+      { nom: 'Moi', relais: relaisProchain, heure: CLOTURE + 3 * 60_000, stockage: leaASigne, geste: (page) => page.locator('[data-geste="moi"]').click({ timeout: 5000 }) },
+      {
+        nom: 'Corriger son nom',
+        relais: relaisProchain,
+        heure: CLOTURE + 3 * 60_000,
+        stockage: leaASigne,
+        geste: async (page) => {
+          await page.locator('[data-geste="moi"]').click({ timeout: 5000 });
+          await page.locator('[data-geste="corrigerNom"]').click({ timeout: 5000 });
+        },
+      },
+    ],
   },
   reglages: {
     titre: 'Les réglages du chef',

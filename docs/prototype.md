@@ -360,6 +360,25 @@ devenu chef, avance le matin à 8 h 30, et Léa lit « Retour au centre : lun.
 30 nov., 8 h 30 ». Deux défauts posés exprès le font échouer : des horaires
 sans délai, et « Réglages » chez un adjoint.
 
+Fait ensuite le 23 novembre 2026, corriger son nom, chez l'apprenant :
+
+- dans le cœur, le nom corrigé, signé par l'appareil de la personne, avec
+  son vecteur. 72 tests ;
+- « Moi » s'ouvre depuis les entrées de l'écran du jour. Il montre le nom
+  que voient les responsables, avec « Corriger », et le thème : comme le
+  téléphone, clair ou sombre. Mes appareils et la phrase de secours
+  viendront à l'étape 8 ;
+- la fenêtre « Nom » dit à qui part la correction. Elle part aux
+  responsables trente secondes après, avec « Annuler » entre-temps ;
+- chez les responsables, le nouveau nom s'affiche, et l'ancien à côté. Les
+  appels suivants prennent le nouveau. Une feuille déjà ouverte garde le nom
+  de son ouverture.
+
+Le scénario le joue : Léa devient Léa Martin-Dupont, et Julien voit « avant :
+Léa Martin ». Le thème « Sombre » s'applique tout de suite et reste au
+rechargement. Deux défauts posés exprès le font échouer : un nom envoyé sans
+délai, et un thème qui ne se garde pas.
+
 Le scénario regardait « Appel clos » à la salle après la capture du
 formateur, alors que la salle ne le montre que trois secondes : une machine
 chargée le manquait. Il guette maintenant la salle avant de clore.
@@ -384,8 +403,10 @@ on construit directement la première version complète
    les membres, et le site installable qui marche sans réseau. L'écran
    d'accueil redemandé avant plus de sept jours sans cours est fait le 23
    novembre 2026. Nommer un adjoint, passer la main et les horaires dans les
-   réglages du chef sont faits le même jour. Reste : corriger son nom,
-   plusieurs classes et « Mes cours », refaire l'invitation. Les
+   réglages du chef sont faits le même jour, et corriger son nom chez
+   l'apprenant. Reste : corriger son nom chez un responsable (sa ligne est
+   dans la porte, que seul le chef signe), plusieurs classes et « Mes
+   cours », refaire l'invitation. Les
    interrupteurs des réglages viendront avec leurs fonctions : l'identité avec
    « Moi », les documents à l'étape 5, le suivi à l'étape 6.
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
@@ -579,6 +600,11 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
   interrupteur qui ne fait encore rien ne s'affiche pas ;
 - les nouveaux horaires attendent trente secondes, avec « Annuler » : ils
   remplacent ceux de toute la classe ;
+- la fenêtre pour corriger son nom n'était pas dessinée : elle reprend les
+  champs de « Rejoindre », et sa barre dit « Nom ». Le nom corrigé attend
+  trente secondes, avec « Annuler » ;
+- le thème choisi dans « Moi » se garde sur l'appareil (`theme`). Sans
+  choix, l'app suit le téléphone ;
 - l'écran d'accueil se redemande dès que le prochain cours est à plus de
   sept jours, et pas seulement à la dernière demi-journée avant : un
   apprenant qui ouvre l'app le lendemain court le même risque. Ailleurs que

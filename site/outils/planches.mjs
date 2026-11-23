@@ -74,6 +74,9 @@ const PLANCHES = [
       ['17d-julien-chef', 'Julien est chef', 'Il publie la porte où il est en premier. Awa y reste, comme adjoint.'],
       ['20c-julien-horaires', 'Les horaires', 'Dans les réglages, que seul le chef voit. Une heure illisible est refusée sous le champ, comme à la création.'],
       ['20d-julien-reglages', 'Trente secondes pour annuler', 'Puis la porte part, et les téléphones des apprenants la suivent.'],
+      ['20e-apprenant-moi', 'Moi, chez Léa', 'Le nom que voient les responsables, avec « Corriger », et le thème.'],
+      ['20f-apprenant-nom-part', 'Son nom corrigé', 'Il part aux responsables dans trente secondes : le temps d’annuler.'],
+      ['20g-julien-membres-nom', 'Chez Julien', 'Le nouveau nom, et l’ancien à côté. Les appels suivants prennent le nouveau.'],
     ],
   },
   {

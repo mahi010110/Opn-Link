@@ -517,3 +517,6 @@ refusés.
 - Les réglages du chef sont faits avec les horaires. Choisi en codant, à
   valider : « Réglages » ne montre que ce qui marche déjà, et s'ouvre depuis
   « Membres » en attendant l'écran « Classe ».
+- Corriger son nom est fait chez l'apprenant, depuis « Moi ». Choisi en
+  codant, à valider : la fenêtre « Nom », qui n'était pas dessinée, et le
+  thème dans « Moi », gardé sur l'appareil.

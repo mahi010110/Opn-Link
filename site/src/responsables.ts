@@ -16,6 +16,7 @@ export interface EtatPartage {
   dehors: string[];
   cours: string[];
   prochain?: { date: string; demi: string; quand: number };
+  noms?: string[];
 }
 
 export interface LettreDeResponsable {
@@ -35,11 +36,27 @@ export const partage = (c: ClasseGardee): EtatPartage => ({
   dehors: union(c.dehors),
   cours: union(c.cours),
   prochain: c.prochain,
+  noms: union(c.noms),
 });
 
 // La même forme des deux côtés, pour comparer ce qu'on sait à ce qu'on a reçu.
 const canon = (e: EtatPartage): string =>
-  JSON.stringify([e.porte, union(e.passations), e.fil, union(e.membres), union(e.demandes), union(e.dehors), union(e.cours), e.prochain]);
+  JSON.stringify([e.porte, union(e.passations), e.fil, union(e.membres), union(e.demandes), union(e.dehors), union(e.cours), e.prochain, union(e.noms)]);
+
+/// Les noms corrigés, vérifiés : la correction la plus récente de chaque personne.
+export function nomsAJour(ctx: Contexte, code: string, textes: string[]): string[] {
+  const parCle = new Map<string, { texte: string; quand: number }>();
+  for (const texte of new Set(textes)) {
+    try {
+      const c = ctx.coeur.lire_correction_de_nom(code, texte);
+      const avant = parCle.get(c.cle);
+      if (!avant || c.quand > avant.quand) parCle.set(c.cle, { texte, quand: c.quand });
+    } catch {
+      // Une correction que la personne n'a pas signée ne compte pas.
+    }
+  }
+  return [...parCle.values()].map((c) => c.texte).sort();
+}
 
 /// Les passations valables de cette classe, parmi des textes venus d'ailleurs.
 export const passationsDe = (ctx: Contexte, code: string, textes: string[]): string[] =>
@@ -135,6 +152,7 @@ export function fusionner(ctx: Contexte, classe: ClasseGardee, l: LettreDeRespon
       dehors,
       cours: union(classe.cours, recu.cours),
       prochain,
+      noms: nomsAJour(ctx, classe.code, union(classe.noms, recu.noms)),
     },
     recu,
   };

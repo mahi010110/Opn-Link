@@ -470,6 +470,7 @@ destinataire. Elles ne sont pas encore figées.
 | `admis` | le responsable, à l'apprenant | la porte, l'acceptation et le secret du fil |
 | `classe`, `montrer` | le formateur, à ses propres appareils | l'état de la classe, et ce que la salle montre |
 | `adjoint` | l'adjoint invité, au chef seul | sa demande, signée comme celle d'un apprenant, et le jeton de l'invitation |
+| `nom` | l'apprenant, à chaque responsable | son nom corrigé (partie « Le nom corrigé ») |
 | `responsables` | un responsable, à chacun des autres | la porte et les passations, puis une lettre entre responsables (partie du même nom) |
 
 La lettre entre responsables porte en contenu
@@ -503,7 +504,9 @@ rôle proposé, formateur ou centre ; le chef garde le rôle de son côté.
 Les clés de stockage du prototype commencent par `opl_proto_`, suivies du
 nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presences`,
 `classe-de-la-salle`, `accueil-propose`, `relais`, `envois`,
-`annonces-appel` et `prochain`. Elles disparaîtront avec lui. `presence`,
+`annonces-appel`, `prochain` et `theme`. Elles disparaîtront avec lui.
+`theme` porte le thème choisi dans « Moi », `clair` ou `sombre`, ou rien
+pour suivre le téléphone. `presence`,
 qui gardait la seule présence du moment, est remplacée par `presences` le
 23 novembre 2026 : une clé du prototype, que personne n'a encore. `relais` porte la liste des relais,
 `{"principaux": [...], "secours": [...]}` ; seuls les tests l'écrivent, et
@@ -519,7 +522,10 @@ attend la fin des trente secondes pour partir. Chez chacun, `classes` garde
 invitations d'adjoint de moins de sept jours, `candidats`, les demandes
 d'adjoint qui attendent son accord, et `passationEnAttente`, la main qu'il
 passe dans trente secondes, et `horairesEnAttente`, les horaires qui
-changent dans trente secondes. Le rôle `adjoint` marque un responsable qui
+changent dans trente secondes. Chez l'apprenant, `classes` garde `nom`, son
+dernier nom corrigé, et `nomEnAttente`, celui qui part dans trente secondes.
+Chez les responsables, `noms`, la correction la plus récente de chaque
+membre, qui voyage aussi entre eux. Le rôle `adjoint` marque un responsable qui
 n'est pas chef, ou qui attend l'accord du chef tant qu'il n'a pas le secret
 du fil.
 

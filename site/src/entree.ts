@@ -108,15 +108,15 @@ async function chercherLaClasse(ctx: Contexte, code: string, chef: string, suite
   await chercher();
 }
 
-type Erreurs = { prenom?: string; nom?: string };
+export type Erreurs = { prenom?: string; nom?: string };
 
-const champDuNom = (erreurs: Erreurs, id: 'prenom' | 'nom', libelle: string, valeur: string, autocomplete: string) =>
+export const champDuNom = (erreurs: Erreurs, id: 'prenom' | 'nom', libelle: string, valeur: string, autocomplete: string) =>
   `<label class="champ-nom" for="${id}">${libelle}</label>
    <input id="${id}" class="champ${erreurs[id] ? ' faux' : ''}" value="${esc(valeur)}" autocomplete="${autocomplete}" autocapitalize="words" autocorrect="off" spellcheck="false"${erreurs[id] ? ` aria-describedby="erreur-${id}"` : ''}>
    ${erreurs[id] ? `<p class="erreur" id="erreur-${id}">${ic('info-box')}<span>${esc(erreurs[id]!)}</span></p>` : ''}`;
 
 /// Le prénom et le nom tapés, ou les erreurs à montrer sous les champs.
-function nomTape(): { prenom: string; nom: string; erreurs?: Erreurs } {
+export function nomTape(): { prenom: string; nom: string; erreurs?: Erreurs } {
   const prenom = document.querySelector<HTMLInputElement>('#prenom')!.value.trim();
   const nom = document.querySelector<HTMLInputElement>('#nom')!.value.trim();
   if (prenom && nom) return { prenom, nom };

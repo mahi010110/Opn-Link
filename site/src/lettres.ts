@@ -18,6 +18,7 @@ export type Lettre =
   | { v: 1; t: 'clos'; seance: string; presents: number; absents: number; quand: number }
   | { v: 1; t: 'reouvert'; seance: string }
   | { v: 1; t: 'adjoint'; code: string; demande: string; jeton: string }
+  | { v: 1; t: 'nom'; code: string; correction: string }
   | { v: 1; t: 'responsables'; code: string; porte: string; passations: string[]; lettre: string };
 
 const UN_JOUR = 24 * 3600;

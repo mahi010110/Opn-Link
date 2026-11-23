@@ -644,6 +644,30 @@ try {
   await telLea.getByText('Retour au centre : lun. 30 nov., 8 h 30').waitFor({ timeout: 60_000 });
   verifier(true, 'le téléphone de Léa suit les nouveaux horaires : « Retour au centre : lun. 30 nov., 8 h 30 »');
 
+  // Léa corrige son nom depuis « Moi » : trente secondes pour annuler, puis la correction signée part.
+  await telLea.click('[data-geste="moi"]');
+  await capturer(telLea, '20e-apprenant-moi');
+  await telLea.click('[data-geste="corrigerNom"]');
+  await telLea.fill('#nom', 'Martin-Dupont');
+  await telLea.click('[data-geste="corriger"]');
+  const delaiDuNom = Number((await telLea.getByText(/part aux responsables dans \d+\ss/).textContent()).match(/dans (\d+)/)[1]);
+  verifier(delaiDuNom >= 25 && (await telLea.locator('[data-geste="annulerNom"]').count()) === 1, `le nom corrigé attend trente secondes, avec « Annuler » (${delaiDuNom} s)`);
+  await capturer(telLea, '20f-apprenant-nom-part');
+  await telJulien.click('[data-geste="retour"]');
+  await telJulien.getByText('Léa Martin-Dupont').waitFor({ timeout: 60_000 });
+  verifier(await telJulien.getByText(/avant : Léa Martin ·/).count() === 1, 'chez Julien, le nouveau nom de Léa, et l’ancien à côté');
+  await capturer(telJulien, '20g-julien-membres-nom');
+
+  // Le thème choisi dans « Moi » s'applique tout de suite, et reste au rechargement.
+  await telLea.check('input[name="theme"][value="sombre"]');
+  verifier(await telLea.evaluate(() => document.documentElement.dataset.theme) === 'dark', 'le thème « Sombre », choisi dans « Moi », s’applique tout de suite');
+  await telLea.reload();
+  await telLea.locator('.semaine').waitFor({ timeout: 15_000 });
+  verifier(await telLea.evaluate(() => document.documentElement.dataset.theme) === 'dark', 'et il reste au rechargement');
+  await telLea.click('[data-geste="moi"]');
+  await telLea.check('input[name="theme"][value="telephone"]');
+  await telLea.click('[data-geste="retour"]');
+
   // Le texte agrandi à 200 %, à 360 pixels : la semaine passe en rangs, et rien ne sort de l'écran.
   await pages.lea.contexte.addInitScript(() => document.addEventListener('DOMContentLoaded', () => (document.documentElement.style.fontSize = '200%')));
   await telLea.setViewportSize({ width: 360, height: 640 });
