@@ -3,7 +3,7 @@
 // Yanis tape le code, d'abord de travers, Noah sans réseau. Awa accepte tout le monde sauf
 // Kevin, qu'elle ne connaît pas. Puis l'appel, annoncé sur le fil de la classe : Léa signe en
 // visant le QR de la salle avec la caméra simulée de Chromium, Yanis se trompe de code puis signe, et tente de clore l'appel avec sa propre clé. Inès n'a plus
-// de réseau et tend son QR, Noah est absent. Awa clôt. Les captures vont dans captures/.
+// de réseau et tend son QR, qu'Awa lit avec la caméra de son téléphone, Noah est absent. Awa clôt. Les captures vont dans captures/.
 //
 // Les appareils ont deux relais principaux, dont un qui refuse toute écriture, et deux de
 // secours, dont un qui ne répond pas. Le principal qui marche tombe juste après l'invitation :
@@ -175,7 +175,7 @@ const rejoindre = async (page, prenom, nom) => {
 
 try {
   const salle = await appareil('awa-ordi', ORDI, { url: '/index.html?ecran=salle', cles: clesDAwa });
-  const tel = await appareil('awa-tel', TEL, { url: '/index.html#creer', cles: clesDAwa });
+  const tel = await appareil('awa-tel', TEL, { url: '/index.html#creer', cles: clesDAwa, camera: true });
 
   await tel.fill('#prenom', 'Awa');
   await tel.fill('#nom', 'Diallo');
@@ -350,11 +350,18 @@ try {
   await telInes.reload();
   await telInes.getByText('Pas de réseau · 1 envoi attend').waitFor({ timeout: 15_000 });
   verifier(enAttente.length === 1, 'ce qui attend se garde sur le téléphone : rechargé, il dit encore « 1 envoi attend »');
+  await filmerLeQr(await salle.locator('[data-qr]').getAttribute('data-qr'));
   await tel.click(`[data-geste="nom"][data-cle="${cleDInes}"]`);
   await tel.click('[data-geste="lireQr"]');
-  await tel.fill('#texte-qr', presenceDInes);
-  await tel.click('[data-geste="validerQr"]');
-  await tel.getByText('3 sur 4').first().waitFor();
+  await tel.getByText('Ce QR n’est pas une présence').waitFor({ timeout: 15_000 });
+  await capturer(tel, '15b-formateur-lire-qr');
+  verifier((await salle.getByText('2 sur 4').count()) === 1, 'le formateur vise le QR de la salle au lieu de celui d’Inès : une phrase, et rien n’entre');
+  await tel.click('[data-geste="retour"]');
+  await filmerLeQr(presenceDInes);
+  await tel.click(`[data-geste="nom"][data-cle="${cleDInes}"]`);
+  await tel.click('[data-geste="lireQr"]');
+  await tel.getByText('3 sur 4').first().waitFor({ timeout: 15_000 });
+  verifier(true, 'Awa lit le QR d’Inès avec la caméra de son téléphone, sans rien taper');
   await salle.getByText('3 sur 4').waitFor({ timeout: 15_000 });
 
   await tel.click('[data-geste="clore"]');
@@ -463,6 +470,10 @@ try {
     `nos.lol refuse : l’app l’écarte et passe par les deux relais de secours (${vus()} ; ${JSON.stringify(evenementsPour)})`,
   );
   verifier([...adresses].every((h) => h.startsWith('127.0.0.1')), `aucune requête ne quitte la machine (${[...adresses].join(', ')})`);
+} catch (e) {
+  // L'écran de chaque appareil au moment de l'échec, pour comprendre sans relancer.
+  for (const [nom, { page }] of Object.entries(pages)) await page.screenshot({ path: join(CAPTURES, `echec-${nom}.png`) }).catch(() => {});
+  throw e;
 } finally {
   await navigateur.close();
   await navigateurCamera.close();

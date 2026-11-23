@@ -65,7 +65,7 @@ function taperLeCode(ctx: Contexte, texte = '', erreur?: string): void {
       taperLeCode(ctx, valeur, codeDe(e));
     }
   };
-  champ.addEventListener('input', chercher);
+  champ.oninput = chercher;
   if (attente) auRetourDuReseau(ctx, chercher);
 }
 

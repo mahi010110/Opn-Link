@@ -43,6 +43,7 @@ const PLANCHES = [
       ['13c-apprenant-viseur', 'Léa vise le mauvais QR', 'Celui de la classe : une phrase sous le code, rien ne part. Puis elle vise celui de l’appel, et sa présence part.'],
       ['14-apprenant-signee', 'Léa a signé', 'Reçue par Awa Diallo. Sur iPhone, l’app propose une fois de la garder sur l’écran d’accueil, avec les trois pas.'],
       ['15-apprenant-sans-reseau', 'Inès n’a plus de réseau', 'Au bout de dix secondes, le QR de sa présence s’affiche seul.'],
+      ['15b-formateur-lire-qr', 'Awa lit son QR', 'Avec la caméra de son téléphone. Elle vise d’abord le QR de la salle : une phrase, et rien n’entre.'],
       ['16-formateur-clos', 'Clos et signé', 'Noah est absent. Kevin n’est pas sur la feuille.'],
       ['16b-apprenant-absence', 'Chez Noah', 'L’appel clos sans sa présence : une absence, et qui a clos.'],
       ['17-formateur-clos-sombre', 'En sombre'],

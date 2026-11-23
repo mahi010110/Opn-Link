@@ -45,9 +45,15 @@ document.addEventListener('click', (e) => {
   if (cible && !cible.hasAttribute('disabled')) gestes[cible.dataset.geste!]?.(cible);
 });
 
+let affiche = '';
+
 /// Écrit un écran. Le titre de la page suit, et le focus va au titre de l'écran.
+/// Un écran qui n'a pas changé reste en place : un relais qui se reconnecte redessinait sinon la
+/// page sous le doigt, et un lecteur d'écran perdait sa place.
 export function afficher(classe: string, titre: string, html: string, nouveauxGestes: Record<string, Geste>, garderFocus = false): void {
   gestes = nouveauxGestes;
+  if (document.body.className === classe && affiche === html) return;
+  affiche = html;
   document.body.className = classe;
   document.body.innerHTML = html;
   document.title = `${titre} · Opn-Link`;

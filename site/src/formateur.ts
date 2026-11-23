@@ -1,6 +1,7 @@
 // Le téléphone du formateur : sa classe, les demandes d'entrée, et l'appel.
-// La salle montre le QR, le téléphone montre les noms.
+// La salle montre le QR, le téléphone montre les noms. Sa caméra lit le QR d'un apprenant sans réseau.
 
+import { arreter, poser, viser } from './camera';
 import type { Appel } from './coeur';
 import { type Contexte, faits, nomDe } from './contexte';
 import { type ClasseGardee, type Moi, classes, ecrire, garderClasse, lire } from './etat';
@@ -14,9 +15,19 @@ type Vue =
   | { ecran: 'accepter'; dehors: Set<string> }
   | { ecran: 'membres' }
   | { ecran: 'nom'; cle: string }
-  | { ecran: 'lire'; cle: string; erreur?: string; texte?: string };
+  | { ecran: 'lire'; cle: string; erreur?: string; sansCamera?: boolean };
 
 const ANNULER_MS = 30_000;
+
+// Le formateur lit le QR d'un autre : les phrases du cœur s'adressent à l'apprenant, celles-ci à lui.
+const phraseDuQr = (code: string, formateur: string): string =>
+  code === 'qr-inconnu'
+    ? 'Ce QR n’est pas une présence. Vise celui de son téléphone.'
+    : code === 'autre-seance'
+      ? 'Cette présence est celle d’un autre appel.'
+      : code === 'membre-inconnu'
+        ? 'Cette présence est celle de quelqu’un qui n’est pas dans la classe.'
+        : phrase(code, formateur);
 const UN_JOUR_MS = 24 * 3600 * 1000;
 
 export function formateur(ctx: Contexte): void {
@@ -107,8 +118,27 @@ export function formateur(ctx: Contexte): void {
 
   const vers = (v: Vue) => {
     if (vue.ecran === 'inviter' && vue.montre && v.ecran !== 'inviter') montrer('rien');
+    if (vue.ecran === 'lire' && v.ecran !== 'lire') arreter();
     vue = v;
     rendre();
+  };
+
+  // La caméra lit cinq images par seconde : un QR refusé n'est refusé qu'une fois, sans renvoyer
+  // de refus à l'apprenant à chaque image.
+  let dernierQrRefuse = '';
+  const lirePresence = (texte: string) => {
+    if (vue.ecran !== 'lire' || texte === dernierQrRefuse) return;
+    const erreur = repondre(texte, 'qr');
+    if (!erreur) return vers({ ecran: 'cours' });
+    dernierQrRefuse = texte;
+    vers({ ...vue, erreur });
+  };
+  const ouvrirLaCamera = (cle: string) => {
+    dernierQrRefuse = '';
+    vers({ ecran: 'lire', cle });
+    viser(coeur, lirePresence).then((ouverte) => {
+      if (!ouverte && vue.ecran === 'lire') vers({ ...vue, sansCamera: true });
+    });
   };
 
   const gestes = {
@@ -145,7 +175,7 @@ export function formateur(ctx: Contexte): void {
     nom: (c: HTMLElement) => vers({ ecran: 'nom', cle: c.dataset.cle! }),
     retour: () => vers({ ecran: 'cours' }),
     ici: () => {
-      if (vue.ecran !== 'nom' || !appel) return;
+      if ((vue.ecran !== 'nom' && vue.ecran !== 'lire') || !appel) return;
       appel.signer_ici(vue.cle, Date.now());
       garderAppel();
       versLaSalle();
@@ -158,13 +188,7 @@ export function formateur(ctx: Contexte): void {
       vers({ ecran: 'cours' });
     },
     lireQr: () => {
-      if (vue.ecran === 'nom') vers({ ecran: 'lire', cle: vue.cle });
-    },
-    validerQr: () => {
-      if (vue.ecran !== 'lire') return;
-      const texte = document.querySelector<HTMLTextAreaElement>('#texte-qr')?.value.trim() ?? '';
-      const erreur = repondre(texte, 'qr');
-      vers(erreur ? { ...vue, erreur, texte } : { ecran: 'cours' });
+      if (vue.ecran === 'nom') ouvrirLaCamera(vue.cle);
     },
     clore: () => {
       if (!appel) return;
@@ -321,6 +345,7 @@ export function formateur(ctx: Contexte): void {
     );
   };
 
+  // Sans caméra, le chemin de secours est déjà là : l'apprenant signe sur le téléphone du formateur.
   const lireQr = (v: Extract<Vue, { ecran: 'lire' }>) => {
     const l = membres().find((x) => x.cle === v.cle);
     afficher(
@@ -328,15 +353,18 @@ export function formateur(ctx: Contexte): void {
       'Lire son QR',
       `<header class="barre maintenant"><h1 class="barre-titre" tabindex="-1">Lire son QR</h1><span class="mono">${esc(l ? nomDe(l) : '')}</span></header>
        <main class="page">
-         <div class="viseur-vide">La caméra viendra au prochain pas du prototype.</div>
-         <div class="bloc">
-           <label class="champ-nom">Le texte du QR<textarea id="texte-qr" class="champ code${v.erreur ? ' faux' : ''}" rows="4" autocapitalize="off" autocorrect="off" spellcheck="false"${v.erreur ? ' aria-describedby="erreur"' : ''}>${esc(v.texte ?? '')}</textarea></label>
-           ${v.erreur ? `<p class="erreur" id="erreur">${ic('info-box')}<span>${esc(phrase(v.erreur, nomFormateur))}</span></p>` : ''}
+         <div class="viseur" role="img" aria-label="La caméra">
+           <i class="viseur-coin hg"></i><i class="viseur-coin hd"></i><i class="viseur-coin bg"></i><i class="viseur-coin bd"></i>
+           <p class="viseur-mot">${v.sansCamera ? 'La caméra ne s’ouvre pas' : 'Vise le QR de son téléphone'}</p>
          </div>
+         ${v.erreur ? `<p class="erreur" role="alert">${ic('info-box')}<span>${esc(phraseDuQr(v.erreur, nomFormateur))}</span></p>` : ''}
+         ${v.sansCamera ? `<div class="liste"><button class="rangee" data-geste="ici">${ic('smartphone', 'ic-24')}<div><b>Signer sur mon téléphone</b><span class="mono">à la place de son QR</span></div>${ic('chevron-right')}</button></div>` : ''}
        </main>
-       <footer class="bas"><div class="gestes">${retour}<button class="touche" data-geste="validerQr">${ic('check', 'ic-24')}<span>Valider</span></button></div>${faits(relais)}</footer>`,
+       <footer class="bas"><div class="gestes">${retour}</div>${faits(relais)}</footer>`,
       gestes,
+      true,
     );
+    poser();
   };
 
   const apres = (a: Appel, maintenant: number) => {
