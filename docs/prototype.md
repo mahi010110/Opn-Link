@@ -302,6 +302,15 @@ différentes, comme une main qui bouge.
 Mesuré : l'interface pèse 16,3 Ko compressés, et le premier chargement chez
 un apprenant 269 Ko, sous le plafond de 300 Ko.
 
+Corrigé ensuite le 23 novembre 2026, en relisant [regles.md](regles.md) :
+changer le prochain cours l'envoie à toute la classe et remplace le
+précédent. La règle 6 demande « Annuler » pendant trente secondes. Le
+prochain cours attend donc trente secondes avant de partir, avec
+« Annuler ». Proposé à la clôture, il part avec la feuille, quand la clôture
+ne s'annule plus. Le scénario le vérifie en comptant les événements du fil
+sur le relais : un changement annulé n'envoie rien. Deux défauts posés exprès
+le font échouer : un « Annuler » sans effet, et un envoi immédiat.
+
 Fait ensuite le 23 novembre 2026, un morceau de « Rejoindre une classe » :
 l'app redemande l'écran d'accueil une seule fois quand le prochain cours est
 à plus de sept jours, avec la raison : « Ton prochain cours est le lun. 30
@@ -486,7 +495,8 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
   demi-journée, et le cours qui a suivi. Sans rien de tel, la demi-journée
   suivante. Une alternance revient ainsi d'elle-même ;
 - « Changer » propose les demi-journées des trois semaines qui viennent,
-  groupées par semaine ;
+  groupées par semaine. Le prochain cours part trente secondes après, avec
+  « Annuler » entre-temps ;
 - « Présence signée » reste à l'écran tant que l'appel n'est pas clos. Clos,
   la réponse devient « En règle », et la preuve reste dans la case de la
   semaine, comme dans les maquettes `apprenant-jour-signe` et

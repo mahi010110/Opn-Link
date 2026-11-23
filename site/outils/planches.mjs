@@ -47,6 +47,7 @@ const PLANCHES = [
       ['16-formateur-clos', 'Clos et signé', 'Noah est absent. Kevin n’est pas sur la feuille.'],
       ['16b-apprenant-absence', 'Chez Noah', 'L’appel clos sans sa présence : une absence, et qui a clos. Sa semaine le montre.'],
       ['16c-formateur-prochain', 'Le prochain cours', 'L’app propose la demi-journée suivante. Awa choisit lundi 23 au matin et l’annonce à la classe.'],
+      ['16e-formateur-prochain-part', 'Trente secondes pour annuler', 'Le prochain cours part à toute la classe et remplace le précédent : il attend, avec « Annuler ».'],
       ['16d-apprenant-en-regle', 'Chez Léa', 'En règle, avec le prochain appel. Sa présence dans la semaine, puis pas de cours jusqu’à lundi.'],
       ['17-formateur-clos-sombre', 'En sombre'],
       ['18-apprenant-en-regle-sombre', 'En sombre'],

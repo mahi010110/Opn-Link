@@ -25,6 +25,8 @@ export interface ClasseGardee {
   /// annoncé à la classe.
   cours?: string[];
   prochain?: { date: string; demi: string; quand: number };
+  /// Le prochain cours qui attend la fin du délai pour annuler, avant de partir à la classe.
+  prochainEnAttente?: { date: string; demi: string; part: number };
 }
 
 const parametres = new URLSearchParams(location.search);

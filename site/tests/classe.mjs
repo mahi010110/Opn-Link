@@ -391,14 +391,36 @@ try {
   verifier(await telNoah.getByText(/Matin · appel clos à 9\sh\s0\d par Awa Diallo/).count() === 1, 'l’appel clos, le téléphone de Noah dit « Une absence », et qui a clos');
   verifier(await telNoah.locator('.case.absent').count() === 1, 'sa semaine le montre : une case rouge, mardi matin');
 
-  verifier(await tel.getByText('Prochain cours : mardi 17, après-midi').count() === 1, 'à la clôture, l’app propose le prochain cours : sans rien appris, la demi-journée suivante');
-  await telLea.getByText('Prochain appel : mar. 17 nov., 13 h 30').waitFor({ timeout: 15_000 });
+  verifier(
+    (await tel.getByText('Prochain cours : mardi 17, après-midi').count()) === 1 && (await tel.getByText(/part à la classe dans \d+\ss/).count()) === 1,
+    'à la clôture, l’app propose le prochain cours, la demi-journée suivante, qui part avec la feuille',
+  );
+  verifier(await telLea.getByText(/Prochain appel/).count() === 0, 'tant que la clôture peut s’annuler, le prochain cours n’est pas parti');
+  await telLea.getByText('Prochain appel : mar. 17 nov., 13 h 30').waitFor({ timeout: 45_000 });
+
+  // Un prochain cours part à toute la classe et remplace le précédent : trente secondes pour annuler.
+  const etiquetteDuFil = coeur.etiquette_du_fil(classeDeYanis.fil);
+  const surLeFil = () => secours.gardes.filter((e) => e.tags.some(([t, v]) => t === 'x' && v === etiquetteDuFil)).length;
+  const avantLesChangements = surLeFil();
+  await tel.click('[data-geste="changerProchain"]');
+  await tel.check('input[value="2026-11-18 matin"]');
+  await tel.click('[data-geste="annoncerProchain"]');
+  await tel.click('[data-geste="annulerProchain"]');
+  verifier(
+    (await tel.getByText('Prochain cours : mardi 17, après-midi').count()) === 1 && (await tel.getByText('les apprenants le voient').count()) === 1,
+    '« Annuler » pendant les trente secondes : le prochain cours reste celui d’avant',
+  );
   await tel.click('[data-geste="changerProchain"]');
   await tel.check('input[value="2026-11-23 matin"]');
   await capturer(tel, '16c-formateur-prochain');
   await tel.click('[data-geste="annoncerProchain"]');
-  verifier(await tel.getByText('Prochain cours : lundi 23, matin').count() === 1, '« Changer » : Awa choisit lundi 23 au matin, et l’annonce à la classe');
-  await telLea.getByText('Prochain appel : lun. 23 nov., 9 h').waitFor({ timeout: 15_000 });
+  verifier(
+    (await tel.getByText('Prochain cours : lundi 23, matin').count()) === 1 && (await tel.locator('[data-geste="annulerProchain"]').count()) === 1,
+    '« Changer » : Awa choisit lundi 23 au matin, qui part dans trente secondes, avec « Annuler »',
+  );
+  await capturer(tel, '16e-formateur-prochain-part');
+  await telLea.getByText('Prochain appel : lun. 23 nov., 9 h').waitFor({ timeout: 45_000 });
+  verifier(surLeFil() === avantLesChangements + 1, `un seul prochain cours est parti, celui de lundi : l’annulé n’a rien envoyé (${surLeFil() - avantLesChangements})`);
   await capturer(telLea, '16d-apprenant-en-regle');
   const casesDeLea = await telLea.locator('.semaine .case').evaluateAll((cases) => cases.map((c) => `${c.className.replace('case', '').trim() || '-'}:${c.textContent}`));
   verifier(
@@ -481,7 +503,7 @@ try {
   await tel.click('[data-geste="changerProchain"]');
   await tel.check('input[value="2026-11-30 matin"]');
   await tel.click('[data-geste="annoncerProchain"]');
-  await telLea.getByText('Ton prochain cours est le lun. 30 nov. : d’ici là').waitFor({ timeout: 15_000 });
+  await telLea.getByText('Ton prochain cours est le lun. 30 nov. : d’ici là').waitFor({ timeout: 45_000 });
   await capturer(telLea, '20b-apprenant-accueil-redemande');
   verifier(true, 'plus de sept jours sans cours : l’app redemande l’écran d’accueil, avec la raison');
   await telLea.click('[data-geste="plusTard"]');

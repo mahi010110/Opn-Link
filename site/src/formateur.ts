@@ -72,19 +72,27 @@ export function formateur(ctx: Contexte): void {
   };
   const montrer = (quoi: 'rejoindre' | 'rien') => envoyer(coeur, relais, moi.boite(), { v: 1, t: 'montrer', code: classe.code, quoi });
   // Le prochain cours, dit à la classe sur le fil : c'est ainsi que les apprenants savent quand
-  // revient l'appel, et que leur téléphone sait les jours sans cours.
-  const annoncerProchain = (c: Creneau) => {
-    if (!classe.fil) return;
+  // revient l'appel, et que leur téléphone sait les jours sans cours. Il part à toute la classe et
+  // remplace le précédent : il attend trente secondes, qu'on peut annuler (règle 6). Proposé à la
+  // clôture, il part avec la feuille, quand la clôture ne s'annule plus.
+  const finDeLaCloture = () => (appel?.close() ? (appel.cloture_a() ?? 0) + ANNULER_MS : 0);
+  const preparerProchain = (c: Creneau) => {
+    const part = Math.max(Date.now() + ANNULER_MS, finDeLaCloture());
+    changer({ ...classe, prochainEnAttente: { ...c, part } });
+  };
+  const envoyerLeProchainALHeure = () => {
+    const attente = classe.prochainEnAttente;
+    if (!attente || Date.now() < attente.part || !classe.fil) return;
     const quand = Date.now();
-    annoncerLeProchain(coeur, relais, classe.fil, moi.prochain_cours(classe.fil, c.date, c.demi, quand), c.date);
-    changer({ ...classe, prochain: { ...c, quand } });
+    annoncerLeProchain(coeur, relais, classe.fil, moi.prochain_cours(classe.fil, attente.date, attente.demi, quand), attente.date);
+    changer({ ...classe, prochain: { date: attente.date, demi: attente.demi, quand }, prochainEnAttente: undefined });
   };
   const proposerALaCloture = (a: Appel) => {
     const ce: Creneau = { date: a.date(), demi: a.demi() as Demi };
     const limite = plusJours(ce.date, -HUIT_SEMAINES);
     const cours = [...new Set([...(classe.cours ?? []), enTexte(ce)])].filter((t) => t >= limite).sort();
     classe = { ...classe, cours };
-    annoncerProchain(proposerLeProchain(cours.map(lireCreneau), ce));
+    preparerProchain(proposerLeProchain(cours.map(lireCreneau), ce));
   };
 
   if (!classe.portePubliee || Date.now() - classe.portePubliee > UN_JOUR_MS) {
@@ -224,17 +232,22 @@ export function formateur(ctx: Contexte): void {
       rendre();
     },
     changerProchain: () => {
-      const actuel = classe.prochain;
+      const actuel = classe.prochainEnAttente ?? classe.prochain;
       vers({ ecran: 'prochain', choix: actuel ? { date: actuel.date, demi: actuel.demi as Demi } : suivant(creneauDuMoment()) });
     },
     annoncerProchain: () => {
       if (vue.ecran !== 'prochain') return;
-      annoncerProchain(vue.choix);
+      preparerProchain(vue.choix);
       vers({ ecran: 'cours' });
+    },
+    annulerProchain: () => {
+      changer({ ...classe, prochainEnAttente: undefined });
+      rendre();
     },
     annuler: () => {
       if (!appel) return;
       appel.annuler_cloture(Date.now());
+      changer({ ...classe, prochainEnAttente: undefined });
       garderAppel();
       envoyer(coeur, relais, moi.boite(), { v: 1, t: 'reouvert', seance: appel.seance() });
       annoncer();
@@ -402,6 +415,17 @@ export function formateur(ctx: Contexte): void {
     poser();
   };
 
+  // Pendant le délai de la clôture, son « Annuler » vaut aussi pour le prochain cours : la ligne
+  // garde « Changer ». Ensuite, un prochain cours qui attend a son propre « Annuler ».
+  const ligneDuProchain = (maintenant: number, clotureAnnulable: boolean) => {
+    const attente = classe.prochainEnAttente;
+    const affiche = attente ?? classe.prochain;
+    if (!affiche) return '';
+    const etat = attente ? `part à la classe dans ${Math.max(1, Math.ceil((attente.part - maintenant) / 1000))}\u00a0s` : 'les apprenants le voient';
+    const geste = attente && !clotureAnnulable ? `<button class="btn" data-geste="annulerProchain">${ic('undo')}Annuler</button>` : `<button class="btn" data-geste="changerProchain">Changer</button>`;
+    return `<div class="liste"><div class="rangee">${ic('calendar', 'ic-20')}<div><b>Prochain cours : ${esc(leCours({ date: affiche.date, demi: affiche.demi as Demi }))}</b><span class="mono">${etat}</span></div>${geste}</div></div>`;
+  };
+
   const apres = (a: Appel, maintenant: number) => {
     const lignes = a.lignes();
     const [presents, inscrits] = a.compte();
@@ -417,7 +441,7 @@ export function formateur(ctx: Contexte): void {
            <h2 class="tres-gros" tabindex="-1">Clos et signé</h2>
            <p class="mono">${esc(porte.nom)} · ${heure(cloture)} · ${pluriel(presents, 'présent')}, ${pluriel(inscrits - presents, 'absent')}</p>
          </div></section>
-         ${classe.prochain ? `<div class="liste"><div class="rangee">${ic('calendar', 'ic-20')}<div><b>Prochain cours : ${esc(leCours({ date: classe.prochain.date, demi: classe.prochain.demi as Demi }))}</b><span class="mono">les apprenants le voient</span></div><button class="btn" data-geste="changerProchain">Changer</button></div></div>` : ''}
+         ${ligneDuProchain(maintenant, reste > 0)}
          ${absents.length ? `<section class="bloc"><p class="etiquette">À suivre</p><div class="liste">${absents
            .map((l) => `<div class="rangee"><div><b>${esc(l.prenom)} ${esc(l.nom)}</b><span class="mono">une absence ce ${a.demi() === 'matin' ? 'matin' : 'après-midi'}</span></div></div>`)
            .join('')}</div></section>` : ''}
@@ -503,7 +527,11 @@ export function formateur(ctx: Contexte): void {
     if (vue.ecran !== 'lire') rendre();
   };
   setInterval(() => {
-    if (appel?.close() && vue.ecran === 'cours' && !appel.definitive(Date.now() - 2000)) rendre();
+    const avant = classe.prochainEnAttente;
+    envoyerLeProchainALHeure();
+    const decompte = (appel?.close() && !appel.definitive(Date.now() - 2000)) || avant;
+    if (decompte && vue.ecran === 'cours') rendre();
   }, 1000);
+  envoyerLeProchainALHeure();
   rendre();
 }

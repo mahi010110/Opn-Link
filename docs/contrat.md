@@ -412,7 +412,8 @@ les annonces de l'appel des sept derniers jours, une par séance, déjà
 vérifiées. `presences` porte les présences signées, avec leur demi-journée
 et leur réception. `prochain` porte le dernier prochain cours vérifié. Chez
 le chef, `classes` garde aussi `cours`, les demi-journées où l'appel a été
-clos, et `prochain`, le dernier annoncé.
+clos, `prochain`, le dernier annoncé, et `prochainEnAttente`, celui qui
+attend la fin des trente secondes pour partir.
 
 Le service worker garde le site dans une réserve nommée `opn-link-` suivi de
 l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.
