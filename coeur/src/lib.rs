@@ -35,7 +35,7 @@ pub use fil::SecretDuFil;
 pub use lecture::lire_qr;
 pub use lettre::{etiquette_de_boite, ouvrir, sceller};
 pub use nostr::{SORTE as SORTE_NOSTR, evenement as evenement_nostr};
-pub use responsables::{EntreResponsables, Passation, Regne, lignee};
+pub use responsables::{CorrectionDeNom, EntreResponsables, Passation, Regne, lignee};
 
 #[cfg(all(test, target_arch = "wasm32"))]
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);

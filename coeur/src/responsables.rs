@@ -1,6 +1,7 @@
 //! Ce qui se passe entre les responsables d'une classe : le chef qui passe la main, et les lettres
 //! qu'ils s'écrivent pour partager l'état de la classe. Leurs boîtes sont dans la porte, que tout
 //! apprenant peut lire : une lettre entre responsables est donc signée par celui qui l'écrit.
+//! Et le nom que chacun corrige, signé par son propre appareil.
 
 use crate::classe::SecretsDeClasse;
 use crate::cles::{CleAppareil, ClePublique};
@@ -9,6 +10,7 @@ use crate::erreur::Erreur;
 
 const PASSATION: &str = "opn-link·passation·v1";
 const ENTRE_RESPONSABLES: &str = "opn-link·responsables·v1";
+const NOM: &str = "opn-link·nom·v1";
 
 /// Le chef passe la main à un autre responsable. Il signe seul : c'est sa clé qui fait foi.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -107,6 +109,36 @@ impl EntreResponsables {
     }
 }
 
+/// Le nom qu'une personne corrige, signé par son appareil : personne ne corrige celui d'un autre.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CorrectionDeNom {
+    pub cle: ClePublique,
+    pub prenom: String,
+    pub nom: String,
+    pub quand: u64,
+}
+
+impl CorrectionDeNom {
+    pub fn signer(classe: &SecretsDeClasse, appareil: &CleAppareil, prenom: &str, nom: &str, quand: u64) -> Result<String, Erreur> {
+        let cle = appareil.publique().texte();
+        texte_signe(NOM, &[classe.etiquette(), &cle, champ(prenom.trim())?, champ(nom.trim())?, &quand.to_string()], appareil)
+    }
+
+    /// Relit une correction, et vérifie qu'elle est faite pour cette classe et signée par la clé qu'elle porte.
+    pub fn lire(classe: &SecretsDeClasse, texte: &str) -> Result<Self, Erreur> {
+        let (champs, signature, signe) = lire_signe(texte, NOM)?;
+        let [etiquette, cle, prenom, nom, quand] = champs[..] else {
+            return Err(Erreur::Encodage);
+        };
+        if etiquette != classe.etiquette() {
+            return Err(Erreur::AutreSeance);
+        }
+        let cle = ClePublique::lire(cle)?;
+        cle.verifier(signe.as_bytes(), &signature)?;
+        Ok(CorrectionDeNom { cle, prenom: prenom.into(), nom: nom.into(), quand: quand.parse().map_err(|_| Erreur::Encodage)? })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -163,5 +195,17 @@ mod tests {
         let changee = texte.replace(r#"{"v":1}"#, r#"{"v":2}"#);
         assert_eq!(EntreResponsables::lire(&classe, &changee, &responsables), Err(Erreur::SignatureInvalide));
         assert_eq!(EntreResponsables::signer(&classe, &awa, "deux\nlignes", 5), Err(Erreur::ChampInvalide));
+    }
+
+    #[test]
+    fn un_nom_corrige_se_relit_et_n_engage_que_son_appareil() {
+        let (classe, lea, _, intrus) = cles();
+        let texte = CorrectionDeNom::signer(&classe, &lea, " Léa ", "Martin-Dupont", 9).unwrap();
+        let lue = CorrectionDeNom::lire(&classe, &texte).unwrap();
+        assert_eq!((lue.cle, lue.prenom.as_str(), lue.nom.as_str(), lue.quand), (lea.publique(), "Léa", "Martin-Dupont", 9));
+        let par_l_intrus = CorrectionDeNom::signer(&classe, &intrus, "Léa", "Intrus", 9).unwrap();
+        let usurpee = par_l_intrus.replace(&intrus.publique().texte(), &lea.publique().texte());
+        assert_eq!(CorrectionDeNom::lire(&classe, &usurpee), Err(Erreur::SignatureInvalide));
+        assert_eq!(CorrectionDeNom::signer(&classe, &lea, "", "Martin", 9), Err(Erreur::ChampInvalide));
     }
 }

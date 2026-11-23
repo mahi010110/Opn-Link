@@ -233,6 +233,31 @@ opn-link·responsables·v1
 Vecteur : `coeur/tests/vecteurs/responsables-v1.txt`, signée par Awa le 17
 novembre 2026 à 9 h 30, pour le contenu `{"v":1,"t":"classe"}`.
 
+## Le nom corrigé
+
+Chacun peut corriger son prénom et son nom. La correction est signée par
+l'appareil de la personne : personne ne corrige le nom d'un autre.
+
+```
+opn-link·nom·v1
+<étiquette de la classe>
+<clé de la personne>
+<prénom>
+<nom>
+<heure>
+<signature de la personne>
+```
+
+- Elle part scellée dans la boîte de chaque responsable, et voyage entre
+  eux avec l'état de la classe.
+- La plus récente compte. Les responsables voient l'ancien nom à côté du
+  nouveau.
+- Une feuille déjà ouverte garde le nom de son ouverture. Les appels
+  suivants prennent le nouveau.
+
+Vecteur : `coeur/tests/vecteurs/nom-v1.txt`, Léa devient Léa Martin-Dupont,
+le 19 novembre 2026.
+
 ## La demande d'entrée
 
 ```

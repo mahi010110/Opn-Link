@@ -103,6 +103,7 @@ const ANNONCE_DE_L_APPEL: &str = include_str!("vecteurs/appel-v1.txt");
 const PROCHAIN_COURS: &str = include_str!("vecteurs/prochain-v1.txt");
 const PASSATION: &str = include_str!("vecteurs/passation-v1.txt");
 const ENTRE_RESPONSABLES: &str = include_str!("vecteurs/responsables-v1.txt");
+const NOM_CORRIGE: &str = include_str!("vecteurs/nom-v1.txt");
 const JULIEN_CLE: &str = "BHQxsY8FWshzset9dNhxatHj3waQiwDML5ARU_jrZCgYSGfA_asznGxJCjmucE0ptbTC8SRDUKKQWWIs9JtCEVU";
 
 #[test]
@@ -181,4 +182,13 @@ fn la_lettre_entre_responsables() {
     let lettre = EntreResponsables::lire(&classe, ENTRE_RESPONSABLES, &[awa().publique(), julien().publique()]).unwrap();
     assert_eq!((lettre.de, lettre.quand, lettre.contenu.as_str()), (awa().publique(), 1_763_368_200_000, r#"{"v":1,"t":"classe"}"#));
     assert_eq!(EntreResponsables::signer(&classe, &awa(), r#"{"v":1,"t":"classe"}"#, 1_763_368_200_000).unwrap(), ENTRE_RESPONSABLES);
+}
+
+#[test]
+fn le_nom_corrige() {
+    let classe = CodeDeClasse::lire(CODE).unwrap().secrets();
+    let correction = CorrectionDeNom::lire(&classe, NOM_CORRIGE).unwrap();
+    assert_eq!((correction.cle.clone(), correction.prenom.as_str(), correction.nom.as_str()), (lea().publique(), "Léa", "Martin-Dupont"));
+    assert_eq!(correction.quand, 1_763_539_200_000);
+    assert_eq!(CorrectionDeNom::signer(&classe, &lea(), "Léa", "Martin-Dupont", 1_763_539_200_000).unwrap(), NOM_CORRIGE);
 }

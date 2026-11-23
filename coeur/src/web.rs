@@ -14,7 +14,7 @@ use crate::entree::{Demande, Porte, Responsable, Role};
 use crate::erreur::Erreur;
 use crate::feuille::{EtatPresence, Feuille, Recu, Voie};
 use crate::fil::SecretDuFil;
-use crate::responsables::{EntreResponsables, Passation};
+use crate::responsables::{CorrectionDeNom, EntreResponsables, Passation};
 use crate::{appel, feuille, lettre};
 
 impl From<Erreur> for JsValue {
@@ -112,6 +112,11 @@ impl Appareil {
     /// Signe sa présence avec les six chiffres tapés.
     pub fn signer_code(&self, seance: &str, code: &str, maintenant: f64) -> Result<String, Erreur> {
         Ok(Presence::depuis_code(&self.0, IdSeance::lire(seance)?, code, heure(maintenant))?.texte())
+    }
+
+    /// Corrige son prénom et son nom, signés par cet appareil. Les responsables gardent l'ancien.
+    pub fn corriger_son_nom(&self, code: &str, prenom: &str, nom: &str, maintenant: f64) -> Result<String, Erreur> {
+        CorrectionDeNom::signer(&secrets(code)?, &self.0, prenom, nom, heure(maintenant))
     }
 
     /// Le chef passe la main à un autre responsable. La passation voyage comme la porte.
@@ -268,6 +273,22 @@ pub struct PassationJs {
 pub fn lire_passation(code: &str, texte: &str) -> Result<PassationJs, Erreur> {
     let p = Passation::lire(&secrets(code)?, texte)?;
     Ok(PassationJs { ancien: p.ancien.texte(), nouveau: p.nouveau.texte(), quand: p.quand as f64 })
+}
+
+/// Un nom corrigé : la clé de celui qui l'a corrigé, et son nouveau nom.
+#[wasm_bindgen(getter_with_clone)]
+pub struct CorrectionJs {
+    pub cle: String,
+    pub prenom: String,
+    pub nom: String,
+    pub quand: f64,
+}
+
+/// Relit un nom corrigé, et vérifie que la clé qu'il porte l'a signé.
+#[wasm_bindgen]
+pub fn lire_correction_de_nom(code: &str, texte: &str) -> Result<CorrectionJs, Erreur> {
+    let c = CorrectionDeNom::lire(&secrets(code)?, texte)?;
+    Ok(CorrectionJs { cle: c.cle.texte(), prenom: c.prenom, nom: c.nom, quand: c.quand as f64 })
 }
 
 /// Le chef actuel : on suit les passations, parmi les textes donnés, à partir du chef qu'on connaît.
