@@ -537,8 +537,8 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
 - `node outils/avant-apres.mjs <cas> [référence]`, dans `site/`, après
   `npm run construire`, fait cette planche : il construit à part la version
   de la référence (`main` par défaut), pose la même classe inventée dans
-  les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour` et
-  `signer` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et
+  les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour`,
+  `signer`, `semaine`, `lire` et `prochain` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et
   le geste qui mène à l'écran.
 - Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
   scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans
