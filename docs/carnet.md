@@ -500,3 +500,7 @@ refusés.
   durées de vie sur le téléphone. Le détail est dans
   [prototype.md](prototype.md), partie « Les choix du prototype, à
   valider ».
+- L'app redemande l'écran d'accueil une seule fois, quand le prochain cours
+  est à plus de sept jours, comme le prévoit la conception. Choisi en
+  codant, à valider : la demande vaut dès que le cours est loin, pas
+  seulement à la dernière demi-journée avant.

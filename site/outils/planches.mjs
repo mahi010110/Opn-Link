@@ -51,6 +51,7 @@ const PLANCHES = [
       ['17-formateur-clos-sombre', 'En sombre'],
       ['18-apprenant-en-regle-sombre', 'En sombre'],
       ['20-apprenant-entreprise', 'Jeudi, en entreprise', 'La barre et la case du moment en trame. Rien n’est dû : pas de touche.'],
+      ['20b-apprenant-accueil-redemande', 'Plus de sept jours sans cours', 'Awa repousse le prochain cours au lundi 30. L’app redemande une seule fois l’écran d’accueil, avec la raison.'],
       ['21-apprenant-texte-200', 'Le texte agrandi à 200 %', 'À 360 pixels, la semaine se lit en rangs, un jour par rang.'],
       ['19-icone', 'L’icône', 'Le pictogramme « lien » du matériel, clair sur l’accent.'],
     ],

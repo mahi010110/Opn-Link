@@ -8,6 +8,7 @@
 //   node outils/avant-apres.mjs semaine   l'écran du jour de l'apprenant : en règle, puis en entreprise
 //   node outils/avant-apres.mjs lire      « Lire son QR », chez le formateur
 //   node outils/avant-apres.mjs prochain  le formateur après la clôture, et « Changer »
+//   node outils/avant-apres.mjs redemande l'écran d'accueil redemandé, plus de sept jours avant le cours
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
 //
 // Léa et Awa sont posées dans le stockage, Léa déjà acceptée. Les annonces partent d'un relais local.
@@ -97,6 +98,8 @@ const relaisOuvert = await relaisAvec(appel.annonce(fil, OUVERTURE));
 appel.clore(CLOTURE);
 const relaisClos = await relaisAvec(appel.annonce(fil, CLOTURE));
 const relaisProchain = await relaisAvec(appel.annonce(fil, CLOTURE), awa.prochain_cours(fil, '2026-11-23', 'matin', CLOTURE));
+const relaisLoin = await relaisAvec(appel.annonce(fil, CLOTURE), awa.prochain_cours(fil, '2026-11-30', 'matin', CLOTURE));
+const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
 const appelClos = { journal: appel.journal(), secret: appel.secret() };
 
 // Ce que gardent les appareils, sous les clés d'avant et d'après : chaque version y lit les siennes.
@@ -150,6 +153,10 @@ const CAS = {
       { nom: 'Jeudi, en entreprise', relais: relaisProchain, heure: JEUDI, stockage: leaASigne },
     ],
   },
+  redemande: {
+    titre: 'L’écran d’accueil, redemandé avant plus de sept jours sans cours',
+    etats: [{ nom: 'Jeudi, sur iPhone, le prochain cours le lundi 30', relais: relaisLoin, heure: JEUDI, stockage: leaASigne, iphone: true }],
+  },
   lire: {
     titre: '« Lire son QR », chez le formateur',
     etats: [
@@ -182,7 +189,14 @@ for (const [n, etat] of CAS[cas].etats.entries()) {
     for (const [ecran, nomEcran, options] of ECRANS) {
       for (const [theme, nomTheme] of THEMES) {
         const nav = etat.camera ? navigateurCamera : navigateur;
-        const contexte = await nav.newContext({ ...options, colorScheme: theme, locale: 'fr-FR', timezoneId: 'Europe/Paris', ...(etat.camera ? { permissions: ['camera'] } : {}) });
+        const contexte = await nav.newContext({
+          ...options,
+          colorScheme: theme,
+          locale: 'fr-FR',
+          timezoneId: 'Europe/Paris',
+          ...(etat.camera ? { permissions: ['camera'] } : {}),
+          ...(etat.iphone ? { userAgent: IPHONE } : {}),
+        });
         await contexte.clock.setSystemTime(new Date(etat.heure));
         const qui = etat.qui ?? 'lea';
         const stockage = qui === 'lea' ? { cles: lea.secrets(), classes: [classe], 'accueil-propose': 1, ...etat.stockage } : etat.stockage;
@@ -226,7 +240,7 @@ const planche = join(CAPTURES, `avant-apres-${cas}.png`);
 await page.screenshot({ path: planche, fullPage: true });
 await navigateur.close();
 await navigateurCamera.close();
-for (const r of [relaisVide, relaisOuvert, relaisClos, relaisProchain]) await r.fermer();
+for (const r of [relaisVide, relaisOuvert, relaisClos, relaisProchain, relaisLoin]) await r.fermer();
 for (const [, , site] of VERSIONS) site.fermer();
 rmSync(AVANT, { recursive: true, force: true });
 console.log(`✓ captures/avant-apres-${cas}.png`);

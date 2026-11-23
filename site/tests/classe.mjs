@@ -475,6 +475,20 @@ try {
   );
   verifier(await telLea.locator('[data-geste="signer"]').count() === 0, 'en entreprise, rien n’est dû : pas de touche');
 
+  verifier(await telLea.getByText('Garde Opn-Link sur ton écran d’accueil').count() === 0, 'le retour au centre dans quatre jours : l’écran d’accueil ne se redemande pas');
+
+  // Awa repousse le prochain cours au lundi 30 : plus de sept jours sans cours pour Léa.
+  await tel.click('[data-geste="changerProchain"]');
+  await tel.check('input[value="2026-11-30 matin"]');
+  await tel.click('[data-geste="annoncerProchain"]');
+  await telLea.getByText('Ton prochain cours est le lun. 30 nov. : d’ici là').waitFor({ timeout: 15_000 });
+  await capturer(telLea, '20b-apprenant-accueil-redemande');
+  verifier(true, 'plus de sept jours sans cours : l’app redemande l’écran d’accueil, avec la raison');
+  await telLea.click('[data-geste="plusTard"]');
+  await telLea.reload();
+  await telLea.getByText('Retour au centre : lun. 30 nov., 9 h').waitFor({ timeout: 15_000 });
+  verifier(await telLea.getByText('Garde Opn-Link sur ton écran d’accueil').count() === 0, '« Plus tard », et la demande ne revient plus : une seule fois');
+
   // Le texte agrandi à 200 %, à 360 pixels : la semaine passe en rangs, et rien ne sort de l'écran.
   await pages.lea.contexte.addInitScript(() => document.addEventListener('DOMContentLoaded', () => (document.documentElement.style.fontSize = '200%')));
   await telLea.setViewportSize({ width: 360, height: 640 });

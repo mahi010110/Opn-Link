@@ -6,7 +6,7 @@
 
 import { arreter, poser, viser } from './camera';
 import { type Contexte, faits, nomDe } from './contexte';
-import { type Creneau, type Demi, enJour, ouvre, plusJours, rang, sansCours } from './creneaux';
+import { type Creneau, type Demi, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
 import { type ClasseGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
 import { entree } from './routes';
 import { ecouterLeFil, envoyer, recevoir } from './lettres';
@@ -40,6 +40,8 @@ const SANS_REPONSE_MS = 10_000;
 // dessiner la semaine, et bientôt les semaines d'avant.
 const HUIT_SEMAINES = 56;
 const UNE_SEMAINE = 7;
+// Safari efface les données d'un site après sept jours sans visite (docs/mesures.md).
+const SANS_VISITE_JOURS = 7;
 // Le temps de joindre un relais au démarrage, avant de conclure qu'il n'y a pas de réseau.
 const HORS_LIGNE_MS = 5_000;
 const MENU = `<nav class="menu" aria-label="Entrées"><a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#">Moi</a></nav>`;
@@ -244,14 +246,21 @@ export function apprenant(ctx: Contexte): void {
     rendre();
   };
 
-  // Demandé une fois, juste après la première présence signée, avec la raison (conception, partie 4).
-  const proposerLAccueil = () =>
-    !surLEcranDAccueil() && !lire<number>('accueil-propose') && presences.some((p) => p.recu) && (surIPhone() || installable());
-  const accueil = () => {
+  // Demandé une fois, juste après la première présence signée, avec la raison, puis redemandé
+  // une seule fois quand le prochain cours est à plus de sept jours (conception, partie 4).
+  const demandeDAccueil = (): 'accueil-propose' | 'accueil-redemande' | undefined => {
+    if (surLEcranDAccueil() || !(surIPhone() || installable())) return undefined;
+    if (!lire<number>('accueil-propose')) return cetteFois()?.recu ? 'accueil-propose' : undefined;
+    const loin = prochain && joursEntre(dateIso(maintenant()), prochain.date) > SANS_VISITE_JOURS;
+    return loin && !lire<number>('accueil-redemande') ? 'accueil-redemande' : undefined;
+  };
+  const accueil = (demande: 'accueil-propose' | 'accueil-redemande') => {
+    // La date ne finit jamais la phrase : « nov. » porte déjà un point, « mai » n'en a pas.
+    const cours = demande === 'accueil-redemande' && prochain ? `Ton prochain cours est le ${jour(enJour(prochain.date).getTime())} : ` : '';
     if (surIPhone()) {
       return `<section class="fen"><header class="barre"><h2 class="barre-titre">Sur cet iPhone</h2></header><div class="fen-corps">
         <h3 class="gros">Garde Opn-Link sur ton écran d’accueil</h3>
-        <p class="lu">Sinon, l’iPhone peut effacer tes données après 7 jours sans visite.</p>
+        <p class="lu">${cours ? `${cours}d’ici là, sans visite, l’iPhone peut effacer tes données après 7 jours.` : 'Sinon, l’iPhone peut effacer tes données après 7 jours sans visite.'}</p>
         <ol class="pas">
           <li><span class="mono">1</span><span>Touche <b>Partager</b> ${ic('upload')}, en bas de l’écran</span></li>
           <li><span class="mono">2</span><span><b>Sur l’écran d’accueil</b></span></li>
@@ -262,19 +271,21 @@ export function apprenant(ctx: Contexte): void {
     }
     return `<section class="fen"><header class="barre"><h2 class="barre-titre">Sur ce téléphone</h2></header><div class="fen-corps">
       <h3 class="gros">Garde Opn-Link sur ton écran d’accueil</h3>
-      <p class="lu">Tu le retrouves d’un geste, même sans réseau.</p>
+      <p class="lu">${cours ? `${cours}tu le retrouves d’un geste, même sans réseau.` : 'Tu le retrouves d’un geste, même sans réseau.'}</p>
       <div class="note-gestes"><button class="btn" data-geste="plusTard">Plus tard</button></div>
     </div></section>`;
   };
 
   const gestes = {
     plusTard: () => {
-      ecrire('accueil-propose', Date.now());
+      const demande = demandeDAccueil();
+      if (demande) ecrire(demande, Date.now());
       rendre();
     },
     installer: async () => {
+      const demande = demandeDAccueil();
       await installer();
-      ecrire('accueil-propose', Date.now());
+      if (demande) ecrire(demande, Date.now());
       rendre();
     },
     signer: () => versSigner(),
@@ -330,8 +341,9 @@ export function apprenant(ctx: Contexte): void {
       const quand = avenir ? `${sansCoursMaintenant() ? 'Retour au centre' : 'Prochain appel'} : ${jour(enJour(avenir.date).getTime())}, ${debutDe(avenir)}` : '';
       reponse = `${ic('checkbox-on', 'ic-32')}<div><h2 class="tres-gros">En règle</h2>${quand ? `<p class="mono">${quand}</p>` : ''}</div>`;
     }
-    if (proposerLAccueil() && fois?.recu) {
-      fenetre = accueil();
+    const demande = demandeDAccueil();
+    if (demande) {
+      fenetre = accueil(demande);
       if (!surIPhone()) touche = `<div class="gestes"><button class="touche" data-geste="installer">${ic('download', 'ic-24')}<span>Installer</span></button></div>`;
     }
     const semaine = `<section class="bloc" aria-label="Ma semaine"><p class="etiquette">Ma semaine</p>${semaineHtml(sait())}</section>`;

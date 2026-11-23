@@ -20,7 +20,7 @@ export const plusJours = (date: string, n: number): string => {
 };
 export const ouvre = (date: string): boolean => enJour(date).getDay() % 6 !== 0;
 export const lundiDe = (date: string): string => plusJours(date, -((enJour(date).getDay() + 6) % 7));
-const ecart = (de: string, a: string): number => Math.round((enJour(a).getTime() - enJour(de).getTime()) / 86_400_000);
+export const joursEntre = (de: string, a: string): number => Math.round((enJour(a).getTime() - enJour(de).getTime()) / 86_400_000);
 
 /// Pour comparer deux créneaux comme des textes : le matin passe avant l'après-midi.
 export const rang = (c: Creneau): string => `${c.date}${c.demi === 'matin' ? 0 : 1}`;
@@ -48,7 +48,7 @@ export function proposerLeProchain(cours: Creneau[], ce: Creneau): Creneau {
   const avant = tries.filter((c) => rang(c) < rang(ce) && c.demi === ce.demi && enJour(c.date).getDay() === jour).pop();
   const apres = avant && tries.find((c) => rang(c) > rang(avant));
   if (avant && apres) {
-    const propose = { date: plusJours(ce.date, ecart(avant.date, apres.date)), demi: apres.demi };
+    const propose = { date: plusJours(ce.date, joursEntre(avant.date, apres.date)), demi: apres.demi };
     if (rang(propose) > rang(ce) && ouvre(propose.date)) return propose;
   }
   return suivant(ce);

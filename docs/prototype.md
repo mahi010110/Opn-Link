@@ -37,6 +37,8 @@ Pour une nouvelle discussion, dans un conteneur neuf.
 4. Reprendre la suite, dans l'ordre de « La suite » plus bas. Les
    questions qui attendent le mainteneur sont dans
    [questions-ouvertes.md](questions-ouvertes.md), partie « Le prototype ».
+   Le 23 novembre 2026, l'adjoint et « passer la main » attendent sa
+   réponse sur la façon de faire.
 
 Trois choses à savoir :
 
@@ -300,6 +302,15 @@ différentes, comme une main qui bouge.
 Mesuré : l'interface pèse 16,3 Ko compressés, et le premier chargement chez
 un apprenant 269 Ko, sous le plafond de 300 Ko.
 
+Fait ensuite le 23 novembre 2026, un morceau de « Rejoindre une classe » :
+l'app redemande l'écran d'accueil une seule fois quand le prochain cours est
+à plus de sept jours, avec la raison : « Ton prochain cours est le lun. 30
+nov. : d'ici là, sans visite, l'iPhone peut effacer tes données après 7
+jours. » Le scénario le joue : jeudi, le retour lundi 23 ne déclenche rien.
+Awa repousse au lundi 30, Léa voit la demande, touche « Plus tard », et elle
+ne revient plus. Deux défauts posés exprès le font échouer : la demande qui
+revient après « Plus tard », et une demande faite à trois jours.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -308,10 +319,11 @@ on construit directement la première version complète
 
 1. Rejoindre une classe et être accepté, les responsables et les réglages.
    Fait en partie le 17 novembre 2026 : créer, inviter, rejoindre, accepter,
-   les membres, et le site installable qui marche sans réseau. Reste : nommer
-   un adjoint et passer la main, les réglages du chef, corriger son nom,
-   plusieurs classes et « Mes cours », redemander l'écran d'accueil avant plus
-   de sept jours sans cours, refaire l'invitation.
+   les membres, et le site installable qui marche sans réseau. L'écran
+   d'accueil redemandé avant plus de sept jours sans cours est fait le 23
+   novembre 2026. Reste : nommer un adjoint et passer la main, les réglages
+   du chef, corriger son nom, plusieurs classes et « Mes cours », refaire
+   l'invitation.
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
    relais publics, l'écran d'entrée de chacun. Il passe avant la fin du 1 :
    sans les relais publics, rien ne marchait hors des tests. Les relais
@@ -490,7 +502,12 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
   semaines chez le formateur. « Mes présences », avec les semaines d'avant,
   dira s'il faut garder les présences plus longtemps ;
 - « Ma semaine » n'ouvre pas encore « Mes présences » : le chevron des
-  maquettes viendra avec cette fenêtre.
+  maquettes viendra avec cette fenêtre ;
+- l'écran d'accueil se redemande dès que le prochain cours est à plus de
+  sept jours, et pas seulement à la dernière demi-journée avant : un
+  apprenant qui ouvre l'app le lendemain court le même risque. Ailleurs que
+  sur iPhone, la raison reste « tu le retrouves d'un geste », car seul
+  Safari efface après sept jours.
 
 ## Ce qu'il tranche
 
@@ -538,7 +555,7 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
   `npm run construire`, fait cette planche : il construit à part la version
   de la référence (`main` par défaut), pose la même classe inventée dans
   les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour`,
-  `signer`, `semaine`, `lire` et `prochain` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et
+  `signer`, `semaine`, `lire`, `prochain` et `redemande` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et
   le geste qui mène à l'écran.
 - Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
   scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans
