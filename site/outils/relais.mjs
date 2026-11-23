@@ -2,7 +2,8 @@
 // des relais publics. Il vérifie chaque événement comme un vrai relais, garde ce qu'il reçoit
 // jusqu'à son expiration (NIP-40), et sert les filtres dont Opn-Link a besoin.
 // Avec { refuser: true }, il sert les lectures et refuse toute écriture, comme relay.froth.zone
-// le 15 novembre 2026 (docs/mesures.md).
+// le 15 novembre 2026 (docs/mesures.md). Un test qui vit à une autre date lui donne son horloge :
+// sinon une annonce qui dure un jour paraît expirée dès le lendemain du jour simulé.
 //
 // node outils/relais.mjs [port]  le lance seul ; sinon les tests appellent lancerRelais().
 
@@ -20,7 +21,7 @@ const correspond = (filtre, e) =>
   (!filtre.since || e.created_at >= filtre.since) &&
   (!filtre['#x'] || e.tags.some((t) => t[0] === 'x' && filtre['#x'].includes(t[1])));
 
-export async function lancerRelais(port = 0, { refuser = false } = {}) {
+export async function lancerRelais(port = 0, { refuser = false, horloge = Date.now } = {}) {
   const serveur = new WebSocketServer({ host: '127.0.0.1', port });
   await new Promise((ok) => serveur.on('listening', ok));
   const gardes = [];
@@ -51,7 +52,7 @@ export async function lancerRelais(port = 0, { refuser = false } = {}) {
           refuses.push(e);
           return ws.send(JSON.stringify(['OK', e?.id ?? '', false, 'invalid: signature']));
         }
-        if (expiration(e) * 1000 < Date.now()) return ws.send(JSON.stringify(['OK', e.id, false, 'invalid: expiré']));
+        if (expiration(e) * 1000 < horloge()) return ws.send(JSON.stringify(['OK', e.id, false, 'invalid: expiré']));
         if (!gardes.some((g) => g.id === e.id)) gardes.push(e);
         ws.send(JSON.stringify(['OK', e.id, true, '']));
         for (const [client, subs] of abonnements) {
@@ -62,7 +63,7 @@ export async function lancerRelais(port = 0, { refuser = false } = {}) {
       } else if (sorte === 'REQ') {
         const [id, ...filtres] = reste;
         siens.set(id, filtres);
-        const maintenant = Date.now() / 1000;
+        const maintenant = horloge() / 1000;
         for (const e of gardes) {
           if (expiration(e) > maintenant && filtres.some((f) => correspond(f, e))) ws.send(JSON.stringify(['EVENT', id, e]));
         }

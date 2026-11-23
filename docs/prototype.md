@@ -15,6 +15,7 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    dossier qui contient `opn-link` et `Open-Contact` :
 
    ```sh
+   git clone --depth 1 https://github.com/mahi010110/Open-Contact
    rustup target add wasm32-unknown-unknown
    cargo install wasm-bindgen-cli --version 0.2.130 --locked
    (cd opn-link/maquettes && npm install && npm run style)
@@ -29,9 +30,9 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    - `cd coeur && cargo test` : 57 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
-   - `cd ../site && npm run verifier && npm run construire && npm run
-     classe` : les types de l'interface, puis le scénario, sans aucun
-     échec ;
+   - `cd ../site && npm run construire && npm run verifier && npm run
+     classe` : le cœur d'abord, dont les types de l'interface ont besoin,
+     puis le scénario, sans aucun échec ;
    - `node outils/planches.mjs` : les captures en planches, à regarder.
 4. Reprendre la suite, dans l'ordre de « La suite » plus bas. Les
    questions qui attendent le mainteneur sont dans
@@ -310,8 +311,8 @@ La classe jouée de bout en bout, à huit appareils :
 ```sh
 cd maquettes && npm install && npm run style    # le matériel, une fois
 cd ../site && npm install
-npm run verifier                                # les types de l'interface
 npm run construire                              # le cœur, l'interface, et leur poids
+npm run verifier                                # les types de l'interface, après le cœur
 npm run classe                                  # le scénario et ses captures
 node outils/planches.mjs                        # les captures en planches
 ```

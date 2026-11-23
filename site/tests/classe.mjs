@@ -49,9 +49,16 @@ const serveur = createServer((requete, reponse) => {
 await new Promise((ok) => serveur.listen(0, '127.0.0.1', ok));
 const site = `http://127.0.0.1:${serveur.address().port}`;
 
-const principal = await lancerRelais();
-const ferme = await lancerRelais(0, { refuser: true });
-const secours = await lancerRelais();
+// Les appareils vivent le mardi 17 novembre 2026 au matin, comme dans les maquettes, et les
+// relais avec eux.
+const MARDI_MATIN = new Date('2026-11-17T08:55:00+01:00');
+const NEUF_HEURES = new Date('2026-11-17T09:01:00+01:00');
+let ecart = MARDI_MATIN - Date.now();
+const horloge = () => Date.now() + ecart;
+
+const principal = await lancerRelais(0, { horloge });
+const ferme = await lancerRelais(0, { refuser: true, horloge });
+const secours = await lancerRelais(0, { horloge });
 const mort = await lancerRelaisMort();
 const LISTE = { principaux: [principal.url, ferme.url], secours: [secours.url, mort.url] };
 const debut = Date.now();
@@ -115,9 +122,6 @@ async function filmerLeQr(texte) {
 }
 const TEL = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
 const ORDI = { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 };
-// Les appareils vivent le mardi 17 novembre 2026 au matin, comme dans les maquettes.
-const MARDI_MATIN = new Date('2026-11-17T08:55:00+01:00');
-const NEUF_HEURES = new Date('2026-11-17T09:01:00+01:00');
 const adresses = new Set();
 // Le téléphone et l'ordinateur d'Awa ont les mêmes clés : « relier un appareil » viendra plus tard.
 const clesDAwa = new coeur.Appareil().secrets();
@@ -280,6 +284,7 @@ try {
   await capturer(tel, '12-formateur-membres');
   await tel.click('[data-geste="retour"]');
 
+  ecart = NEUF_HEURES - Date.now();
   for (const { contexte } of Object.values(pages)) await contexte.clock.setSystemTime(NEUF_HEURES);
   await tel.click('[data-geste="lancer"]');
   await tel.getByText('0 sur 4').first().waitFor();
