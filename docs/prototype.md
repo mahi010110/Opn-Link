@@ -37,14 +37,11 @@ Pour une nouvelle discussion, dans un conteneur neuf.
 4. Reprendre la suite, dans l'ordre de « La suite » plus bas. Les
    questions qui attendent le mainteneur sont dans
    [questions-ouvertes.md](questions-ouvertes.md), partie « Le prototype ».
-   Le 23 novembre 2026, l'adjoint et « passer la main » attendent sa
-   réponse sur la façon de faire.
 
-Trois choses à savoir :
-
-- Le travail avance sur la branche `claude/design-navigation-concept-4c4fzs`
-  avant d'arriver sur `main`. Si elle a des commits que `main` n'a pas,
-  demander au mainteneur de les fusionner avant de reprendre.
+- Le travail avance sur une branche avant d'arriver sur `main`. Si une
+  branche de travail a des commits que `main` n'a pas, demander au
+  mainteneur de les fusionner avant de reprendre. Le 23 novembre 2026, c'est
+  `claude/quirky-fermat-tgb4d4`.
 - Pousser sur `main` demande l'accord explicite du mainteneur, à chaque
   fois. La session le bloque sinon.
 - Seul Chromium est installé. Le pilote Chrome de l'environnement n'a pas la
@@ -311,6 +308,53 @@ ne s'annule plus. Le scénario le vérifie en comptant les événements du fil
 sur le relais : un changement annulé n'envoie rien. Deux défauts posés exprès
 le font échouer : un « Annuler » sans effet, et un envoi immédiat.
 
+Fait ensuite le 23 novembre 2026, les responsables, la façon de faire choisie
+par le mainteneur ([architecture.md](architecture.md), partie « Les
+responsables ») :
+
+- dans le cœur, la passation et la lettre entre responsables, avec leurs
+  vecteurs. Pour choisir la porte, le cœur suit les passations depuis le chef
+  qu'il connaît. 70 tests ;
+- le chef nomme un adjoint, formateur ou centre, depuis « Membres » : une
+  invitation, montrée en QR ou envoyée, avec un jeton tiré pour elle. L'invité
+  demande au chef seul, et le chef l'accepte dans « À suivre ». Une demande
+  sans le jeton d'une invitation ne s'affiche pas ;
+- les responsables partagent l'état de la classe par des lettres signées. La
+  fusion unit les listes, et ne retire rien ;
+- le téléphone de l'apprenant écoute la porte sur les relais : il envoie sa
+  présence à chaque responsable et reconnaît leurs annonces ;
+- un responsable ne répond qu'aux présences de l'appel qu'il tient ;
+- le chef passe la main à un adjoint : trente secondes pour annuler, puis la
+  passation signée part, et le nouveau chef publie la porte où il est en
+  premier. Les gestes du chef passent chez lui ;
+- la salle montre encore « Appel clos » quand la lettre de clôture arrive en
+  retard, tant que la clôture a moins d'une minute ;
+- une nouvelle porte, ou une passation, date d'après la précédente, même si
+  l'horloge de l'appareil retarde sur celle d'un autre responsable ;
+- le cœur garde les secrets d'une classe le temps de la page : les tirer du
+  code prend 210 ms, et l'écran du formateur les recalculait à chaque dessin
+  ([mesures.md](mesures.md), partie « Le code de la classe, dans le
+  navigateur »).
+
+Le scénario le joue avec Julien Morel, formateur. Awa l'invite, Kevin
+demande aussi à être adjoint sans jeton, et rien ne s'affiche. Julien voit
+la classe et ses quatre apprenants, sans « Nommer un adjoint ». La porte qui
+le compte arrive chez Léa. Yanis signe une porte où il est chef, puis une
+lettre entre responsables : personne n'en tient compte. Sans réseau, Inès a
+deux envois en attente, un par responsable. Après l'appel, Awa passe la main
+à Julien et annule, puis recommence : trente secondes après, Julien est
+chef, les gestes du chef quittent l'écran d'Awa, et le téléphone de Léa suit.
+
+Sept défauts posés exprès font chacun échouer le scénario : un jeton
+ignoré, une lettre entre responsables dont on ne vérifie pas l'auteur, une
+porte que l'apprenant ne suit plus, une porte acceptée sans suivre le chef,
+une passation sans délai, un « Annuler » sans effet, une passation que
+l'apprenant ne suit pas.
+
+Le scénario regardait « Appel clos » à la salle après la capture du
+formateur, alors que la salle ne le montre que trois secondes : une machine
+chargée le manquait. Il guette maintenant la salle avant de clore.
+
 Fait ensuite le 23 novembre 2026, un morceau de « Rejoindre une classe » :
 l'app redemande l'écran d'accueil une seule fois quand le prochain cours est
 à plus de sept jours, avec la raison : « Ton prochain cours est le lun. 30
@@ -330,9 +374,9 @@ on construit directement la première version complète
    Fait en partie le 17 novembre 2026 : créer, inviter, rejoindre, accepter,
    les membres, et le site installable qui marche sans réseau. L'écran
    d'accueil redemandé avant plus de sept jours sans cours est fait le 23
-   novembre 2026. Reste : nommer un adjoint et passer la main, les réglages
-   du chef, corriger son nom, plusieurs classes et « Mes cours », refaire
-   l'invitation.
+   novembre 2026. Nommer un adjoint et passer la main sont faits le même
+   jour. Reste : les réglages du chef, corriger son nom, plusieurs classes et
+   « Mes cours », refaire l'invitation.
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
    relais publics, l'écran d'entrée de chacun. Il passe avant la fin du 1 :
    sans les relais publics, rien ne marchait hors des tests. Les relais
@@ -513,6 +557,12 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
   dira s'il faut garder les présences plus longtemps ;
 - « Ma semaine » n'ouvre pas encore « Mes présences » : le chevron des
   maquettes viendra avec cette fenêtre ;
+- dans « Membres », « des apprenants » reste une liste sous les
+  responsables, comme le 17 novembre, plutôt que la ligne « 24 apprenants »
+  de la maquette. « Inviter un tuteur » et « Fermer la classe » viendront
+  avec leurs étapes ;
+- « accepté le » devient « depuis le », dans « Membres » : l'app ne connaît
+  pas le genre de la personne ;
 - l'écran d'accueil se redemande dès que le prochain cours est à plus de
   sept jours, et pas seulement à la dernière demi-journée avant : un
   apprenant qui ouvre l'app le lendemain court le même risque. Ailleurs que

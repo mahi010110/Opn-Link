@@ -9,7 +9,8 @@ import { type Contexte, faits, nomDe } from './contexte';
 import { type Creneau, type Demi, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
 import { type ClasseGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
 import { entree } from './routes';
-import { ecouterLeFil, envoyer, recevoir } from './lettres';
+import { ecouterLaPorte, ecouterLeFil, envoyer, recevoir } from './lettres';
+import { passationsDe, porteAJour } from './responsables';
 import { type CeQueSaitLeTelephone, absences, ajusterLaSemaine, semaineHtml } from './semaine';
 import { phrase } from './textes';
 import { afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
@@ -149,6 +150,17 @@ export function apprenant(ctx: Contexte): void {
   };
   const ecouterLAppel = () => {
     if (classe.fil) ecouterLeFil(coeur, relais, classe.fil, recevoirDuFil);
+  };
+  // La porte change quand le chef nomme un adjoint ou passe la main : le téléphone la suit, pour
+  // envoyer sa présence à chaque responsable et reconnaître leurs annonces.
+  const suivreLaPorte = (texte: string) => {
+    const passations = [...new Set([...(classe.passations ?? []), ...passationsDe(ctx, classe.code, [texte])])];
+    const nouvelle = porteAJour(ctx, classe.code, classe.porte, [texte, ...passations]);
+    if (nouvelle === classe.porte && passations.length === (classe.passations ?? []).length) return;
+    classe = { ...classe, porte: nouvelle, passations };
+    porte = coeur.lire_porte(classe.code, nouvelle);
+    garderClasse(classe);
+    if (vue.ecran === 'jour') rendre();
   };
 
   const attente = () => {
@@ -437,5 +449,6 @@ export function apprenant(ctx: Contexte): void {
   };
   setTimeout(() => vue.ecran === 'jour' && rendre(), HORS_LIGNE_MS + 100);
   ecouterLAppel();
+  ecouterLaPorte(coeur, relais, classe.code, suivreLaPorte);
   rendre();
 }

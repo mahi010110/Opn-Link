@@ -58,6 +58,23 @@ const PLANCHES = [
     ],
   },
   {
+    nom: 'planche-4-responsables',
+    titre: 'Les responsables : un adjoint, puis passer la main',
+    sous: 'Awa nomme Julien adjoint par une invitation, et l’accepte dans « À suivre ». Julien voit la classe, sans les gestes du chef. Plus tard, Awa lui passe la main : trente secondes pour annuler, puis Julien est chef.',
+    colonnes: 4,
+    largeur: 1360,
+    images: [
+      ['12b-formateur-adjoint', 'Nommer un adjoint', 'Un formateur ou le centre. L’invitation est un lien, montré en QR ou envoyé.'],
+      ['12c-adjoint-invitation', 'Julien ouvre l’invitation', 'La classe, et qui l’invite. Sa demande part au chef seul.'],
+      ['12d-formateur-accepter-adjoint', 'Dans « À suivre »', 'Une demande sans le jeton d’une invitation ne s’affiche pas.'],
+      ['12e-adjoint-cours', 'Julien est adjoint', 'La classe et ses apprenants, partagés par une lettre signée.'],
+      ['12f-adjoint-membres', 'Les membres, chez Julien', 'Sans « Nommer un adjoint » : c’est un geste du chef.'],
+      ['17b-formateur-passer', 'Passer la main', 'Le nouveau chef, parmi les adjoints.'],
+      ['17c-formateur-passation-attend', 'Trente secondes pour annuler', 'Ensuite, seul le nouveau chef pourra la rendre.'],
+      ['17d-julien-chef', 'Julien est chef', 'Il publie la porte où il est en premier. Awa y reste, comme adjoint.'],
+    ],
+  },
+  {
     nom: 'planche-3-salle',
     titre: 'L’écran de la salle',
     sous: 'Le premier jour, le QR de la classe. Puis celui de l’appel, qui change toutes les dix secondes. Aucun nom d’apprenant, vérifié à chaque étape.',

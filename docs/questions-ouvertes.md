@@ -25,31 +25,11 @@ l'appel, « Une absence » après, et la touche gardée sans réseau. Puis la
 caméra : quircs au lieu de rqrr pour lire les QR, à cause du poids. Puis,
 le 23 novembre 2026, l'écran d'entrée : le prochain cours annoncé à part
 sur le fil, proposé en reprenant l'écart de la dernière fois, « En règle »
-une fois l'appel clos, et les durées de vie sur le téléphone.
+une fois l'appel clos, et les durées de vie sur le téléphone. Puis les
+responsables : le jeton de l'invitation d'adjoint, sept jours, et la fusion
+de l'état partagé entre responsables, où rien ne se retire.
 
 Recommandation : les garder.
-
-### Nommer un adjoint et passer la main
-
-C'est le morceau suivant de « Rejoindre une classe ». Il y a deux façons de
-faire :
-
-- reprendre les adjoints d'OpenContact : des lettres `adjoint` signées,
-  qu'un groupe « sur demande » échange entre ses membres ;
-- étendre la porte d'Opn-Link, déjà signée par le chef avec la liste des
-  responsables. Nommer un adjoint, c'est signer une nouvelle porte qui le
-  compte. Passer la main, c'est signer une porte où il devient chef : les
-  téléphones la vérifient avec la clé de l'ancien chef, qu'ils connaissent,
-  puis retiennent la nouvelle.
-
-Dans les deux cas, les responsables doivent ensuite partager l'état de la
-classe (les membres, les demandes) : par la lettre `classe`, que le chef
-envoie déjà à ses propres appareils, envoyée aussi à chaque responsable.
-
-Recommandation : étendre la porte. Chaque appareil sait déjà la vérifier, la
-maquette `cours-adjoint` passe par une invitation que le chef accepte, et le
-lien avec OpenContact, après la première version, passe par le résumé envoyé
-aux responsables, pas par les rôles.
 
 ### React ou pas
 

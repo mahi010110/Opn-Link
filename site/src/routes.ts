@@ -2,13 +2,14 @@
 
 import { apprenant } from './apprenant';
 import type { Contexte } from './contexte';
-import { sansClasse } from './entree';
-import { classes } from './etat';
+import { attenteDAdjoint, sansClasse } from './entree';
+import { classes, estResponsable } from './etat';
 import { formateur } from './formateur';
 
 export function entree(ctx: Contexte): void {
   const liste = classes();
-  if (liste.some((c) => c.role === 'chef')) return formateur(ctx);
+  if (liste.some((c) => estResponsable(c) && c.fil)) return formateur(ctx);
+  if (liste.some((c) => c.role === 'adjoint')) return attenteDAdjoint(ctx);
   if (liste.some((c) => c.role === 'apprenant')) return apprenant(ctx);
   sansClasse(ctx);
 }

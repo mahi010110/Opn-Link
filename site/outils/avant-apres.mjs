@@ -9,6 +9,9 @@
 //   node outils/avant-apres.mjs lire      « Lire son QR », chez le formateur
 //   node outils/avant-apres.mjs prochain  le formateur après la clôture, et « Changer »
 //   node outils/avant-apres.mjs redemande l'écran d'accueil redemandé, plus de sept jours avant le cours
+//   node outils/avant-apres.mjs membres   « Membres » chez le chef, avec un adjoint
+//   node outils/avant-apres.mjs adjoint   la fenêtre « Adjoint »
+//   node outils/avant-apres.mjs passer    la fenêtre « Passer la main »
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
 //
 // Léa et Awa sont posées dans le stockage, Léa déjà acceptée. Les annonces partent d'un relais local.
@@ -72,6 +75,12 @@ const lea = new coeur.Appareil();
 const code = coeur.nouveau_code_de_classe().replace(/\s/g, '').toLowerCase();
 const porte = coeur.signer_porte(code, 'BTS SIO 2', 'Centre Exemple', '9:00-12:30', '13:30-17:00', ['Awa', 'Diallo', 'formateur', awa.cle(), awa.boite()].join('\t'), awa, OUVERTURE - 3600_000);
 const acceptation = awa.accepter(code, lea.demander_entree(code, 'Léa', 'Martin', OUVERTURE - 3000_000), OUVERTURE - 2000_000);
+const julien = new coeur.Appareil();
+const porteAvecJulien = coeur.signer_porte(
+  code, 'BTS SIO 2', 'Centre Exemple', '9:00-12:30', '13:30-17:00',
+  [['Awa', 'Diallo', 'formateur', awa.cle(), awa.boite()], ['Julien', 'Morel', 'formateur', julien.cle(), julien.boite()]].map((r) => r.join('\t')).join('\n'),
+  awa, OUVERTURE - 1000_000,
+);
 const fil = coeur.nouveau_secret_du_fil();
 const appel = coeur.Appel.ouvrir(code, '2026-11-17', 'matin', awa, ['Léa', 'Martin', lea.cle(), lea.boite()].join('\t'), OUVERTURE);
 const appelOuvert = { journal: appel.journal(), secret: appel.secret() };
@@ -126,6 +135,11 @@ const lireSonQr = async (page) => {
   await page.waitForTimeout(1500);
 };
 const changerLeProchain = (page) => page.locator('[data-geste="changerProchain"]').click({ timeout: 5000 });
+const ouvrirMembres = (page) => page.locator('[data-geste="classe"]').click({ timeout: 5000 });
+const puis = (geste) => async (page) => {
+  await ouvrirMembres(page);
+  await page.locator(`[data-geste="${geste}"]`).click({ timeout: 5000 });
+};
 const signer = async (page) => {
   await page.locator('[data-geste="signer"]').click({ timeout: 15_000 });
   await page.waitForFunction(() => !document.querySelector('.viseur video') || document.querySelector('.viseur video').readyState >= 2, null, { timeout: 15_000 });
@@ -156,6 +170,18 @@ const CAS = {
   redemande: {
     titre: 'L’écran d’accueil, redemandé avant plus de sept jours sans cours',
     etats: [{ nom: 'Jeudi, sur iPhone, le prochain cours le lundi 30', relais: relaisLoin, heure: JEUDI, stockage: leaASigne, iphone: true }],
+  },
+  membres: {
+    titre: '« Membres », chez le chef, avec un adjoint',
+    etats: [{ nom: 'Awa est chef, Julien adjoint', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { porte: porteAvecJulien }), geste: ouvrirMembres }],
+  },
+  adjoint: {
+    titre: 'La fenêtre « Adjoint »',
+    etats: [{ nom: 'Nommer un adjoint', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { porte: porteAvecJulien }), geste: puis('nommer') }],
+  },
+  passer: {
+    titre: 'La fenêtre « Passer la main »',
+    etats: [{ nom: 'Passer la main à Julien', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { porte: porteAvecJulien }), geste: puis('passer') }],
   },
   lire: {
     titre: '« Lire son QR », chez le formateur',
@@ -202,7 +228,7 @@ for (const [n, etat] of CAS[cas].etats.entries()) {
         const stockage = qui === 'lea' ? { cles: lea.secrets(), classes: [classe], 'accueil-propose': 1, ...etat.stockage } : etat.stockage;
         await contexte.addInitScript(
           ([qui, stockage, liste]) => {
-            for (const [cle, valeur] of Object.entries(stockage)) localStorage.setItem(`opl_proto_${qui}_${cle}`, JSON.stringify(valeur));
+            for (const [cle, valeur] of Object.entries(stockage)) if (valeur !== undefined) localStorage.setItem(`opl_proto_${qui}_${cle}`, JSON.stringify(valeur));
             localStorage.setItem(`opl_proto_${qui}_relais`, JSON.stringify(liste));
           },
           [qui, stockage, { principaux: [etat.relais.url], secours: [] }],

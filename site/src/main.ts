@@ -1,8 +1,8 @@
 import { chargerCoeur } from './coeur';
 import { creer } from './creer';
-import { rejoindreParLien } from './entree';
+import { rejoindreCommeAdjoint, rejoindreParLien } from './entree';
 import { clesDeLAppareil, ecran, ecrire, lire, listeDesRelais } from './etat';
-import { lireLien } from './lettres';
+import { lireLien, lireLienDAdjoint } from './lettres';
 import { Relais } from './relais';
 import { entree } from './routes';
 import { salle } from './salle';
@@ -18,8 +18,10 @@ chargerCoeur().then((coeur) => {
   const envois = { lire: () => lire<string[]>('envois') ?? [], ecrire: (e: string[]) => ecrire('envois', e) };
   const ctx = { coeur, relais: new Relais(listeDesRelais(), envois), moi: clesDeLAppareil(coeur) };
   const lien = lireLien(location.hash);
+  const invitation = lireLienDAdjoint(location.hash);
   if (ecran === 'salle') return salle(ctx);
   if (location.hash === '#creer') return creer(ctx);
   if (lien) return rejoindreParLien(ctx, lien.code, lien.chef);
+  if (invitation) return rejoindreCommeAdjoint(ctx, invitation);
   entree(ctx);
 });

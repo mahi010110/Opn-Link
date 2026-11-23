@@ -416,7 +416,9 @@ données possible ». Pour l'appel :
   l'apprenant ;
 - les demi-journées où l'appel a été clos restent huit semaines chez le
   formateur : l'app y apprend le rythme de la classe pour proposer le
-  prochain cours.
+  prochain cours ;
+- une invitation d'adjoint vit sept jours chez le chef. Les passations vivent
+  avec la porte, jusqu'à la fermeture de la classe.
 
 ## L'événement Nostr
 
@@ -442,14 +444,36 @@ destinataire. Elles ne sont pas encore figées.
 | `entree` | l'apprenant, à chaque responsable | sa demande d'entrée |
 | `admis` | le responsable, à l'apprenant | la porte, l'acceptation et le secret du fil |
 | `classe`, `montrer` | le formateur, à ses propres appareils | l'état de la classe, et ce que la salle montre |
+| `adjoint` | l'adjoint invité, au chef seul | sa demande, signée comme celle d'un apprenant, et le jeton de l'invitation |
+| `responsables` | un responsable, à chacun des autres | la porte et les passations, puis une lettre entre responsables (partie du même nom) |
+
+La lettre entre responsables porte en contenu
+`{"v":1,"t":"classe","etat":{...}}` : la porte, les passations, le secret du
+fil, les acceptations, les demandes, les clés laissées dehors, les
+demi-journées de cours et le prochain cours. Celui qui la reçoit met d'abord
+sa porte à jour avec celle qui voyage à côté, vérifie la signature avec les
+responsables de cette porte, puis fusionne : les listes s'unissent, une
+acceptation ne compte que signée par un responsable, la première acceptation
+d'un apprenant gagne, et le prochain cours le plus récent gagne. Rien ne se
+retire ainsi. S'il en sait plus que la lettre, il répond.
 
 La porte voyage autrement : un événement sous l'étiquette de la classe, dont
 le contenu est la porte chiffrée par la clé de la classe (`OPC1.`). Le chef
-la publie à la création, puis une fois par jour au plus.
+la publie à la création. Chaque responsable la republie une fois par jour au
+plus, avec les passations, qui voyagent de la même façon. L'apprenant
+écoute cette étiquette : sa porte suit le chef, et il envoie sa présence à
+chaque responsable.
 
 Le lien du QR de la classe : l'adresse du site, puis
 `#r=<code en minuscules>.<clé du chef, forme courte>`. Ce qui suit `#` ne
 part jamais vers le serveur du site.
+
+L'invitation d'un adjoint : l'adresse du site, puis
+`#a=<code>.<clé du chef, forme courte>.<jeton>.<f ou c>`. Le jeton, 16
+octets tirés au hasard en base64url, ne sert qu'à elle. Le chef ne voit une
+demande d'adjoint que si elle porte le jeton d'une invitation qu'il a
+montrée ou envoyée il y a moins de sept jours. La dernière lettre dit le
+rôle proposé, formateur ou centre ; le chef garde le rôle de son côté.
 
 Les clés de stockage du prototype commencent par `opl_proto_`, suivies du
 nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presences`,
@@ -465,7 +489,13 @@ vérifiées. `presences` porte les présences signées, avec leur demi-journée
 et leur réception. `prochain` porte le dernier prochain cours vérifié. Chez
 le chef, `classes` garde aussi `cours`, les demi-journées où l'appel a été
 clos, `prochain`, le dernier annoncé, et `prochainEnAttente`, celui qui
-attend la fin des trente secondes pour partir.
+attend la fin des trente secondes pour partir. Chez chacun, `classes` garde
+`passations`, les passations du chef. Chez le chef, `invitations`, les
+invitations d'adjoint de moins de sept jours, `candidats`, les demandes
+d'adjoint qui attendent son accord, et `passationEnAttente`, la main qu'il
+passe dans trente secondes. Le rôle `adjoint` marque un responsable qui
+n'est pas chef, ou qui attend l'accord du chef tant qu'il n'a pas le secret
+du fil.
 
 Le service worker garde le site dans une réserve nommée `opn-link-` suivi de
 l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.

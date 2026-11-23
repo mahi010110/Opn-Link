@@ -16,7 +16,9 @@ export type Lettre =
   | { v: 1; t: 'refus'; seance: string; raison: string }
   | { v: 1; t: 'compte'; seance: string; presents: number; inscrits: number }
   | { v: 1; t: 'clos'; seance: string; presents: number; absents: number; quand: number }
-  | { v: 1; t: 'reouvert'; seance: string };
+  | { v: 1; t: 'reouvert'; seance: string }
+  | { v: 1; t: 'adjoint'; code: string; demande: string; jeton: string }
+  | { v: 1; t: 'responsables'; code: string; porte: string; passations: string[]; lettre: string };
 
 const UN_JOUR = 24 * 3600;
 const SEPT_JOURS = 7 * UN_JOUR;
@@ -69,7 +71,19 @@ export function ecouterLeFil(coeur: Coeur, relais: Relais, fil: string, rappel: 
   });
 }
 
-/// Le chef publie la porte de la classe, sous l'étiquette du code. Les relais la gardent trente jours.
+/// Ce qui arrive sous l'étiquette de la classe : la porte, et les passations de ses chefs.
+export function ecouterLaPorte(coeur: Coeur, relais: Relais, code: string, rappel: (texte: string) => void): void {
+  relais.ecouter('porte', { kinds: [8571], '#x': [coeur.etiquette_de_classe(code)], since: secondes() - TRENTE_JOURS }, (e) => {
+    try {
+      rappel(coeur.dechiffrer_pour_la_classe(code, e.content));
+    } catch {
+      // Ce qui ne se déchiffre pas n'est pas de cette classe.
+    }
+  });
+}
+
+/// Un responsable publie la porte de la classe, ou une passation, sous l'étiquette du code. Les
+/// relais la gardent trente jours.
 export function publierPorte(coeur: Coeur, relais: Relais, code: string, porte: string): void {
   const maintenant = secondes();
   const chiffree = coeur.chiffrer_pour_la_classe(code, porte);
@@ -80,6 +94,7 @@ export function publierPorte(coeur: Coeur, relais: Relais, code: string, porte: 
 export async function chercherPorte(coeur: Coeur, relais: Relais, code: string, chef?: string): Promise<ReturnType<Coeur['choisir_porte']>> {
   const evenements = await relais.chercher({ kinds: [8571], '#x': [coeur.etiquette_de_classe(code)] });
   const textes: string[] = [];
+  // Les passations voyagent avec la porte : le cœur les suit depuis le chef du lien.
   for (const e of evenements) {
     try {
       textes.push(coeur.dechiffrer_pour_la_classe(code, e.content));
@@ -102,4 +117,22 @@ export function lienDeLaClasse(coeur: Coeur, code: string, cleDuChef: string): s
 export function lireLien(hash: string): { code: string; chef: string } | undefined {
   const m = /^#r=([a-z0-9]{15})\.([A-Za-z0-9_-]{44})$/.exec(hash);
   return m ? { code: m[1], chef: m[2] } : undefined;
+}
+
+/// L'invitation d'un adjoint : le lien de la classe, un jeton que le chef a tiré pour elle, et le
+/// rôle proposé, f pour formateur ou c pour centre. Sans un jeton qu'il a donné, le chef ne voit
+/// pas la demande.
+export function lienDAdjoint(coeur: Coeur, code: string, cleDuChef: string, jeton: string, role: string): string {
+  return `${location.origin}${location.pathname}#a=${codeNormal(code)}.${coeur.cle_courte(cleDuChef)}.${jeton}.${role === 'centre' ? 'c' : 'f'}`;
+}
+
+export function lireLienDAdjoint(hash: string): { code: string; chef: string; jeton: string; role: 'formateur' | 'centre' } | undefined {
+  const m = /^#a=([a-z0-9]{15})\.([A-Za-z0-9_-]{44})\.([A-Za-z0-9_-]{22})\.([fc])$/.exec(hash);
+  return m ? { code: m[1], chef: m[2], jeton: m[3], role: m[4] === 'c' ? 'centre' : 'formateur' } : undefined;
+}
+
+/// Un jeton tiré au hasard, 16 octets en base64url.
+export function nouveauJeton(): string {
+  const octets = crypto.getRandomValues(new Uint8Array(16));
+  return btoa(String.fromCharCode(...octets)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }

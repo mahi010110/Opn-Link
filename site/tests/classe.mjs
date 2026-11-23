@@ -61,6 +61,15 @@ const horloge = () => Date.now() + ecart;
 const principal = await lancerRelais(0, { horloge });
 const ferme = await lancerRelais(0, { refuser: true, horloge });
 const secours = await lancerRelais(0, { horloge });
+// Ce qu'un intrus publie lui-même, sans passer par l'app : un événement sous une étiquette.
+async function publierAuSecours(etiquette, contenu) {
+  const seconde = Math.floor(horloge() / 1000);
+  const ws = new WebSocket(secours.url);
+  await new Promise((ok) => ws.on('open', ok));
+  ws.send(`["EVENT",${coeur.evenement_nostr(etiquette, seconde + 86_400, contenu, seconde)}]`);
+  await new Promise((ok) => ws.on('message', ok));
+  ws.close();
+}
 const mort = await lancerRelaisMort();
 const LISTE = { principaux: [principal.url, ferme.url], secours: [secours.url, mort.url] };
 const debut = Date.now();
@@ -298,6 +307,57 @@ try {
 
   await tel.click('[data-geste="classe"]');
   await capturer(tel, '12-formateur-membres');
+
+  // Awa nomme un adjoint, Julien Morel, formateur. L'invitation est un lien, avec un jeton.
+  await tel.click('[data-geste="nommer"]');
+  await capturer(tel, '12b-formateur-adjoint');
+  await tel.click('[data-geste="montrerInvitation"]');
+  const invitation = await tel.locator('[data-lien]').getAttribute('data-lien');
+  const telJulien = await appareil('julien', TEL, { url: `/index.html#${invitation.split('#')[1]}` });
+  await telJulien.getByText('Awa Diallo t’invite comme adjoint').waitFor({ timeout: 15_000 });
+  await capturer(telJulien, '12c-adjoint-invitation');
+  await telJulien.fill('#prenom', 'Julien');
+  await telJulien.fill('#nom', 'Morel');
+  await telJulien.click('[data-geste="demander"]');
+  await telJulien.getByText('Demande envoyée').waitFor();
+
+  // Kevin, qui a le code, demande aussi à être adjoint, mais sans le jeton d'une invitation.
+  const clesDeKevin = JSON.parse(await telKevin.evaluate(() => localStorage.getItem('opl_proto_kevin_cles')));
+  const boiteDAwa = coeur.Appareil.relire(clesDAwa).boite();
+  const demandeDeKevin = coeur.Appareil.relire(clesDeKevin).demander_entree(code, 'Kevin', 'Intrus', horloge());
+  await publierAuSecours(coeur.etiquette_de_boite(boiteDAwa), coeur.sceller(boiteDAwa, JSON.stringify({ v: 1, t: 'adjoint', code, demande: demandeDeKevin, jeton: 'A'.repeat(22) })));
+
+  await tel.click('[data-geste="retour"]');
+  await tel.click('[data-geste="retour"]');
+  await tel.getByText('Julien Morel demande à être adjoint').waitFor({ timeout: 15_000 });
+  await tel.waitForTimeout(1500);
+  verifier(await tel.getByText('Kevin Intrus demande à être adjoint').count() === 0, 'une demande d’adjoint sans le jeton d’une invitation ne s’affiche pas');
+  await capturer(tel, '12d-formateur-accepter-adjoint');
+  await tel.click('[data-geste="accepterAdjoint"]');
+  await telJulien.getByText('Lancer l’appel').waitFor({ timeout: 15_000 });
+  await capturer(telJulien, '12e-adjoint-cours');
+  verifier(await telJulien.getByText('Matin, 9 h à 12 h 30 · 4 apprenants').count() === 1, 'accepté, Julien voit la classe et ses quatre apprenants, partagés par Awa');
+  await telJulien.click('[data-geste="classe"]');
+  verifier(
+    (await telJulien.getByText('formateur · chef').count()) === 1 && (await telJulien.getByText('formateur · adjoint').count()) === 1 && (await telJulien.locator('[data-geste="nommer"]').count()) === 0,
+    'Julien est adjoint : il ne voit pas « Nommer un adjoint », qui reste au chef',
+  );
+  await capturer(telJulien, '12f-adjoint-membres');
+  await telJulien.click('[data-geste="retour"]');
+
+  // Le téléphone de Léa suit la porte : Julien en est, sa présence lui partira aussi.
+  await telLea.waitForFunction(() => JSON.parse(localStorage.getItem('opl_proto_lea_classes'))[0].porte.includes('Julien'), null, { timeout: 15_000 });
+  verifier(true, 'la porte qui compte Julien arrive chez Léa');
+  // Yanis, qui a le code, signe une porte où il est chef : personne n'en tient compte.
+  const clesDeYanisAvant = JSON.parse(await telYanis.evaluate(() => localStorage.getItem('opl_proto_yanis_cles')));
+  const yanis = coeur.Appareil.relire(clesDeYanisAvant);
+  const porteDeYanis = coeur.signer_porte(code, 'BTS SIO 2', 'Centre Exemple', '9:00-12:30', '13:30-17:00', ['Yanis', 'Haddad', 'formateur', yanis.cle(), yanis.boite()].join('\t'), yanis, horloge() + 60_000);
+  await publierAuSecours(coeur.etiquette_de_classe(code), coeur.chiffrer_pour_la_classe(code, porteDeYanis));
+  await telLea.waitForTimeout(1500);
+  const porteDeLea = JSON.parse(await telLea.evaluate(() => localStorage.getItem('opl_proto_lea_classes')))[0].porte;
+  verifier(coeur.lire_porte(code, porteDeLea).responsables[0].prenom === 'Awa', 'un apprenant ne se fait pas chef : sa porte n’est pas signée par le chef que suit la classe');
+
+  await tel.click('[data-geste="classe"]');
   await tel.click('[data-geste="retour"]');
 
   ecart = NEUF_HEURES - Date.now();
@@ -359,13 +419,14 @@ try {
   await taper(telInes, await codeDeLAppel());
   await telInes.getByText('Montre ce QR à Awa Diallo').waitFor({ timeout: 20_000 });
   await capturer(telInes, '15-apprenant-sans-reseau');
-  verifier(await telInes.getByText('Pas de réseau · 1 envoi attend').count() === 1, 'sans réseau, l’écran dit ce qui attend');
+  // Sa présence part à chaque responsable : Awa et Julien.
+  verifier(await telInes.getByText('Pas de réseau · 2 envois attendent').count() === 1, 'sans réseau, l’écran dit ce qui attend : sa présence, pour chacun des deux responsables');
   const presenceDInes = await telInes.locator('[data-presence]').getAttribute('data-presence');
   const cleDInes = coeur.cle_de_la_presence(presenceDInes);
   const enAttente = JSON.parse(await telInes.evaluate(() => localStorage.getItem('opl_proto_ines_envois')));
   await telInes.reload();
-  await telInes.getByText('Pas de réseau · 1 envoi attend').waitFor({ timeout: 15_000 });
-  verifier(enAttente.length === 1, 'ce qui attend se garde sur le téléphone : rechargé, il dit encore « 1 envoi attend »');
+  await telInes.getByText('Pas de réseau · 2 envois attendent').waitFor({ timeout: 15_000 });
+  verifier(enAttente.length === 2, 'ce qui attend se garde sur le téléphone : rechargé, il dit encore « 2 envois attendent »');
   await filmerLeQr(await salle.locator('[data-qr]').getAttribute('data-qr'));
   await tel.click(`[data-geste="nom"][data-cle="${cleDInes}"]`);
   await tel.click('[data-geste="lireQr"]');
@@ -380,11 +441,12 @@ try {
   verifier(true, 'Awa lit le QR d’Inès avec la caméra de son téléphone, sans rien taper');
   await salle.getByText('3 sur 4').waitFor({ timeout: 15_000 });
 
+  // « Appel clos » ne reste que trois secondes à la salle : on la guette avant de clore.
+  const clotureALaSalle = salle.getByText('Appel clos').waitFor({ timeout: 15_000 }).then(() => sansNom(salle, 'à la clôture'));
   await tel.click('[data-geste="clore"]');
   await tel.getByText('Clos et signé').waitFor();
   await capturer(tel, '16-formateur-clos');
-  await salle.getByText('Appel clos').waitFor({ timeout: 15_000 });
-  await sansNom(salle, 'à la clôture');
+  await clotureALaSalle;
   verifier(await tel.getByText('Noah Petit').count() === 1, 'Noah, qui n’a pas signé, est noté absent');
   await telNoah.getByText('Une absence').waitFor({ timeout: 15_000 });
   await capturer(telNoah, '16b-apprenant-absence');
@@ -421,6 +483,19 @@ try {
   await capturer(tel, '16e-formateur-prochain-part');
   await telLea.getByText('Prochain appel : lun. 23 nov., 9 h').waitFor({ timeout: 45_000 });
   verifier(surLeFil() === avantLesChangements + 1, `un seul prochain cours est parti, celui de lundi : l’annulé n’a rien envoyé (${surLeFil() - avantLesChangements})`);
+
+  // Yanis écrit à Awa comme un responsable, une lettre signée de sa clé : un autre prochain cours.
+  const parYanisLettre = coeur.Appareil.relire(clesDeYanis).ecrire_aux_responsables(
+    code,
+    JSON.stringify({ v: 1, t: 'classe', etat: { porte: classeDeYanis.porte, passations: [], membres: [], demandes: [], dehors: [], cours: [], prochain: { date: '2026-12-25', demi: 'matin', quand: horloge() + 1e9 } } }),
+    horloge(),
+  );
+  await publierAuSecours(
+    coeur.etiquette_de_boite(boiteDAwa),
+    coeur.sceller(boiteDAwa, JSON.stringify({ v: 1, t: 'responsables', code, porte: classeDeYanis.porte, passations: [], lettre: parYanisLettre })),
+  );
+  await tel.waitForTimeout(1500);
+  verifier(await tel.getByText('Prochain cours : lundi 23, matin').count() === 1, 'une lettre entre responsables signée par un apprenant ne compte pas');
   await capturer(telLea, '16d-apprenant-en-regle');
   const casesDeLea = await telLea.locator('.semaine .case').evaluateAll((cases) => cases.map((c) => `${c.className.replace('case', '').trim() || '-'}:${c.textContent}`));
   verifier(
@@ -445,8 +520,8 @@ try {
   await telInes.getByText('En règle').waitFor({ timeout: 15_000 });
   verifier((await telInes.locator('.case.faite').count()) === 1, 'le réseau revenu, Inès reçoit la réponse : sa présence est signée, et elle est en règle');
   await telInes.waitForFunction(() => localStorage.getItem('opl_proto_ines_envois') === '[]', null, { timeout: 15_000 });
-  const idDeLaPresence = JSON.parse(enAttente[0]).id;
-  verifier(secours.gardes.some((e) => e.id === idDeLaPresence), 'la présence gardée part d’elle-même au retour du réseau, rechargement compris');
+  const partis = enAttente.map((e) => JSON.parse(e).id).filter((id) => secours.gardes.some((e) => e.id === id));
+  verifier(partis.length === 2, 'la présence gardée part d’elle-même au retour du réseau, rechargement compris');
 
   const garde = JSON.parse(await tel.evaluate(() => localStorage.getItem('opl_proto_awa-tel_appel')));
   verifier(/^[0-9a-f]{64}$/.test(coeur.verifier_journal(garde.journal)), 'la feuille close se vérifie seule');
@@ -468,7 +543,7 @@ try {
   // donc que chaque contenu est une lettre scellée ou une porte chiffrée, et qu'aucun nom complet,
   // espace compris, n'apparaît nulle part.
   const surLesRelais = JSON.stringify(gardes);
-  const enClair = ['Awa Diallo', 'Léa Martin', 'Yanis Haddad', 'Inès Roux', 'Noah Petit', 'Kevin Intrus', 'BTS SIO 2', 'Centre Exemple'].filter((n) => surLesRelais.includes(n));
+  const enClair = ['Awa Diallo', 'Léa Martin', 'Yanis Haddad', 'Inès Roux', 'Noah Petit', 'Kevin Intrus', 'Julien Morel', 'BTS SIO 2', 'Centre Exemple'].filter((n) => surLesRelais.includes(n));
   const nonChiffres = gardes.filter((e) => !/^OP[BC]1\.[A-Za-z0-9_-]+$/.test(e.content));
   verifier(enClair.length === 0 && nonChiffres.length === 0, `rien ne passe en clair sur les relais : chaque contenu est scellé ou chiffré, et aucun nom ne s'y lit (${enClair.join(', ') || 'aucun'})`);
   verifier([...adresses].every((h) => h.startsWith('127.0.0.1')), `aucune autre adresse contactée (${[...adresses].join(', ')})`);
@@ -483,6 +558,46 @@ try {
   for (const page of [tel, telLea, telYanis]) await page.emulateMedia({ colorScheme: 'dark' });
   await capturer(tel, '17-formateur-clos-sombre');
   await capturer(telLea, '18-apprenant-en-regle-sombre');
+
+  // Awa passe la main à Julien : trente secondes pour annuler, puis la passation signée part, et
+  // Julien publie la porte où il est chef.
+  await tel.emulateMedia({ colorScheme: 'light' });
+  await tel.click('[data-geste="classe"]');
+  await tel.click('[data-geste="passer"]');
+  await tel.click('[data-geste="passerLaMain"]');
+  await tel.click('[data-geste="annulerPassation"]');
+  const passationGardee = () => tel.evaluate(() => JSON.parse(localStorage.getItem('opl_proto_awa-tel_classes'))[0].passationEnAttente);
+  verifier(
+    (await passationGardee()) === undefined && (await tel.locator('[data-geste="passer"]').count()) === 1,
+    '« Annuler » pendant les trente secondes : Awa reste chef, et rien n’attend de partir',
+  );
+  await tel.click('[data-geste="passer"]');
+  await capturer(tel, '17b-formateur-passer');
+  await tel.click('[data-geste="passerLaMain"]');
+  const decompte = Number((await tel.getByText(/devient chef dans \d+\ss/).textContent()).match(/dans (\d+)/)[1]);
+  verifier(
+    decompte >= 25 && (await tel.locator('[data-geste="annulerPassation"]').count()) === 1,
+    `passer la main attend trente secondes, avec « Annuler » (${decompte} s)`,
+  );
+  await capturer(tel, '17c-formateur-passation-attend');
+  await telJulien.click('[data-geste="classe"]');
+  await telJulien.locator('[data-geste="nommer"]').waitFor({ timeout: 60_000 });
+  await capturer(telJulien, '17d-julien-chef');
+  verifier(
+    (await telJulien.locator('[data-geste="passer"]').count()) === 1 && (await telJulien.getByText('formateur · chef').count()) === 1,
+    'Julien est chef : « Nommer un adjoint » et « Passer la main » sont chez lui',
+  );
+  await tel.locator('[data-geste="nommer"]').waitFor({ state: 'detached', timeout: 15_000 });
+  verifier(
+    (await tel.locator('[data-geste="passer"]').count()) === 0 && (await tel.getByText('formateur · adjoint').count()) === 1,
+    'Awa est adjoint : les gestes du chef ont quitté son écran',
+  );
+  const chefChezLea = async () =>
+    coeur.lire_porte(code, JSON.parse(await telLea.evaluate(() => localStorage.getItem('opl_proto_lea_classes')))[0].porte).responsables[0].prenom;
+  for (let i = 0; i < 30 && (await chefChezLea()) !== 'Julien'; i++) await telLea.waitForTimeout(1000);
+  verifier((await chefChezLea()) === 'Julien', 'le téléphone de Léa suit la passation : sa porte est celle de Julien');
+  await telJulien.click('[data-geste="retour"]');
+  await tel.click('[data-geste="retour"]');
 
   // Jeudi, Léa est en entreprise : son téléphone le sait par le prochain cours.
   ecart = JEUDI - Date.now();

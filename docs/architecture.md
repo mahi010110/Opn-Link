@@ -198,6 +198,30 @@ Pourquoi P-256 :
   page (une clé « non exportable » de WebCrypto). Le cœur demande alors à
   l'adaptateur de signer.
 
+## Les responsables
+
+Décidé le 23 novembre 2026, sur la recommandation de
+[questions-ouvertes.md](questions-ouvertes.md) (« Ok go, continue »).
+
+- La porte de la classe, signée par le chef, dit qui sont les responsables :
+  le chef en premier, puis les adjoints. Nommer un adjoint, c'est signer une
+  nouvelle porte qui le compte.
+- Le chef passe la main par une passation qu'il signe seul. Le nouveau chef
+  signe aussitôt une porte où il est en premier. Chaque appareil suit les
+  passations depuis le chef qu'il connaît : un apprenant qui a rejoint avec
+  l'ancien lien retrouve le chef actuel.
+- Les responsables partagent l'état de la classe par des lettres signées,
+  dans leurs boîtes. Leurs boîtes sont dans la porte, que tout apprenant peut
+  lire : sans signature, un apprenant pourrait écrire à leur place.
+- L'adjoint entre par une invitation que le chef montre ou envoie, avec un
+  jeton tiré pour elle, puis le chef accepte sa demande.
+- Les adjoints d'OpenContact, ses lettres `adjoint` signées entre membres
+  d'un groupe, ne sont pas repris. Le lien avec OpenContact passe par le
+  résumé envoyé aux responsables.
+
+Les formats sont dans [contrat.md](contrat.md), parties « La porte », « La
+passation » et « La lettre entre responsables ».
+
 ## La preuve d'une présence ou d'une signature
 
 La recherche dit ce qu'il faut pour qu'une feuille de présence ou un document

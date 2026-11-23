@@ -10,7 +10,8 @@ export interface Moi {
 
 export interface ClasseGardee {
   code: string;
-  role: 'chef' | 'apprenant';
+  /// « chef » ou « adjoint » chez un responsable : la porte et ses passations disent qui est chef.
+  role: 'chef' | 'adjoint' | 'apprenant';
   porte: string;
   fil?: string;
   /// L'apprenant : son acceptation, une fois admis, ou sa demande, tant qu'il attend.
@@ -27,7 +28,17 @@ export interface ClasseGardee {
   prochain?: { date: string; demi: string; quand: number };
   /// Le prochain cours qui attend la fin du délai pour annuler, avant de partir à la classe.
   prochainEnAttente?: { date: string; demi: string; part: number };
+  /// Les passations du chef, qui voyagent avec la porte.
+  passations?: string[];
+  /// Le chef : les invitations d'adjoint qu'il a données, sept jours au plus, et ceux qui y ont
+  /// répondu en demandant à être adjoint.
+  invitations?: { jeton: string; role: string; quand: number }[];
+  candidats?: { demande: string; role: string; jeton: string }[];
+  /// Le chef qui passe la main : à qui, et quand la passation part, après le délai pour annuler.
+  passationEnAttente?: { vers: string; part: number };
 }
+
+export const estResponsable = (c: ClasseGardee): boolean => c.role === 'chef' || c.role === 'adjoint';
 
 const parametres = new URLSearchParams(location.search);
 export const appareil = parametres.get('appareil') ?? 'moi';

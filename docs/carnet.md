@@ -507,3 +507,10 @@ refusés.
 - En relisant les règles : changer le prochain cours envoie à toute la
   classe et remplace le précédent. Il attend maintenant trente secondes,
   avec « Annuler », comme le demande la règle 6.
+- Le mainteneur, après le compte rendu : « Ok go, continue. » Pris comme un
+  oui à la recommandation pour l'adjoint : on étend la porte d'Opn-Link
+  plutôt que de reprendre les adjoints d'OpenContact. Reporté dans
+  [architecture.md](architecture.md), partie « Les responsables ».
+- Nommer un adjoint et passer la main sont faits. Choisis en codant, à
+  valider : l'invitation porte un jeton valable sept jours, et la fusion de
+  l'état partagé entre responsables ne retire jamais rien.
