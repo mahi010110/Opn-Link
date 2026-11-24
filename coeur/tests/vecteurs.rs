@@ -104,6 +104,7 @@ const PROCHAIN_COURS: &str = include_str!("vecteurs/prochain-v1.txt");
 const PASSATION: &str = include_str!("vecteurs/passation-v1.txt");
 const ENTRE_RESPONSABLES: &str = include_str!("vecteurs/responsables-v1.txt");
 const NOM_CORRIGE: &str = include_str!("vecteurs/nom-v1.txt");
+const SECRETS_GARDES: &str = include_str!("vecteurs/secrets-v1.txt");
 const JULIEN_CLE: &str = "BHQxsY8FWshzset9dNhxatHj3waQiwDML5ARU_jrZCgYSGfA_asznGxJCjmucE0ptbTC8SRDUKKQWWIs9JtCEVU";
 
 #[test]
@@ -191,4 +192,13 @@ fn le_nom_corrige() {
     assert_eq!((correction.cle.clone(), correction.prenom.as_str(), correction.nom.as_str()), (lea().publique(), "Léa", "Martin-Dupont"));
     assert_eq!(correction.quand, 1_763_539_200_000);
     assert_eq!(CorrectionDeNom::signer(&classe, &lea(), "Léa", "Martin-Dupont", 1_763_539_200_000).unwrap(), NOM_CORRIGE);
+}
+
+#[test]
+fn les_secrets_gardes() {
+    let code = CodeDeClasse::lire(CODE).unwrap();
+    assert_eq!(code.secrets().texte(&code), SECRETS_GARDES);
+    let relus = SecretsDeClasse::lire(&code, SECRETS_GARDES).unwrap();
+    assert_eq!(relus.etiquette(), ETIQUETTE);
+    assert_eq!(relus.seance("2026-11-17", Demi::Matin).unwrap().texte(), SEANCE_MATIN);
 }

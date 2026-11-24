@@ -150,6 +150,13 @@ maintenant ces secrets le temps de la page : le calcul se fait une fois par
 classe, puis il prend 0,1 ms. Sur un vieux téléphone, ce premier calcul sera
 plus long : à mesurer sur place.
 
+Mesuré le 24 novembre 2026 dans Chromium, sur la même machine : 140 ms par
+code, de 132 à 154 ms sur dix codes. Un téléphone qui suit dix classes
+attendrait donc 1,4 s à chaque ouverture, avant le premier écran. Il garde
+maintenant les secrets avec chaque classe (`opn-link·secrets·v1`,
+[contrat.md](contrat.md)) : le calcul ne se fait qu'une fois, quand on entre
+dans la classe.
+
 ## Les QR codes
 
 Mesurés sur un ordinateur, avec une correction d'erreur moyenne et un contenu

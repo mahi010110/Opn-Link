@@ -3,7 +3,7 @@ use sha2::Sha256;
 
 use crate::appel::{Demi, IdSeance};
 use crate::cles::{CleAppareil, ClePublique, Signature};
-use crate::encodage::{a_signer, champ, hex, lire_signe};
+use crate::encodage::{a_signer, b64, champ, de_b64, hex, lire_signe};
 use crate::erreur::Erreur;
 use crate::hasard;
 
@@ -12,6 +12,8 @@ const ALPHABET: &[u8] = b"abcdefghjkmnpqrstuvwxyz23456789";
 const LONGUEUR: usize = 15;
 const SEL: &[u8] = "opn-link·classe·v1".as_bytes();
 const TOURS: u32 = 100_000;
+const SECRETS_GARDES: &str = "opn-link·secrets·v1";
+const DEBUT_D_ETIQUETTE: &str = "opl-classe-";
 
 /// Le code d'une classe. C'est le secret de la classe : qui l'a peut demander à entrer.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -57,7 +59,7 @@ impl CodeDeClasse {
         pbkdf2::pbkdf2_hmac::<Sha256>(self.0.as_bytes(), SEL, TOURS, &mut sortie);
         let mut cle = [0u8; 32];
         cle.copy_from_slice(&sortie[16..]);
-        SecretsDeClasse { etiquette: format!("opl-classe-{}", hex(&sortie[..16])), cle }
+        SecretsDeClasse { etiquette: format!("{DEBUT_D_ETIQUETTE}{}", hex(&sortie[..16])), cle }
     }
 }
 
@@ -71,6 +73,32 @@ pub struct SecretsDeClasse {
 impl SecretsDeClasse {
     pub fn etiquette(&self) -> &str {
         &self.etiquette
+    }
+
+    /// Les secrets en texte, à garder sur l'appareil avec le code : les tirer du code prend
+    /// 140 ms dans un navigateur, à chaque ouverture, et un téléphone suit jusqu'à dix classes.
+    pub fn texte(&self, code: &CodeDeClasse) -> String {
+        [SECRETS_GARDES, code.texte(), &self.etiquette, &b64(&self.cle)].join("\n")
+    }
+
+    /// Relit des secrets gardés. Ils ne valent que pour le code qu'ils portent.
+    pub fn lire(code: &CodeDeClasse, texte: &str) -> Result<Self, Erreur> {
+        let lignes: Vec<&str> = texte.trim_end_matches('\n').split('\n').collect();
+        let [format, de, etiquette, cle] = lignes[..] else {
+            return Err(Erreur::Encodage);
+        };
+        if format != SECRETS_GARDES {
+            return Err(Erreur::Encodage);
+        }
+        if de != code.texte() {
+            return Err(Erreur::AutreSeance);
+        }
+        let empreinte = etiquette.strip_prefix(DEBUT_D_ETIQUETTE).ok_or(Erreur::Encodage)?;
+        if empreinte.len() != 32 || !empreinte.bytes().all(|o| o.is_ascii_digit() || (b'a'..=b'f').contains(&o)) {
+            return Err(Erreur::Encodage);
+        }
+        let cle: [u8; 32] = de_b64(cle)?.try_into().map_err(|_| Erreur::Encodage)?;
+        Ok(SecretsDeClasse { etiquette: etiquette.into(), cle })
     }
 
     /// L'identifiant d'une demi-journée de cette classe. Il se calcule des deux côtés,
@@ -196,6 +224,26 @@ mod tests {
         assert!(a.etiquette().starts_with("opl-classe-"));
         let autre = CodeDeClasse::lire("RJ4KP 7MX2D W8QHM").unwrap().secrets();
         assert_ne!(a.etiquette(), autre.etiquette());
+    }
+
+    #[test]
+    fn les_secrets_gardes_se_relisent_pour_leur_seul_code() {
+        let code = CodeDeClasse::nouveau().unwrap();
+        let secrets = code.secrets();
+        let texte = secrets.texte(&code);
+        let relus = SecretsDeClasse::lire(&code, &texte).unwrap();
+        assert_eq!(relus.etiquette(), secrets.etiquette());
+        assert_eq!(relus.seance("2026-11-17", Demi::Matin), secrets.seance("2026-11-17", Demi::Matin));
+        let autre = CodeDeClasse::nouveau().unwrap();
+        assert_eq!(SecretsDeClasse::lire(&autre, &texte).err(), Some(Erreur::AutreSeance));
+        let tronques = texte.rsplit_once('\n').unwrap().0;
+        assert_eq!(SecretsDeClasse::lire(&code, tronques).err(), Some(Erreur::Encodage));
+        let version_inconnue = texte.replace(SECRETS_GARDES, "opn-link·secrets·v2");
+        assert_eq!(SecretsDeClasse::lire(&code, &version_inconnue).err(), Some(Erreur::Encodage));
+        for fausse in [format!("{DEBUT_D_ETIQUETTE}abc"), format!("{DEBUT_D_ETIQUETTE}{}", "z".repeat(32))] {
+            let texte_faux = texte.replace(secrets.etiquette(), &fausse);
+            assert_eq!(SecretsDeClasse::lire(&code, &texte_faux).err(), Some(Erreur::Encodage));
+        }
     }
 
     #[test]

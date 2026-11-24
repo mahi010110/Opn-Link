@@ -28,7 +28,8 @@ thread_local! {
 }
 
 /// Les secrets d'une classe se tirent de son code par PBKDF2, 100 000 tours : un calcul long dans
-/// le navigateur, dont l'écran a besoin à chaque dessin. On les garde le temps de la page.
+/// le navigateur, dont l'écran a besoin à chaque dessin. On les garde le temps de la page, et
+/// l'appareil les garde avec la classe (`secrets_de_la_classe`).
 fn secrets(code: &str) -> Result<SecretsDeClasse, Erreur> {
     let code = CodeDeClasse::lire(code)?;
     SECRETS.with(|gardes| {
@@ -140,6 +141,28 @@ impl Appareil {
 #[wasm_bindgen]
 pub fn etiquette_de_classe(code: &str) -> Result<String, Erreur> {
     Ok(secrets(code)?.etiquette().to_owned())
+}
+
+/// Les secrets de la classe en texte, à garder sur l'appareil avec elle : les tirer du code
+/// prend 140 ms dans un navigateur, à chaque ouverture (docs/mesures.md).
+#[wasm_bindgen]
+pub fn secrets_de_la_classe(code: &str) -> Result<String, Erreur> {
+    let code = CodeDeClasse::lire(code)?;
+    Ok(secrets(code.texte())?.texte(&code))
+}
+
+/// Redonne au cœur les secrets gardés d'une classe : il ne les tire plus de son code.
+#[wasm_bindgen]
+pub fn reprendre_les_secrets(code: &str, texte: &str) -> Result<(), Erreur> {
+    let code = CodeDeClasse::lire(code)?;
+    let relus = SecretsDeClasse::lire(&code, texte)?;
+    SECRETS.with(|gardes| {
+        let mut gardes = gardes.borrow_mut();
+        if !gardes.iter().any(|(c, _)| c == code.texte()) {
+            gardes.push((code.texte().to_owned(), relus));
+        }
+    });
+    Ok(())
 }
 
 /// L'identifiant d'une demi-journée de la classe, calculé sans rien échanger.

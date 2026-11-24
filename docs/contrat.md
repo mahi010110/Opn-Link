@@ -55,6 +55,24 @@ de la salle permet de demander à entrer, pas de lire les annonces.
 Vecteur : `RJ4KP 7MX2D W8QHN` donne
 `opl-classe-48c4e5ebf83ef60682ad29918ce4ec5a`.
 
+## Les secrets gardés
+
+Tirer l'étiquette et la clé d'une classe de son code prend 140 ms dans un
+navigateur, à chaque ouverture de l'app ([mesures.md](mesures.md)). Le
+téléphone les garde donc avec la classe, en texte, une valeur par ligne :
+
+```
+opn-link·secrets·v1
+<le code, en minuscules>
+<l'étiquette>
+<la clé de la classe, 32 octets en base64url>
+```
+
+Ils ne valent que pour le code qu'ils portent. Ils restent sur les
+appareils de la personne, qui a déjà le code.
+
+Vecteur : `coeur/tests/vecteurs/secrets-v1.txt`, pour le code ci-dessus.
+
 ## La séance
 
 L'identifiant d'une demi-journée. Il se calcule des deux côtés, sans rien
@@ -443,7 +461,9 @@ données possible ». Pour l'appel :
   formateur : l'app y apprend le rythme de la classe pour proposer le
   prochain cours ;
 - une invitation d'adjoint vit sept jours chez le chef. Les passations vivent
-  avec la porte, jusqu'à la fermeture de la classe.
+  avec la porte, jusqu'à la fermeture de la classe ;
+- les secrets gardés vivent avec la classe sur l'appareil, et partent avec
+  elle.
 
 ## L'événement Nostr
 
