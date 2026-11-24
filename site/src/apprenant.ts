@@ -4,24 +4,17 @@
 // reste là pendant les heures de la classe. Sans réponse au bout de dix secondes, l'écran montre
 // seul le QR à tendre au formateur.
 
-import { arreter, poser, viser } from './camera';
+import { couper, poser, viser } from './camera';
+import { type Moment, type Navigation, type Suivi, titreDesClasses } from './classes';
 import { type Contexte, faits, nomDe } from './contexte';
-import { type Creneau, type Demi, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
+import { type Creneau, type Demi, bornes, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
 import { type Erreurs, champDuNom, nomTape } from './entree';
-import { type ClasseGardee, type Theme, appliquerLeTheme, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
-import { entree } from './routes';
+import { type AnnonceGardee, type PresenceGardee, type Theme, appliquerLeTheme, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
 import { ecouterLaPorte, ecouterLeFil, envoyer, recevoir } from './lettres';
 import { passationsDe, porteAJour } from './responsables';
 import { type CeQueSaitLeTelephone, absences, ajusterLaSemaine, semaineHtml } from './semaine';
 import { phrase } from './textes';
 import { afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
-
-interface Garde extends Creneau {
-  seance: string;
-  presence: string;
-  signee: number;
-  recu?: { quand: number; par: string };
-}
 
 type Vue =
   | { ecran: 'jour' }
@@ -31,12 +24,6 @@ type Vue =
   | { ecran: 'nom'; prenom: string; nom: string; erreurs?: Erreurs };
 
 type Annonce = ReturnType<Contexte['coeur']['lire_annonce_de_l_appel']>;
-interface AnnonceGardee extends Creneau {
-  seance: string;
-  etat: string;
-  quand: number;
-  par: string;
-}
 interface Prochain extends Creneau {
   quand: number;
   par: string;
@@ -54,20 +41,23 @@ const HORS_LIGNE_MS = 5_000;
 const MENU = `<nav class="menu" aria-label="Entrées"><a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#" data-geste="moi">Moi</a></nav>`;
 const ANNULER_MS = 30_000;
 
-export function apprenant(ctx: Contexte): void {
+export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const { coeur, relais, moi } = ctx;
-  let classe = classes().find((c) => c.role === 'apprenant') as ClasseGardee;
+  let classe = classes().find((c) => c.code === code)!;
   let porte = coeur.lire_porte(classe.code, classe.porte);
   let vue: Vue = { ecran: 'jour' };
+  let arrete = false;
   const demarrage = Date.now();
   const depuis = (jours: number) => plusJours(dateIso(Date.now()), -jours);
-  let presences = (lire<Garde[]>('presences') ?? []).filter((p) => p.date >= depuis(HUIT_SEMAINES));
-  // Avant le 23 novembre 2026, le prototype gardait la seule présence du moment sous cette clé.
-  ecrire('presence', null);
+  let presences = (classe.presences ?? []).filter((p) => p.date >= depuis(HUIT_SEMAINES));
   // Les annonces de l'appel, une par séance : la plus récente compte.
-  let annonces = (lire<AnnonceGardee[]>('annonces-appel') ?? []).filter((a) => a.date >= depuis(UNE_SEMAINE));
-  let prochain = lire<Prochain>('prochain');
+  let annonces = (classe.annoncesAppel ?? []).filter((a) => a.date >= depuis(UNE_SEMAINE));
+  let prochain = classe.prochain as Prochain | undefined;
   if (prochain && prochain.date < depuis(UNE_SEMAINE)) prochain = undefined;
+  const garder = () => {
+    classe = { ...classe, presences, annoncesAppel: annonces, prochain };
+    garderClasse(classe);
+  };
 
   const formateur = () => nomDe(porte.responsables[0]);
   const maintenant = () => Date.now();
@@ -93,7 +83,6 @@ export function apprenant(ctx: Contexte): void {
     return [coeur.seance(classe.code, date, 'matin'), coeur.seance(classe.code, date, 'apres-midi')];
   };
   const cetteFois = () => presences.find((p) => p.seance === seanceDuMoment());
-  const garderPresences = () => ecrire('presences', presences);
   // La demi-journée d'une séance que le téléphone vient de signer : celle d'une annonce, ou du jour.
   const creneauDe = (s: string): Creneau => {
     const a = annonces.find((x) => x.seance === s);
@@ -120,12 +109,14 @@ export function apprenant(ctx: Contexte): void {
   const nomDeLaDemi = (d: string) => (d === 'matin' ? 'matin' : 'après-midi');
   const horsLigne = () => !relais.ouvert && Date.now() - demarrage > HORS_LIGNE_MS;
   // La barre dit où l'app croit que tu es : au centre, en entreprise, ou le centre fermé le week-end.
+  // Avec plusieurs classes, le nom de la classe est écrit à côté, et permet d'en changer.
   const barre = (ouvert = false) => {
+    const classeIci = nav.plusieurs() ? `<button class="btn" data-geste="mesClasses">${esc(porte.nom)}</button>` : '';
     if (sansCoursMaintenant()) {
       const lieu = ouvre(dateIso(maintenant())) ? 'En entreprise' : 'Centre fermé';
-      return `<header class="barre pas-maintenant"><h1 class="barre-titre" tabindex="-1">${lieu}</h1><span class="mono">${jour(maintenant())}</span></header>`;
+      return `<header class="barre pas-maintenant"><h1 class="barre-titre" tabindex="-1">${lieu}</h1><span class="mono">${jour(maintenant())}</span>${classeIci}</header>`;
     }
-    return `<header class="barre${ouvert ? ' maintenant' : ''}"><h1 class="barre-titre" tabindex="-1">Au centre</h1><span class="mono">${jour(maintenant())} · ${heure(maintenant())}</span></header>`;
+    return `<header class="barre${ouvert ? ' maintenant' : ''}"><h1 class="barre-titre" tabindex="-1">Au centre</h1><span class="mono">${jour(maintenant())} · ${heure(maintenant())}</span>${classeIci}</header>`;
   };
 
   const responsables = () => porte.responsables.map((r) => r.cle);
@@ -138,7 +129,7 @@ export function apprenant(ctx: Contexte): void {
     }
     if (prochain && prochain.quand >= p.quand) return;
     prochain = { date: p.date, demi: p.demi as Demi, quand: p.quand, par: p.par };
-    ecrire('prochain', prochain);
+    garder();
     if (vue.ecran === 'jour') rendre();
   };
   const recevoirDuFil = (texte: string) => {
@@ -152,11 +143,13 @@ export function apprenant(ctx: Contexte): void {
     const avant = annonces.find((x) => x.seance === a.seance);
     if (avant && avant.quand >= a.quand) return;
     annonces = [...annonces.filter((x) => x.seance !== a.seance), { seance: a.seance, date: a.date, demi: a.demi as Demi, etat: a.etat, quand: a.quand, par: a.par }];
-    ecrire('annonces-appel', annonces);
+    garder();
     if (vue.ecran === 'jour') rendre();
+    nav.aChange();
   };
+  const arrets: (() => void)[] = [];
   const ecouterLAppel = () => {
-    if (classe.fil) ecouterLeFil(coeur, relais, classe.fil, recevoirDuFil);
+    if (classe.fil) arrets.push(ecouterLeFil(coeur, relais, classe.fil, recevoirDuFil));
   };
   // La porte change quand le chef nomme un adjoint ou passe la main : le téléphone la suit, pour
   // envoyer sa présence à chaque responsable et reconnaître leurs annonces.
@@ -166,7 +159,7 @@ export function apprenant(ctx: Contexte): void {
     if (nouvelle === classe.porte && passations.length === (classe.passations ?? []).length) return;
     classe = { ...classe, porte: nouvelle, passations };
     porte = coeur.lire_porte(classe.code, nouvelle);
-    garderClasse(classe);
+    garder();
     if (vue.ecran === 'jour') rendre();
   };
 
@@ -175,7 +168,7 @@ export function apprenant(ctx: Contexte): void {
     afficher(
       'tel',
       porte.nom,
-      `<header class="barre pas-maintenant"><h1 class="barre-titre">${esc(porte.nom)}</h1><span class="mono">${esc(porte.centre)}</span></header>
+      `<header class="barre pas-maintenant"><h1 class="barre-titre">${esc(porte.nom)}</h1><span class="mono">${esc(porte.centre)}</span>${nav.plusieurs() ? `<button class="btn" data-geste="mesClasses">${titreDesClasses()}</button>` : ''}</header>
        <main class="page">
          <section class="reponse">${ic('clock', 'ic-32')}<div><h2 class="tres-gros" tabindex="-1">Demande envoyée</h2><p class="mono">${heure(demande.quand)} · un responsable va t’accepter</p></div></section>
          <div class="liste"><div class="rangee"><div><b>${esc(nomDe(demande))}</b><span class="mono">le nom que verront les responsables</span></div></div></div>
@@ -186,8 +179,9 @@ export function apprenant(ctx: Contexte): void {
       {
         pasMaClasse: () => {
           oublierClasse(classe.code);
-          entree(ctx);
+          nav.relancer();
         },
+        mesClasses: () => nav.mesCours(),
       },
     );
   };
@@ -196,7 +190,7 @@ export function apprenant(ctx: Contexte): void {
     const sansCamera = vue.ecran === 'signer' && vue.sansCamera;
     vue = { ecran: 'signer', chiffres, erreur, sansCamera };
     rendre();
-    if (sansCamera) return;
+    if (sansCamera || !nav.affichee()) return;
     viser(coeur, signerLeQr).then((ouverte) => {
       if (ouverte || vue.ecran !== 'signer') return;
       vue = { ...vue, sansCamera: true };
@@ -235,10 +229,10 @@ export function apprenant(ctx: Contexte): void {
   };
 
   const envoyerPresence = (seanceSignee: string, presence: string) => {
-    arreter();
-    const garde: Garde = { seance: seanceSignee, ...creneauDe(seanceSignee), presence, signee: maintenant() };
+    couper();
+    const garde: PresenceGardee = { seance: seanceSignee, ...creneauDe(seanceSignee), presence, signee: maintenant() };
     presences = [...presences.filter((p) => p.seance !== seanceSignee), garde];
-    garderPresences();
+    garder();
     for (const r of porte.responsables) envoyer(coeur, relais, r.boite, { v: 1, t: 'presence', presence });
     vue = { ecran: 'jour' };
     setTimeout(() => {
@@ -311,7 +305,7 @@ export function apprenant(ctx: Contexte): void {
     const correction = moi.corriger_son_nom(classe.code, attente.prenom, attente.nom, Date.now());
     for (const r of porte.responsables) envoyer(coeur, relais, r.boite, { v: 1, t: 'nom', code: classe.code, correction });
     classe = { ...classe, nom: correction, nomEnAttente: undefined };
-    garderClasse(classe);
+    garder();
   };
 
   const gestes = {
@@ -330,7 +324,7 @@ export function apprenant(ctx: Contexte): void {
     chiffre: (c: HTMLElement) => taper(c.dataset.n!),
     effacer,
     retour: () => {
-      arreter();
+      couper();
       vue = vue.ecran === 'nom' ? { ecran: 'moi' } : { ecran: 'jour' };
       rendre();
     },
@@ -352,23 +346,25 @@ export function apprenant(ctx: Contexte): void {
       const actuel = monNom();
       if (prenom !== actuel.prenom || nom !== actuel.nom) {
         classe = { ...classe, nomEnAttente: { prenom, nom, part: Date.now() + ANNULER_MS } };
-        garderClasse(classe);
+        garder();
       }
       vue = { ecran: 'moi' };
       rendre();
     },
     annulerNom: () => {
       classe = { ...classe, nomEnAttente: undefined };
-      garderClasse(classe);
+      garder();
       rendre();
     },
+    mesClasses: () => nav.mesCours(),
   };
 
-  document.addEventListener('keydown', (e) => {
-    if (vue.ecran !== 'signer') return;
+  const auClavier = (e: KeyboardEvent) => {
+    if (vue.ecran !== 'signer' || !nav.affichee()) return;
     if (/^[0-9]$/.test(e.key)) taper(e.key);
     if (e.key === 'Backspace') effacer();
-  });
+  };
+  document.addEventListener('keydown', auClavier);
 
   const ecranDuJour = () => {
     const fois = cetteFois();
@@ -512,6 +508,7 @@ export function apprenant(ctx: Contexte): void {
   };
 
   const rendre = () => {
+    if (arrete || !nav.affichee()) return;
     if (!classe.acceptation) return attente();
     if (vue.ecran === 'signer') return ecranSigner(vue);
     if (vue.ecran === 'moi') return ecranMoi();
@@ -520,44 +517,79 @@ export function apprenant(ctx: Contexte): void {
     return ecranDuJour();
   };
 
-  recevoir(coeur, relais, moi, (l) => {
+  // Ce que la classe dit de maintenant : un appel ouvert sans ta présence, puis un cours connu
+  // aujourd'hui qui n'est pas fini, puis le prochain cours.
+  const moment = (): Moment => {
+    if (!classe.acceptation) return { urgence: 0, attente: true };
+    const ici = creneau(maintenant());
+    const [debut, fin] = bornes(ici, porte);
+    const annonce = annonceDuMoment();
+    if (annonce?.etat === 'ouvert' && !cetteFois()) return { urgence: 2, prochain: debut };
+    const prevu = prochain && rang(prochain) === rang(ici);
+    if (maintenant() < fin && (annonce || prevu)) return { urgence: 1, prochain: debut };
+    const avenir = prochain && rang(prochain) > rang(ici) ? bornes(prochain, porte)[0] : undefined;
+    return { urgence: 0, prochain: avenir };
+  };
+
+  arrets.push(recevoir(coeur, relais, moi, (l) => {
     if (l.t === 'admis' && l.code === classe.code && !classe.acceptation) {
       try {
         const nouvellePorte = coeur.lire_porte(classe.code, l.porte);
         coeur.lire_acceptation(classe.code, l.acceptation, nouvellePorte.responsables.map((r) => r.cle));
         classe = { code: classe.code, role: 'apprenant', porte: l.porte, fil: l.fil, acceptation: l.acceptation };
         porte = nouvellePorte;
-        garderClasse(classe);
+        garder();
         ecouterLAppel();
       } catch {
         return; // Une admission qu'un responsable n'a pas signée ne compte pas.
       }
-    } else if (l.t === 'recu' && presences.some((p) => p.seance === l.seance)) {
+    } else if (l.t === 'recu' && presences.some((p) => p.seance === l.seance && !p.recu)) {
+      // Au rechargement, les relais renvoient les lettres de la semaine : un reçu déjà noté ne
+      // change rien, et un nouveau ne fait quitter que l'écran du QR à montrer.
       presences = presences.map((p) => (p.seance === l.seance ? { ...p, recu: { quand: l.quand, par: l.par } } : p));
-      garderPresences();
-      vue = { ecran: 'jour' };
+      garder();
+      if (vue.ecran === 'sans-reseau') vue = { ecran: 'jour' };
     } else if (l.t === 'refus' && presences.some((p) => p.seance === l.seance && !p.recu)) {
       const refusee = presences.find((p) => p.seance === l.seance)!;
       presences = presences.filter((p) => p !== refusee);
-      garderPresences();
+      garder();
       return versSigner(refusee.presence.split('.')[2] ?? '', l.raison);
     } else {
       return;
     }
     rendre();
-  });
-  // Un redessin pendant qu'on tape remettrait le nom d'avant dans les champs.
-  relais.changement = () => {
-    if (vue.ecran !== 'signer' && vue.ecran !== 'nom') rendre();
-  };
-  setInterval(() => {
+  }));
+  const chaqueSeconde = setInterval(() => {
     const avant = classe.nomEnAttente;
     envoyerLeNomALHeure();
     if (avant && vue.ecran === 'moi') rendre();
   }, 1000);
   envoyerLeNomALHeure();
-  setTimeout(() => vue.ecran === 'jour' && rendre(), HORS_LIGNE_MS + 100);
+  const reseauAttendu = setTimeout(() => vue.ecran === 'jour' && rendre(), HORS_LIGNE_MS + 100);
   ecouterLAppel();
-  ecouterLaPorte(coeur, relais, classe.code, suivreLaPorte);
-  rendre();
+  arrets.push(ecouterLaPorte(coeur, relais, classe.code, suivreLaPorte));
+
+  return {
+    code,
+    responsable: false,
+    rendre,
+    revenir: () => {
+      if (vue.ecran === 'signer') couper();
+      vue = { ecran: 'jour' };
+    },
+    aLEntree: () => vue.ecran === 'jour',
+    moment,
+    // Un redessin pendant qu'on tape remettrait le nom d'avant dans les champs.
+    reseau: () => {
+      if (vue.ecran !== 'signer' && vue.ecran !== 'nom') rendre();
+    },
+    arreter: () => {
+      arrete = true;
+      if (vue.ecran === 'signer' && nav.affichee()) couper();
+      for (const fin of arrets) fin();
+      clearInterval(chaqueSeconde);
+      clearTimeout(reseauAttendu);
+      document.removeEventListener('keydown', auClavier);
+    },
+  };
 }

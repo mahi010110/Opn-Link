@@ -9,6 +9,7 @@ export interface EvenementNostr {
   id: string;
   content: string;
   created_at: number;
+  tags: string[][];
 }
 
 export interface ListeDeRelais {

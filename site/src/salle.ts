@@ -1,5 +1,6 @@
 // L'écran de la salle : le QR pour rejoindre la classe, puis celui de l'appel. Aucun nom, jamais.
-// Il tourne sur l'ordinateur du formateur, qui reçoit de son téléphone l'état de la classe.
+// Il tourne sur l'ordinateur du formateur, qui reçoit de son téléphone l'état de ses classes. Il
+// montre la classe dont le téléphone lance l'appel, ou qu'il montre à la salle.
 
 import type { Appel } from './coeur';
 import { type Contexte } from './contexte';
@@ -12,14 +13,27 @@ const CLOTURE_RECENTE_MS = 60_000;
 
 export function salle(ctx: Contexte): void {
   const { coeur, relais, moi } = ctx;
-  let classe = lire<ClasseGardee>('classe-de-la-salle');
+  const connues = lire<Record<string, ClasseGardee>>('classes-de-la-salle') ?? {};
+  // Avant le 24 novembre 2026, la salle ne gardait qu'une classe.
+  const ancienne = lire<ClasseGardee>('classe-de-la-salle');
+  if (ancienne) {
+    connues[ancienne.code] ??= ancienne;
+    ecrire('classes-de-la-salle', connues);
+    ecrire('classe-de-la-salle', null);
+  }
+  const seules = Object.keys(connues);
+  let code = seules.length === 1 ? seules[0] : undefined;
+  const classe = () => (code ? connues[code] : undefined);
   let rejoindre = false;
   let appel: Appel | undefined;
   let compte = [0, 0];
   let clos: number | undefined;
   let dernier = '';
 
-  const porte = () => (classe ? coeur.lire_porte(classe.code, classe.porte) : undefined);
+  const porte = () => {
+    const c = classe();
+    return c ? coeur.lire_porte(c.code, c.porte) : undefined;
+  };
   const nom = () => porte()?.nom ?? 'Opn-Link';
 
   const attente = () =>
@@ -32,9 +46,10 @@ export function salle(ctx: Contexte): void {
     );
 
   const ecranRejoindre = () => {
+    const c = classe()!;
     const p = porte()!;
-    const lien = lienDeLaClasse(coeur, classe!.code, p.responsables[0].cle);
-    const ont = (classe!.membres?.length ?? 0) + (classe!.demandes?.length ?? 0);
+    const lien = lienDeLaClasse(coeur, c.code, p.responsables[0].cle);
+    const ont = (c.membres?.length ?? 0) + (c.demandes?.length ?? 0);
     afficher(
       'salle',
       `Rejoindre · ${p.nom}`,
@@ -44,7 +59,7 @@ export function salle(ctx: Contexte): void {
          <div>
            <p class="salle-mot">Visez ce QR avec l’appareil photo<br>de votre téléphone</p>
            <p class="salle-mot" style="margin-top: 5vh">ou allez sur ${esc(location.host)}<br>et tapez le code de la classe</p>
-           <p class="salle-code" style="font-size: 4.9vw" data-code="${esc(classe!.code)}">${codeAffiche(classe!.code)}</p>
+           <p class="salle-code" style="font-size: 4.9vw" data-code="${esc(c.code)}">${codeAffiche(c.code)}</p>
          </div>
        </main>
        <footer class="salle-bas">${paves(ont, Math.max(ont, 1))}<p class="salle-compte">${ont} ${ont > 1 ? 'ont' : 'a'} rejoint</p></footer>`,
@@ -67,7 +82,7 @@ export function salle(ctx: Contexte): void {
       );
       return;
     }
-    if (!appel) return rejoindre && classe ? ecranRejoindre() : attente();
+    if (!appel) return rejoindre && classe() ? ecranRejoindre() : attente();
     let qr;
     try {
       qr = appel.qr(maintenant);
@@ -95,11 +110,14 @@ export function salle(ctx: Contexte): void {
 
   recevoir(coeur, relais, moi, (l) => {
     if (l.t === 'classe') {
-      classe = l.classe;
-      ecrire('classe-de-la-salle', classe);
+      connues[l.classe.code] = l.classe;
+      ecrire('classes-de-la-salle', connues);
+      code ??= Object.keys(connues).length === 1 ? l.classe.code : undefined;
     } else if (l.t === 'montrer') {
+      code = l.code;
       rejoindre = l.quoi === 'rejoindre';
     } else if (l.t === 'appel') {
+      code = l.code ?? code;
       appel = coeur.Appel.relire(l.journal, l.secret, moi);
       const [presents, inscrits] = appel.compte();
       compte = [presents, inscrits];

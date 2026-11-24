@@ -516,14 +516,14 @@ try {
   verifier(await telLea.getByText('Prochain appel : lun. 23 nov., 9 h').count() === 1, 'un apprenant ne fixe pas le prochain cours : le sien n’est pas signé par un responsable');
 
   reseauDInes.retablir();
-  await telInes.waitForFunction(() => localStorage.getItem('opl_proto_ines_presences')?.includes('"recu"'), null, { timeout: 20_000 });
+  await telInes.waitForFunction(() => JSON.parse(localStorage.getItem('opl_proto_ines_classes'))[0].presences?.some((p) => p.recu), null, { timeout: 20_000 });
   await telInes.getByText('En règle').waitFor({ timeout: 15_000 });
   verifier((await telInes.locator('.case.faite').count()) === 1, 'le réseau revenu, Inès reçoit la réponse : sa présence est signée, et elle est en règle');
   await telInes.waitForFunction(() => localStorage.getItem('opl_proto_ines_envois') === '[]', null, { timeout: 15_000 });
   const partis = enAttente.map((e) => JSON.parse(e).id).filter((id) => secours.gardes.some((e) => e.id === id));
   verifier(partis.length === 2, 'la présence gardée part d’elle-même au retour du réseau, rechargement compris');
 
-  const garde = JSON.parse(await tel.evaluate(() => localStorage.getItem('opl_proto_awa-tel_appel')));
+  const garde = JSON.parse(await tel.evaluate(() => localStorage.getItem('opl_proto_awa-tel_appels')))[code];
   verifier(/^[0-9a-f]{64}$/.test(coeur.verifier_journal(garde.journal)), 'la feuille close se vérifie seule');
   verifier(!garde.journal.includes('Kevin'), 'Kevin, laissé dehors, n’est pas sur la feuille');
   writeFileSync(join(CAPTURES, 'feuille.txt'), garde.journal);

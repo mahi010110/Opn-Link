@@ -1,8 +1,8 @@
-// Créer une classe : le lien d'entrée « #creer » ouvre l'interface du formateur.
+// Créer une classe : le lien d'entrée « #creer », ou « Mes cours » chez un formateur.
 
+import { ouvrirLesClasses } from './classes';
 import { type Contexte } from './contexte';
 import { type ClasseGardee, type Moi, ecrire, garderClasse, lire } from './etat';
-import { formateur } from './formateur';
 import { champsDesHoraires, lireLesHoraires } from './horaires';
 import { codeNormal, envoyer, publierPorte } from './lettres';
 import { afficher, esc, ic } from './vue';
@@ -18,7 +18,8 @@ interface Saisie {
 
 type Erreurs = Partial<Record<'prenom' | 'nom' | 'classe' | 'centre' | 'horaires', string>> & { heuresFausses?: string[] };
 
-export function creer(ctx: Contexte, saisie?: Saisie, erreurs: Erreurs = {}): void {
+/// Le formulaire de la classe. Ouvert depuis « Mes cours », il a son « Retour ».
+export function creer(ctx: Contexte, saisie?: Saisie, erreurs: Erreurs = {}, retour?: () => void): void {
   const moi = lire<Moi>('moi');
   const s: Saisie = saisie ?? { prenom: moi?.prenom ?? '', nom: moi?.nom ?? '', classe: '', centre: '', matin: ['9:00', '12:30'], apresMidi: ['13:30', '17:00'] };
   const champ = (id: 'prenom' | 'nom' | 'classe' | 'centre', libelle: string, valeur: string, extra = '') =>
@@ -36,8 +37,9 @@ export function creer(ctx: Contexte, saisie?: Saisie, erreurs: Erreurs = {}): vo
        ${champsDesHoraires({ matin: s.matin, apresMidi: s.apresMidi }, erreurs.horaires, erreurs.heuresFausses)}
        <p class="mono">Tu seras le chef de la classe.</p>
      </main>
-     <footer class="bas"><div class="gestes"><button class="touche" data-geste="creer">${ic('plus', 'ic-24')}<span>Créer la classe</span></button></div></footer>`,
+     <footer class="bas"><div class="gestes">${retour ? `<button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button>` : ''}<button class="touche" data-geste="creer">${ic('plus', 'ic-24')}<span>Créer la classe</span></button></div></footer>`,
     {
+      retour: () => retour?.(),
       creer: () => {
         const valeur = (id: string) => document.querySelector<HTMLInputElement>(`#${id}`)?.value.trim() ?? '';
         const horaires = lireLesHoraires();
@@ -56,7 +58,7 @@ export function creer(ctx: Contexte, saisie?: Saisie, erreurs: Erreurs = {}): vo
         if (!lue.centre) manque.centre = 'Écris le nom du centre.';
         if (horaires.erreur) Object.assign(manque, { horaires: horaires.erreur, heuresFausses: horaires.heuresFausses });
         else [lue.matin, lue.apresMidi] = [horaires.lus!.matin, horaires.lus!.apresMidi];
-        if (Object.keys(manque).length) return creer(ctx, lue, manque);
+        if (Object.keys(manque).length) return creer(ctx, lue, manque, retour);
 
         const { coeur, relais } = ctx;
         const code = codeNormal(coeur.nouveau_code_de_classe());
@@ -68,7 +70,7 @@ export function creer(ctx: Contexte, saisie?: Saisie, erreurs: Erreurs = {}): vo
         publierPorte(coeur, relais, code, porte);
         envoyer(coeur, relais, ctx.moi.boite(), { v: 1, t: 'classe', classe });
         history.replaceState(null, '', location.pathname + location.search);
-        formateur(ctx);
+        ouvrirLesClasses(ctx, code);
       },
     },
   );

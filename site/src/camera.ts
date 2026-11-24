@@ -24,7 +24,7 @@ export async function viser(coeur: Coeur, lu: (texte: string) => void): Promise<
       return false;
     }
     if (!rappel) {
-      arreter();
+      couper();
       return false;
     }
     video = document.createElement('video');
@@ -45,7 +45,7 @@ export function poser(): void {
   video.play().catch(() => {});
 }
 
-export function arreter(): void {
+export function couper(): void {
   clearInterval(minuterie);
   flux?.getTracks().forEach((piste) => piste.stop());
   flux = video = rappel = undefined;

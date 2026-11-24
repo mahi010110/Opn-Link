@@ -449,6 +449,12 @@ pub fn cle_de_la_presence(presence: &str) -> Result<String, Erreur> {
     Ok(Presence::lire(presence)?.cle.texte())
 }
 
+/// La séance d'une présence : chaque responsable la reçoit, seul celui qui tient cet appel répond.
+#[wasm_bindgen]
+pub fn seance_de_la_presence(presence: &str) -> Result<String, Erreur> {
+    Ok(Presence::lire(presence)?.seance.texte().to_owned())
+}
+
 /// Un événement Nostr prêt à partir, signé d'une clé jetable. Les heures sont en secondes, comme Nostr.
 #[wasm_bindgen]
 pub fn evenement_nostr(etiquette: &str, expiration_s: f64, contenu: &str, maintenant_s: f64) -> Result<String, Erreur> {

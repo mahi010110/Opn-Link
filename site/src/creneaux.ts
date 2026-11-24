@@ -56,3 +56,12 @@ export function proposerLeProchain(cours: Creneau[], ce: Creneau): Creneau {
 
 /// Entre le moment où le prochain cours a été annoncé et ce cours, la classe n'a pas cours.
 export const sansCours = (c: Creneau, annonce: Creneau, prochain: Creneau): boolean => rang(annonce) < rang(c) && rang(c) < rang(prochain);
+
+/// Le début et la fin d'une demi-journée, en millisecondes, d'après les horaires de la classe.
+export function bornes(c: Creneau, horaires: { matin: string; apres_midi: string }): [number, number] {
+  const [debut, fin] = (c.demi === 'matin' ? horaires.matin : horaires.apres_midi).split('-').map((h) => {
+    const [heures, minutes] = h.split(':').map(Number);
+    return enJour(c.date).setHours(heures, minutes, 0, 0);
+  });
+  return [debut, fin];
+}

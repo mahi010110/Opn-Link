@@ -10,7 +10,7 @@ export type Lettre =
   | { v: 1; t: 'admis'; code: string; porte: string; fil: string; acceptation: string }
   | { v: 1; t: 'classe'; classe: ClasseGardee }
   | { v: 1; t: 'montrer'; code: string; quoi: 'rejoindre' | 'rien' }
-  | { v: 1; t: 'appel'; journal: string; secret: string }
+  | { v: 1; t: 'appel'; code?: string; journal: string; secret: string }
   | { v: 1; t: 'presence'; presence: string }
   | { v: 1; t: 'recu'; seance: string; quand: number; par: string }
   | { v: 1; t: 'refus'; seance: string; raison: string }
@@ -34,17 +34,54 @@ export function envoyer(coeur: Coeur, relais: Relais, boite: string, lettre: Let
   relais.publier(coeur.evenement_nostr(coeur.etiquette_de_boite(boite), maintenant + SEPT_JOURS, scellee, maintenant));
 }
 
-export function recevoir(coeur: Coeur, relais: Relais, appareil: Appareil, rappel: (l: Lettre) => void): void {
-  relais.ecouter('boite', { kinds: [8571], '#x': [coeur.etiquette_de_boite(appareil.boite())], since: secondes() - SEPT_JOURS }, (e) => {
-    let lettre: Lettre;
-    try {
-      lettre = JSON.parse(appareil.ouvrir(e.content));
-    } catch {
-      return; // Une lettre qui ne s'ouvre pas n'était pas pour nous.
-    }
-    if (lettre?.v === 1) rappel(lettre);
-  });
+// Un seul abonnement par sorte, pour toutes les classes de l'appareil : la boîte, les fils, les
+// portes. Les relais en acceptent de 20 à 200 par connexion (docs/questions-ouvertes.md), et un
+// appareil suit jusqu'à dix classes. Chaque classe s'y inscrit, et chacune ne garde que ce qui est pour elle.
+const lecteursDeLettres = new Set<(l: Lettre) => void>();
+let boiteEcoutee = false;
+
+/// Les lettres de la boîte de cet appareil. Rend de quoi arrêter de les lire.
+export function recevoir(coeur: Coeur, relais: Relais, appareil: Appareil, rappel: (l: Lettre) => void): () => void {
+  lecteursDeLettres.add(rappel);
+  if (!boiteEcoutee) {
+    boiteEcoutee = true;
+    relais.ecouter('boite', { kinds: [8571], '#x': [coeur.etiquette_de_boite(appareil.boite())], since: secondes() - SEPT_JOURS }, (e) => {
+      let lettre: Lettre;
+      try {
+        lettre = JSON.parse(appareil.ouvrir(e.content));
+      } catch {
+        return; // Une lettre qui ne s'ouvre pas n'était pas pour nous.
+      }
+      if (lettre?.v === 1) for (const lecteur of [...lecteursDeLettres]) lecteur(lettre);
+    });
+  }
+  return () => lecteursDeLettres.delete(rappel);
 }
+
+const etiquetteDe = (e: { tags?: string[][] }) => e.tags?.find((t) => t[0] === 'x')?.[1] ?? '';
+
+/// Un abonnement qui suit plusieurs étiquettes. Les inscriptions d'un même instant partent en une
+/// seule demande aux relais, qui remplace la précédente.
+function abonnementPartage(relais: Relais, id: string, depuis: number) {
+  const inscrits = new Map<string, (contenu: string) => void>();
+  let prevu = false;
+  const demander = () => {
+    prevu = false;
+    relais.ecouter(id, { kinds: [8571], '#x': [...inscrits.keys()], since: secondes() - depuis }, (e) => inscrits.get(etiquetteDe(e))?.(e.content));
+  };
+  return (etiquette: string, rappel: (contenu: string) => void): (() => void) => {
+    inscrits.set(etiquette, rappel);
+    if (!prevu) {
+      prevu = true;
+      queueMicrotask(demander);
+    }
+    return () => {
+      if (inscrits.get(etiquette) === rappel) inscrits.delete(etiquette);
+    };
+  };
+}
+let fils: ReturnType<typeof abonnementPartage> | undefined;
+let portes: ReturnType<typeof abonnementPartage> | undefined;
 
 /// Un responsable dit à la classe, sur le fil, que l'appel est ouvert ou clos. L'annonce ne sert
 /// que le jour même : les relais la gardent un jour.
@@ -62,10 +99,12 @@ export function annoncerLeProchain(coeur: Coeur, relais: Relais, fil: string, pr
 }
 
 /// Ce qui arrive sur le fil de la classe, déchiffré. Celui qui le lit vérifie qui l'a signé.
-export function ecouterLeFil(coeur: Coeur, relais: Relais, fil: string, rappel: (texte: string) => void): void {
-  relais.ecouter('fil', { kinds: [8571], '#x': [coeur.etiquette_du_fil(fil)], since: secondes() - HUIT_SEMAINES }, (e) => {
+/// Rend de quoi arrêter d'écouter.
+export function ecouterLeFil(coeur: Coeur, relais: Relais, fil: string, rappel: (texte: string) => void): () => void {
+  fils ??= abonnementPartage(relais, 'fils', HUIT_SEMAINES);
+  return fils(coeur.etiquette_du_fil(fil), (contenu) => {
     try {
-      rappel(coeur.dechiffrer_du_fil(fil, e.content));
+      rappel(coeur.dechiffrer_du_fil(fil, contenu));
     } catch {
       // Ce qui ne se déchiffre pas n'est pas de ce fil.
     }
@@ -73,10 +112,12 @@ export function ecouterLeFil(coeur: Coeur, relais: Relais, fil: string, rappel: 
 }
 
 /// Ce qui arrive sous l'étiquette de la classe : la porte, et les passations de ses chefs.
-export function ecouterLaPorte(coeur: Coeur, relais: Relais, code: string, rappel: (texte: string) => void): void {
-  relais.ecouter('porte', { kinds: [8571], '#x': [coeur.etiquette_de_classe(code)], since: secondes() - TRENTE_JOURS }, (e) => {
+/// Rend de quoi arrêter d'écouter.
+export function ecouterLaPorte(coeur: Coeur, relais: Relais, code: string, rappel: (texte: string) => void): () => void {
+  portes ??= abonnementPartage(relais, 'portes', TRENTE_JOURS);
+  return portes(coeur.etiquette_de_classe(code), (contenu) => {
     try {
-      rappel(coeur.dechiffrer_pour_la_classe(code, e.content));
+      rappel(coeur.dechiffrer_pour_la_classe(code, contenu));
     } catch {
       // Ce qui ne se déchiffre pas n'est pas de cette classe.
     }

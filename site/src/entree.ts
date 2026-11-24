@@ -1,13 +1,11 @@
 // L'apprenant sans classe : taper le code, ou ouvrir le lien du QR, puis demander à entrer.
 // L'adjoint invité ouvre son lien à lui, demande au chef, et attend son accord.
 
-import { apprenant } from './apprenant';
+import { type Navigation, type Suivi, ouvrirLesClasses, titreDesClasses } from './classes';
 import { type Contexte, faits, nomDe } from './contexte';
 import { classes, ecrire, garderClasse, oublierClasse } from './etat';
-import { formateur } from './formateur';
 import { chercherPorte, codeNormal, envoyer, recevoir } from './lettres';
 import { fusionner } from './responsables';
-import { entree } from './routes';
 import { codeDe, phrase } from './textes';
 import { afficher, codeAffiche, esc, heure, ic } from './vue';
 
@@ -144,7 +142,7 @@ function rejoindre(ctx: Contexte, code: string, porte: Porte, prenom = '', nom =
         const demande = ctx.moi.demander_entree(code, p, n, Date.now());
         for (const r of porte.responsables) envoyer(ctx.coeur, ctx.relais, r.boite, { v: 1, t: 'entree', code, demande });
         garderClasse({ code, role: 'apprenant', porte: porte.texte, demande });
-        apprenant(ctx);
+        ouvrirLesClasses(ctx, code);
       },
     },
   );
@@ -174,7 +172,7 @@ function demanderAuChef(ctx: Contexte, lien: Invitation, porte: Porte, prenom = 
         envoyer(ctx.coeur, ctx.relais, chef.boite, { v: 1, t: 'adjoint', code: lien.code, demande, jeton: lien.jeton });
         ecrire('moi', { prenom: p, nom: n });
         garderClasse({ code: lien.code, role: 'adjoint', porte: porte.texte, demande });
-        attenteDAdjoint(ctx);
+        ouvrirLesClasses(ctx, lien.code);
       },
     },
   );
@@ -182,38 +180,52 @@ function demanderAuChef(ctx: Contexte, lien: Invitation, porte: Porte, prenom = 
 
 /// L'adjoint attend l'accord du chef. La classe s'ouvre ici dès qu'il accepte : sa lettre porte la
 /// porte qui compte l'adjoint, et l'état de la classe.
-export function attenteDAdjoint(ctx: Contexte): void {
+export function attenteDAdjoint(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const { coeur, relais, moi } = ctx;
-  const classe = classes().find((c) => c.role === 'adjoint' && !c.fil)!;
+  const classe = classes().find((c) => c.code === code)!;
   const porte = coeur.lire_porte(classe.code, classe.porte);
   const demande = coeur.lire_demande(classe.code, classe.demande!);
-  const rendre = () => afficher(
-    'tel',
-    porte.nom,
-    `<header class="barre pas-maintenant"><h1 class="barre-titre">${esc(porte.nom)}</h1><span class="mono">${esc(porte.centre)}</span></header>
-     <main class="page">
-       <section class="reponse">${ic('clock', 'ic-32')}<div><h2 class="tres-gros" tabindex="-1">Demande envoyée</h2><p class="mono">${heure(demande.quand)} · ${esc(nomDe(porte.responsables[0]))} va l’accepter</p></div></section>
-       <div class="liste"><div class="rangee"><div><b>${esc(nomDe(demande))}</b><span class="mono">adjoint · le nom que verra la classe</span></div></div></div>
-       <p class="mono">Tu n’as rien à faire. La classe s’ouvre ici dès que c’est accepté.</p>
-       <div class="note-gestes"><button class="btn" data-geste="pasMaClasse">Ce n’est pas ma classe</button></div>
-     </main>
-     <footer class="bas">${faits(relais, `Demande partie · ${heure(demande.quand)}`)}</footer>`,
-    {
-      pasMaClasse: () => {
-        relais.changement = () => {};
-        oublierClasse(classe.code);
-        entree(ctx);
+  let arrete = false;
+  const rendre = () => {
+    if (arrete || !nav.affichee()) return;
+    afficher(
+      'tel',
+      porte.nom,
+      `<header class="barre pas-maintenant"><h1 class="barre-titre">${esc(porte.nom)}</h1><span class="mono">${esc(porte.centre)}</span>${nav.plusieurs() ? `<button class="btn" data-geste="mesCours">${titreDesClasses()}</button>` : ''}</header>
+       <main class="page">
+         <section class="reponse">${ic('clock', 'ic-32')}<div><h2 class="tres-gros" tabindex="-1">Demande envoyée</h2><p class="mono">${heure(demande.quand)} · ${esc(nomDe(porte.responsables[0]))} va l’accepter</p></div></section>
+         <div class="liste"><div class="rangee"><div><b>${esc(nomDe(demande))}</b><span class="mono">adjoint · le nom que verra la classe</span></div></div></div>
+         <p class="mono">Tu n’as rien à faire. La classe s’ouvre ici dès que c’est accepté.</p>
+         <div class="note-gestes"><button class="btn" data-geste="pasMaClasse">Ce n’est pas ma classe</button></div>
+       </main>
+       <footer class="bas">${faits(relais, `Demande partie · ${heure(demande.quand)}`)}</footer>`,
+      {
+        pasMaClasse: () => {
+          oublierClasse(classe.code);
+          nav.relancer();
+        },
+        mesCours: () => nav.mesCours(),
       },
-    },
-  );
-  relais.changement = rendre;
-  rendre();
-  recevoir(coeur, relais, moi, (l) => {
+    );
+  };
+  const finDeLEcoute = recevoir(coeur, relais, moi, (l) => {
     if (l.t !== 'responsables' || l.code !== classe.code) return;
     const fusion = fusionner(ctx, classe, l);
     if (!fusion || !coeur.lire_porte(classe.code, fusion.classe.porte).responsables.some((r) => r.cle === moi.cle())) return;
-    relais.changement = () => {};
     garderClasse({ ...fusion.classe, demande: undefined });
-    formateur(ctx);
+    nav.relancer();
   });
+  return {
+    code,
+    responsable: true,
+    rendre,
+    revenir: () => {},
+    aLEntree: () => true,
+    moment: () => ({ urgence: 0, attente: true }),
+    reseau: rendre,
+    arreter: () => {
+      arrete = true;
+      finDeLEcoute();
+    },
+  };
 }

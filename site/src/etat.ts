@@ -2,11 +2,37 @@
 // avec le prototype, et le contrat écrira les vraies.
 
 import type { Appareil, Coeur } from './coeur';
+import type { Creneau } from './creneaux';
 
 export interface Moi {
   prenom: string;
   nom: string;
 }
+
+/// L'apprenant : une présence qu'il a signée, et sa réception.
+export interface PresenceGardee extends Creneau {
+  seance: string;
+  presence: string;
+  signee: number;
+  recu?: { quand: number; par: string };
+}
+
+/// L'apprenant : l'annonce de l'appel d'une séance, déjà vérifiée. La plus récente compte.
+export interface AnnonceGardee extends Creneau {
+  seance: string;
+  etat: string;
+  quand: number;
+  par: string;
+}
+
+/// Le formateur : l'appel qu'il tient, son journal et son secret.
+export interface AppelGarde {
+  journal: string;
+  secret?: string;
+}
+
+/// Un téléphone suit dix classes au plus (docs/questions-ouvertes.md, « À fixer au prototype »).
+export const CLASSES_AU_PLUS = 10;
 
 export interface ClasseGardee {
   code: string;
@@ -25,7 +51,8 @@ export interface ClasseGardee {
   /// Le chef : les demi-journées où l'appel a été clos, huit semaines au plus, et le prochain cours
   /// annoncé à la classe.
   cours?: string[];
-  prochain?: { date: string; demi: string; quand: number };
+  /// Chez l'apprenant, le dernier prochain cours reçu, et qui l'a signé.
+  prochain?: { date: string; demi: string; quand: number; par?: string };
   /// Le prochain cours qui attend la fin du délai pour annuler, avant de partir à la classe.
   prochainEnAttente?: { date: string; demi: string; part: number };
   /// Les passations du chef, qui voyagent avec la porte.
@@ -43,6 +70,9 @@ export interface ClasseGardee {
   nomEnAttente?: { prenom: string; nom: string; part: number };
   /// Les responsables : les noms corrigés des membres, le plus récent de chacun.
   noms?: string[];
+  /// L'apprenant : ses présences, huit semaines, et les annonces de l'appel, sept jours.
+  presences?: PresenceGardee[];
+  annoncesAppel?: AnnonceGardee[];
 }
 
 export const estResponsable = (c: ClasseGardee): boolean => c.role === 'chef' || c.role === 'adjoint';
@@ -81,8 +111,13 @@ export function clesDeLAppareil(coeur: Coeur): Appareil {
 
 export const classes = (): ClasseGardee[] => lire<ClasseGardee[]>('classes') ?? [];
 
+/// Garde une classe à sa place dans la liste, ou à la fin si elle est neuve.
 export function garderClasse(classe: ClasseGardee): void {
-  ecrire('classes', [classe, ...classes().filter((c) => c.code !== classe.code)]);
+  const liste = classes();
+  const ici = liste.findIndex((c) => c.code === classe.code);
+  if (ici < 0) liste.push(classe);
+  else liste[ici] = classe;
+  ecrire('classes', liste);
 }
 
 export function oublierClasse(code: string): void {
@@ -105,3 +140,26 @@ export function appliquerLeTheme(): void {
   document.documentElement.dataset.theme = fonce ? 'dark' : 'light';
 }
 sombre.addEventListener('change', appliquerLeTheme);
+
+/// L'appel que tient ce téléphone dans une classe.
+export const appelGarde = (code: string): AppelGarde | undefined => lire<Record<string, AppelGarde>>('appels')?.[code];
+export function garderAppel(code: string, appel: AppelGarde | undefined): void {
+  const appels = { ...lire<Record<string, AppelGarde>>('appels') };
+  if (appel) appels[code] = appel;
+  else delete appels[code];
+  ecrire('appels', appels);
+}
+
+/// Avant le 24 novembre 2026, le téléphone ne suivait qu'une classe : l'appel du formateur, et les
+/// présences, les annonces et le prochain cours de l'apprenant, étaient gardés à part. Ils
+/// rejoignent leur classe, sans rien perdre.
+export function rangerParClasse(): void {
+  const liste = classes();
+  const appel = lire<AppelGarde>('appel');
+  const responsable = liste.find(estResponsable);
+  if (appel && responsable && !appelGarde(responsable.code)) garderAppel(responsable.code, appel);
+  const apprenant = liste.find((c) => c.role === 'apprenant');
+  const anciennes = { presences: lire<PresenceGardee[]>('presences'), annoncesAppel: lire<AnnonceGardee[]>('annonces-appel'), prochain: lire<ClasseGardee['prochain']>('prochain') };
+  if (apprenant && Object.values(anciennes).some(Boolean)) garderClasse({ ...anciennes, ...apprenant });
+  for (const ancienne of ['appel', 'presence', 'presences', 'annonces-appel', 'prochain']) ecrire(ancienne, null);
+}

@@ -2,11 +2,12 @@
 // La salle montre le QR, le téléphone montre les noms. Sa caméra lit le QR d'un apprenant sans réseau.
 // Le chef ou un adjoint : tous font l'appel. Seul le chef nomme les adjoints.
 
-import { arreter, poser, viser } from './camera';
+import { couper, poser, viser } from './camera';
+import type { Moment, Navigation, Suivi } from './classes';
 import type { Appel } from './coeur';
 import { type Contexte, faits, nomDe } from './contexte';
-import { type Creneau, type Demi, enJour, enTexte, lireCreneau, lundiDe, ouvre, plusJours, proposerLeProchain, rang, suivant } from './creneaux';
-import { type ClasseGardee, type Moi, classes, ecrire, estResponsable, garderClasse, lire } from './etat';
+import { type Creneau, type Demi, bornes, enJour, enTexte, lireCreneau, lundiDe, ouvre, plusJours, proposerLeProchain, rang, suivant } from './creneaux';
+import { type ClasseGardee, type Moi, appelGarde, classes, garderAppel, garderClasse, lire } from './etat';
 import { type Horaires, champsDesHoraires, lireLesHoraires } from './horaires';
 import { annoncerLAppel, annoncerLeProchain, ecouterLaPorte, envoyer, lienDAdjoint, lienDeLaClasse, nouveauJeton, publierPorte, recevoir } from './lettres';
 import { aDeQuoiRepondre, chefActuel, ecrireAuxResponsables, etatChange, fusionner, nomsAJour, passationsDe, porteAJour } from './responsables';
@@ -48,15 +49,17 @@ const UN_JOUR_MS = 24 * 3600 * 1000;
 const SEPT_JOURS_MS = 7 * UN_JOUR_MS;
 const enLigne = (r: { prenom: string; nom: string; role: string; cle: string; boite: string }) => [r.prenom, r.nom, r.role, r.cle, r.boite].join('\t');
 
-export function formateur(ctx: Contexte): void {
+export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const { coeur, relais, moi } = ctx;
-  let classe = classes().find((c) => estResponsable(c) && c.fil) as ClasseGardee;
+  let classe = classes().find((c) => c.code === code)!;
   let porte = coeur.lire_porte(classe.code, classe.porte);
   const responsables = () => porte.responsables.map((r) => r.cle);
   const nomFormateur = nomDe(lire<Moi>('moi') ?? porte.responsables[0]);
-  const garde = lire<{ journal: string; secret?: string }>('appel');
+  const garde = appelGarde(code);
   let appel = garde ? coeur.Appel.relire(garde.journal, garde.secret ?? undefined, moi) : undefined;
   let vue: Vue = { ecran: 'cours' };
+  let arrete = false;
+  const arrets: (() => void)[] = [];
 
   const membres = () => (classe.membres ?? []).map((a) => coeur.lire_acceptation(classe.code, a, responsables()));
   const demandes = () => (classe.demandes ?? []).map((d) => coeur.lire_demande(classe.code, d));
@@ -105,8 +108,8 @@ export function formateur(ctx: Contexte): void {
     prendreLaMain();
     rendre();
   };
-  const garderAppel = () => {
-    if (appel) ecrire('appel', { journal: appel.journal(), secret: appel.secret() });
+  const sauverLAppel = () => {
+    if (appel) garderAppel(classe.code, { journal: appel.journal(), secret: appel.secret() });
   };
   const versLaSalle = () => {
     if (!appel) return;
@@ -183,8 +186,8 @@ export function formateur(ctx: Contexte): void {
       })
       .join('\n');
     appel = coeur.Appel.ouvrir(classe.code, dateIso(maintenant), demiJournee(maintenant, porte.apres_midi), moi, inscrits, maintenant);
-    garderAppel();
-    envoyer(coeur, relais, moi.boite(), { v: 1, t: 'appel', journal: appel.journal(), secret: appel.secret()! });
+    sauverLAppel();
+    envoyer(coeur, relais, moi.boite(), { v: 1, t: 'appel', code: classe.code, journal: appel.journal(), secret: appel.secret()! });
     annoncer();
     vue = { ecran: 'cours' };
     rendre();
@@ -198,15 +201,17 @@ export function formateur(ctx: Contexte): void {
       return codeDe(e);
     }
     const qui = membres().find((m) => m.cle === cle);
-    // Chaque responsable reçoit les présences : seul celui qui tient l'appel de la séance répond.
+    // Chaque responsable de chaque classe reçoit les présences : seul celui qui tient l'appel de
+    // la séance répond. La feuille dit « appel clos » avant de regarder la séance : on la regarde ici.
     if (!appel) return 'appel-clos';
+    if (coeur.seance_de_la_presence(presence) !== appel.seance()) return 'autre-seance';
     try {
       appel.recevoir(presence, voie, Date.now());
     } catch (e) {
-      if (qui && codeDe(e) !== 'autre-seance') envoyer(coeur, relais, qui.boite, { v: 1, t: 'refus', seance: appel.seance(), raison: codeDe(e) });
+      if (qui) envoyer(coeur, relais, qui.boite, { v: 1, t: 'refus', seance: appel.seance(), raison: codeDe(e) });
       return codeDe(e);
     }
-    garderAppel();
+    sauverLAppel();
     versLaSalle();
     const ligne = appel.lignes().find((l) => l.cle === cle);
     if (qui && ligne) envoyer(coeur, relais, qui.boite, { v: 1, t: 'recu', seance: appel.seance(), quand: ligne.quand, par: nomFormateur });
@@ -234,7 +239,7 @@ export function formateur(ctx: Contexte): void {
 
   const vers = (v: Vue) => {
     if (vue.ecran === 'inviter' && vue.montre && v.ecran !== 'inviter') montrer('rien');
-    if (vue.ecran === 'lire' && v.ecran !== 'lire') arreter();
+    if (vue.ecran === 'lire' && v.ecran !== 'lire') couper();
     vue = v;
     rendre();
   };
@@ -366,14 +371,14 @@ export function formateur(ctx: Contexte): void {
     ici: () => {
       if ((vue.ecran !== 'nom' && vue.ecran !== 'lire') || !appel) return;
       appel.signer_ici(vue.cle, Date.now());
-      garderAppel();
+      sauverLAppel();
       versLaSalle();
       vers({ ecran: 'cours' });
     },
     retard: () => {
       if (vue.ecran !== 'nom' || !appel) return;
       appel.noter_retard(vue.cle, Date.now(), Date.now());
-      garderAppel();
+      sauverLAppel();
       vers({ ecran: 'cours' });
     },
     lireQr: () => {
@@ -382,7 +387,7 @@ export function formateur(ctx: Contexte): void {
     clore: () => {
       if (!appel) return;
       const [presents, absents] = appel.clore(Date.now());
-      garderAppel();
+      sauverLAppel();
       envoyer(coeur, relais, moi.boite(), { v: 1, t: 'clos', seance: appel.seance(), presents, absents, quand: Date.now() });
       annoncer();
       proposerALaCloture(appel);
@@ -405,15 +410,16 @@ export function formateur(ctx: Contexte): void {
       if (!appel) return;
       appel.annuler_cloture(Date.now());
       changer({ ...classe, prochainEnAttente: undefined });
-      garderAppel();
+      sauverLAppel();
       envoyer(coeur, relais, moi.boite(), { v: 1, t: 'reouvert', seance: appel.seance() });
       annoncer();
       versLaSalle();
       rendre();
     },
+    mesCours: () => nav.mesCours(),
   };
 
-  const MENU = `<nav class="menu" aria-label="Entrées"><a href="#" data-geste="classe">Classe</a><a href="#">Messages</a><a href="#">Mes cours</a><a href="#">Moi</a></nav>`;
+  const MENU = `<nav class="menu" aria-label="Entrées"><a href="#" data-geste="classe">Classe</a><a href="#">Messages</a><a href="#" data-geste="mesCours">Mes cours</a><a href="#">Moi</a></nav>`;
   const barre = (maintenant: number, ouvert: boolean) =>
     `<header class="barre${ouvert ? ' maintenant' : ''}"><h1 class="barre-titre" tabindex="-1">${esc(porte.centre)}</h1><span class="mono">${jour(maintenant)} · ${heure(maintenant)}</span></header>`;
   const retour = `<button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button>`;
@@ -783,6 +789,7 @@ export function formateur(ctx: Contexte): void {
   };
 
   const rendre = () => {
+    if (arrete || !nav.affichee()) return;
     const maintenant = Date.now();
     if (vue.ecran === 'prochain') return ecranProchain(vue);
     if (vue.ecran === 'adjoint') return ecranAdjoint(vue);
@@ -800,7 +807,22 @@ export function formateur(ctx: Contexte): void {
     return liste(appel, maintenant);
   };
 
-  recevoir(coeur, relais, moi, (l) => {
+  // Ce que la classe dit de maintenant : l'appel ouvert, puis le cours de maintenant, connu par son
+  // appel clos, par le prochain cours annoncé, ou par l'habitude (le mardi matin, c'est BTS SIO 2).
+  const moment = (): Moment => {
+    const ici = creneauDuMoment();
+    const [debut, fin] = bornes(ici, porte);
+    if (appel && !appel.close()) return { urgence: 2, prochain: debut };
+    const prevu = classe.prochainEnAttente ?? classe.prochain;
+    const prochain = prevu && { date: prevu.date, demi: prevu.demi as Demi };
+    const fait = appel?.date() === ici.date && appel.demi() === ici.demi;
+    const jourDe = (c: Creneau) => enJour(c.date).getDay();
+    const habitude = (!prochain || rang(prochain) < rang(ici)) && (classe.cours ?? []).map(lireCreneau).some((c) => c.demi === ici.demi && jourDe(c) === jourDe(ici) && c.date < ici.date);
+    if (Date.now() < fin && (fait || (prochain && rang(prochain) === rang(ici)) || habitude)) return { urgence: 1, prochain: debut };
+    return { urgence: 0, prochain: prochain && rang(prochain) > rang(ici) ? bornes(prochain, porte)[0] : undefined };
+  };
+
+  arrets.push(recevoir(coeur, relais, moi, (l) => {
     if (l.t === 'presence') {
       repondre(l.presence, 'reseau');
     } else if (l.t === 'entree' && l.code === classe.code) {
@@ -844,12 +866,9 @@ export function formateur(ctx: Contexte): void {
       return;
     }
     if (vue.ecran === 'cours' || vue.ecran === 'accepter' || vue.ecran === 'membres') rendre();
-  });
-  ecouterLaPorte(coeur, relais, classe.code, suivreLaPorte);
-  relais.changement = () => {
-    if (vue.ecran !== 'lire') rendre();
-  };
-  setInterval(() => {
+  }));
+  arrets.push(ecouterLaPorte(coeur, relais, classe.code, suivreLaPorte));
+  const chaqueSeconde = setInterval(() => {
     const avant = classe.prochainEnAttente;
     const passation = classe.passationEnAttente;
     const horaires = classe.horairesEnAttente;
@@ -864,5 +883,26 @@ export function formateur(ctx: Contexte): void {
   envoyerLeProchainALHeure();
   passerLaMainALHeure();
   changerLesHorairesALHeure();
-  rendre();
+
+  return {
+    code,
+    responsable: true,
+    rendre,
+    revenir: () => {
+      if (vue.ecran === 'lire') couper();
+      if (vue.ecran === 'inviter' && vue.montre) montrer('rien');
+      vue = { ecran: 'cours' };
+    },
+    aLEntree: () => vue.ecran === 'cours',
+    moment,
+    reseau: () => {
+      if (vue.ecran !== 'lire') rendre();
+    },
+    arreter: () => {
+      arrete = true;
+      if (vue.ecran === 'lire' && nav.affichee()) couper();
+      for (const fin of arrets) fin();
+      clearInterval(chaqueSeconde);
+    },
+  };
 }
