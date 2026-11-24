@@ -154,7 +154,8 @@ const pages = {};
 
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
 
-async function appareil(nom, options, { url = '/index.html', cles, liste = LISTE, userAgent, camera = false } = {}) {
+// Le stockage de départ ne se pose qu'une fois : ce que l'app y écrit ensuite reste au rechargement.
+async function appareil(nom, options, { url = '/index.html', cles, liste = LISTE, userAgent, camera = false, stockage = {} } = {}) {
   const contexte = await (camera ? navigateurCamera : navigateur).newContext({
     ...options,
     locale: 'fr-FR',
@@ -164,11 +165,13 @@ async function appareil(nom, options, { url = '/index.html', cles, liste = LISTE
   });
   await contexte.clock.setSystemTime(MARDI_MATIN);
   await contexte.addInitScript(
-    ([nom, cles, liste]) => {
+    ([nom, cles, liste, stockage]) => {
+      if (location.protocol === 'about:') return;
       localStorage.setItem(`opl_proto_${nom}_relais`, JSON.stringify(liste));
       if (cles) localStorage.setItem(`opl_proto_${nom}_cles`, JSON.stringify(cles));
+      for (const [cle, valeur] of Object.entries(stockage)) localStorage.getItem(`opl_proto_${nom}_${cle}`) ?? localStorage.setItem(`opl_proto_${nom}_${cle}`, JSON.stringify(valeur));
     },
-    [nom, cles, liste],
+    [nom, cles, liste, stockage],
   );
   const page = await contexte.newPage();
   page.on('pageerror', (e) => echecs.push(`${nom} : ${e.message}`));
@@ -675,6 +678,162 @@ try {
   await telLea.locator('.semaine.en-rangs').waitFor({ timeout: 15_000 });
   await capturer(telLea, '21-apprenant-texte-200');
   verifier(await telLea.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'le texte agrandi à 200 %, la semaine se lit en rangs, et rien ne sort de l’écran');
+
+  // Plusieurs classes. Jeudi, Awa crée BTS SIO 1 depuis « Mes cours », et Inès la rejoint : elle
+  // suit deux classes. L'appel ouvert dans l'une montre cette classe, même si l'autre était à l'écran.
+  const jeudiPlusTard = new Date(horloge());
+  for (const nom of ['awa-tel', 'awa-ordi', 'ines']) await pages[nom].contexte.clock.setSystemTime(jeudiPlusTard);
+  await tel.reload();
+  await tel.click('[data-geste="mesCours"]');
+  verifier(
+    (await tel.locator('[data-geste="choisir"]').count()) === 1 && (await tel.getByText(/lun\. 30 nov\., 8\sh\s30 · Centre Exemple/).count()) === 1,
+    '« Mes cours » liste la classe, avec l’heure de son prochain cours',
+  );
+  await tel.click('[data-geste="creer"]');
+  await tel.click('[data-geste="retour"]');
+  verifier((await tel.locator('[data-geste="choisir"]').count()) === 1, '« Créer une classe » a son « Retour », qui ne crée rien');
+  await tel.click('[data-geste="creer"]');
+  await tel.fill('#classe', 'BTS SIO 1');
+  await tel.fill('#centre', 'Centre Exemple');
+  await tel.click('[data-geste="creer"]');
+  await tel.getByText('Inviter des apprenants').waitFor();
+  verifier((await tel.locator('h2', { hasText: 'BTS SIO 1' }).count()) === 1, 'la classe créée s’ouvre : BTS SIO 1, sans personne');
+  await tel.click('[data-geste="inviter"]');
+  await tel.click('[data-geste="montrer"]');
+  await salle.getByText('Rejoindre · BTS SIO 1').waitFor({ timeout: 15_000 });
+  verifier(true, 'la salle montre la classe que le téléphone lui montre : BTS SIO 1, et pas BTS SIO 2');
+  const ancreSio1 = (await salle.locator('[data-lien]').getAttribute('data-lien')).split('#')[1];
+  const codeSio1 = await salle.locator('[data-code]').getAttribute('data-code');
+
+  await telInes.goto('about:blank');
+  await telInes.goto(`${site}/index.html?appareil=ines#${ancreSio1}`);
+  await rejoindre(telInes, 'Inès', 'Roux');
+  await capturer(telInes, '22-apprenant-deuxieme-classe');
+  verifier((await telInes.locator('header.barre [data-geste="mesClasses"]').innerText()) === 'Mes classes', 'Inès demande à entrer en BTS SIO 1 : « Mes classes » est dans la barre, pour revenir à BTS SIO 2');
+  await tel.click('[data-geste="retour"]');
+  await tel.locator('[data-geste="accepter"]').waitFor({ timeout: 15_000 });
+  await tel.click('[data-geste="accepter"]');
+  await tel.click('[data-geste="valider"]');
+  await telInes.getByText('Pas d’appel ouvert').waitFor({ timeout: 15_000 });
+  await capturer(telInes, '23-apprenant-deux-classes');
+  verifier((await telInes.locator('header.barre [data-geste="mesClasses"]').innerText()) === 'BTS SIO 1', 'acceptée, Inès voit BTS SIO 1, et le nom de la classe dans la barre');
+  await telInes.click('[data-geste="mesClasses"]');
+  const lignesDInes = (await telInes.locator('[data-geste="choisir"]').allInnerTexts()).map((l) => l.replace(/\s+/g, ' ').trim());
+  await capturer(telInes, '24-apprenant-mes-classes');
+  verifier(
+    lignesDInes.length === 2 && /^BTS SIO 2 lun\. 30 nov\., 8 h 30 · Centre Exemple/.test(lignesDInes[0]) && lignesDInes[1].startsWith('BTS SIO 1') && (await telInes.locator('.rangee.ici').innerText()).startsWith('BTS SIO 1'),
+    `« Mes classes » range les classes par leur prochain cours, et marque celle de l’écran (${lignesDInes.join(' | ')})`,
+  );
+  await telInes.click('[data-geste="choisir"]:not(.ici)');
+  await telInes.locator('header.barre.pas-maintenant', { hasText: 'En entreprise' }).waitFor();
+  verifier((await telInes.locator('header.barre [data-geste="mesClasses"]').innerText()) === 'BTS SIO 2', 'Inès passe à BTS SIO 2 : en entreprise jusqu’au lundi 30');
+
+  const avantLAppelDeSio1 = Math.floor(horloge() / 1000);
+  await tel.click('[data-geste="lancer"]');
+  await salle.getByText('Appel · BTS SIO 1').waitFor({ timeout: 15_000 });
+  await capturer(salle, '25-salle-appel-autre-classe');
+  verifier(true, 'la salle montre l’appel de BTS SIO 1');
+  await sansNom(salle, 'pendant l’appel de BTS SIO 1');
+  await telInes.getByText('L’appel est ouvert').waitFor({ timeout: 15_000 });
+  await capturer(telInes, '26-apprenant-appel-autre-classe');
+  verifier((await telInes.locator('header.barre [data-geste="mesClasses"]').innerText()) === 'BTS SIO 1', 'l’appel s’ouvre en BTS SIO 1 : le téléphone d’Inès, qui montrait BTS SIO 2, montre BTS SIO 1');
+  await telInes.click('[data-geste="signer"]');
+  await taper(telInes, await codeDeLAppel());
+  await telInes.getByText('Présence signée').waitFor({ timeout: 15_000 });
+  await tel.getByText('1 sur 1').first().waitFor({ timeout: 15_000 });
+  verifier(true, 'Inès signe en BTS SIO 1, et Awa la voit : 1 sur 1');
+  const ines = coeur.Appareil.relire(JSON.parse(await telInes.evaluate(() => localStorage.getItem('opl_proto_ines_cles'))));
+  const boiteDInes = coeur.etiquette_de_boite(ines.boite());
+  await telInes.waitForTimeout(1500);
+  const refusAInes = [...principal.gardes, ...secours.gardes]
+    .filter((e) => e.created_at >= avantLAppelDeSio1 && e.tags.some(([t, v]) => t === 'x' && v === boiteDInes))
+    .flatMap((e) => {
+      try {
+        return [JSON.parse(ines.ouvrir(e.content))];
+      } catch {
+        return [];
+      }
+    })
+    .filter((l) => l.t === 'refus');
+  verifier(refusAInes.length === 0, `l’appel clos de BTS SIO 2, chez Awa, ne répond pas « appel clos » à la présence d’Inès en BTS SIO 1 (${refusAInes.length} refus)`);
+
+  await tel.click('[data-geste="mesCours"]');
+  const lignesDAwa = (await tel.locator('[data-geste="choisir"]').allInnerTexts()).map((l) => l.replace(/\s+/g, ' ').trim());
+  await capturer(tel, '27-formateur-mes-cours');
+  verifier(
+    lignesDAwa.length === 2 && lignesDAwa[0] === 'BTS SIO 1 maintenant · Centre Exemple' && lignesDAwa[1].startsWith('BTS SIO 2 lun. 30 nov.'),
+    `« Mes cours » met d’abord la classe de l’appel ouvert, « maintenant » (${lignesDAwa.join(' | ')})`,
+  );
+  await tel.click('[data-geste="choisir"]:not(.ici)');
+  await tel.getByText('Lancer l’appel').waitFor();
+  await tel.reload();
+  await tel.getByText('1 sur 1').first().waitFor({ timeout: 15_000 });
+  verifier(true, 'rouverte, l’app d’Awa revient à la classe du moment : l’appel ouvert de BTS SIO 1');
+  const secretsDAwa = await tel.evaluate(() => JSON.parse(localStorage.getItem('opl_proto_awa-tel_classes')).map((c) => c.secrets?.split('\n')[0]));
+  verifier(secretsDAwa.length === 2 && secretsDAwa.every((s) => s === 'opn-link·secrets·v1'), 'chaque classe garde ses secrets : le téléphone ne les tire plus du code à chaque ouverture');
+  verifier(coeur.etiquette_de_classe(codeSio1) !== etiquetteDeLaClasse, 'les deux classes ont chacune leur étiquette sur les relais');
+
+  // Léa rouvre le lien du QR de sa classe : elle y est déjà, et rien ne lui redemande d'entrer.
+  await telLea.goto('about:blank');
+  await telLea.goto(`${site}/index.html?appareil=lea#${ancre}`);
+  await telLea.locator('.semaine').waitFor({ timeout: 15_000 });
+  verifier(
+    (await telLea.locator('#prenom').count()) === 0 && !!JSON.parse(await telLea.evaluate(() => localStorage.getItem('opl_proto_lea_classes')))[0].acceptation,
+    'Léa rouvre le lien de sa classe : la classe s’ouvre, et son acceptation reste',
+  );
+
+  // Dix classes au plus : Sandrine Robert, au centre, en tient dix, puis essaie d'en créer une
+  // onzième et d'en rejoindre une autre.
+  const sandrine = new coeur.Appareil();
+  const ligneDeSandrine = ['Sandrine', 'Robert', 'centre', sandrine.cle(), sandrine.boite()].join('\t');
+  const dixClasses = Array.from({ length: 10 }, (_, n) => {
+    const c = coeur.nouveau_code_de_classe().replace(/\s/g, '').toLowerCase();
+    const porte = coeur.signer_porte(c, `Titre pro ${n + 1}`, 'Centre Exemple', '9:00-12:30', '13:30-17:00', ligneDeSandrine, sandrine, horloge());
+    return { code: c, role: 'chef', porte, fil: coeur.nouveau_secret_du_fil(), membres: [], demandes: [], dehors: [], portePubliee: horloge() };
+  });
+  const telSandrine = await appareil('sandrine', TEL, { cles: sandrine.secrets(), stockage: { moi: { prenom: 'Sandrine', nom: 'Robert' }, classes: dixClasses } });
+  await telSandrine.click('[data-geste="mesCours"]');
+  await capturer(telSandrine, '28-centre-dix-classes');
+  verifier(
+    (await telSandrine.locator('[data-geste="choisir"]').count()) === 10 &&
+      (await telSandrine.locator('[data-geste="creer"]').count()) === 0 &&
+      (await telSandrine.getByText('Dix classes au plus sur ce téléphone.').count()) === 1,
+    '« Mes cours » liste les dix classes, sans « Créer une classe »',
+  );
+  await telSandrine.goto('about:blank');
+  await telSandrine.goto(`${site}/index.html?appareil=sandrine#creer`);
+  await telSandrine.getByText('Dix classes au plus').first().waitFor();
+  await capturer(telSandrine, '29-centre-onzieme-classe');
+  verifier((await telSandrine.locator('#classe').count()) === 0, 'une onzième classe ne se crée pas : l’écran dit pourquoi');
+  await telSandrine.goto('about:blank');
+  await telSandrine.goto(`${site}/index.html?appareil=sandrine#${ancre}`);
+  await telSandrine.getByText('Dix classes au plus').first().waitFor();
+  verifier((await telSandrine.locator('#prenom').count()) === 0, 'ni ne se rejoint par son lien');
+  await telSandrine.click('[data-geste="retour"]');
+  await telSandrine.click('[data-geste="mesCours"]');
+  await telSandrine.setViewportSize({ width: 360, height: 640 });
+  await telSandrine.evaluate(() => (document.documentElement.style.fontSize = '200%'));
+  await capturer(telSandrine, '30-centre-mes-cours-200');
+  verifier(await telSandrine.evaluate(() => document.documentElement.scrollWidth <= innerWidth), '« Mes cours », le texte agrandi à 200 %, à 360 pixels : rien ne sort de l’écran');
+  await telSandrine.evaluate(() => (document.documentElement.style.fontSize = ''));
+  await telSandrine.setViewportSize(TEL.viewport);
+  // L'horloge de la page est simulée : le temps se mesure ici.
+  const ouvrir = async () => {
+    const depart = Date.now();
+    await telSandrine.reload();
+    await telSandrine.locator('.barre-titre').first().waitFor();
+    return Date.now() - depart;
+  };
+  const avecSecrets = await ouvrir();
+  await telSandrine.evaluate(() => {
+    const cle = 'opl_proto_sandrine_classes';
+    localStorage.setItem(cle, JSON.stringify(JSON.parse(localStorage.getItem(cle)).map(({ secrets, ...reste }) => reste)));
+  });
+  const sansSecrets = await ouvrir();
+  verifier(
+    avecSecrets < sansSecrets - 700,
+    `les dix classes s’ouvrent sans tirer leurs secrets du code : ${Math.round(avecSecrets)} ms avec les secrets gardés, ${Math.round(sansSecrets)} ms sans`,
+  );
 
   const poids = [];
   const premier = await navigateur.newContext({ ...TEL });

@@ -1,4 +1,4 @@
-// Le téléphone du formateur : sa classe, les demandes d'entrée, et l'appel.
+// Le téléphone du formateur, dans une classe : les demandes d'entrée, et l'appel.
 // La salle montre le QR, le téléphone montre les noms. Sa caméra lit le QR d'un apprenant sans réseau.
 // Le chef ou un adjoint : tous font l'appel. Seul le chef nomme les adjoints.
 
@@ -886,7 +886,6 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
 
   return {
     code,
-    responsable: true,
     rendre,
     revenir: () => {
       if (vue.ecran === 'lire') couper();

@@ -27,7 +27,21 @@ le 23 novembre 2026, l'écran d'entrée : le prochain cours annoncé à part
 sur le fil, proposé en reprenant l'écart de la dernière fois, « En règle »
 une fois l'appel clos, et les durées de vie sur le téléphone. Puis les
 responsables : le jeton de l'invitation d'adjoint, sept jours, et la fusion
-de l'état partagé entre responsables, où rien ne se retire.
+de l'état partagé entre responsables, où rien ne se retire. Puis, le 24
+novembre 2026, plusieurs classes : la façon de choisir la classe du moment,
+le nom de la classe dans la barre de l'apprenant, et les secrets de chaque
+classe gardés sur l'appareil.
+
+### Rejoindre une autre classe
+
+Un apprenant qui a déjà une classe en rejoint une autre par le lien ou le
+QR de la classe. Il ne peut pas taper son code : « Taper un code » n'est
+que sur l'écran sans classe, comme dans la conception.
+
+Recommandation : ajouter « Rejoindre une classe » en bas de « Mes
+classes », qui mène à « Taper un code ». Le formateur montre le QR à la
+salle, mais un apprenant au fond de la salle, ou absent ce jour-là, n'a que
+le code.
 
 Recommandation : les garder.
 
@@ -104,8 +118,9 @@ quand la caméra ne marche pas, le QR quand il n'y a pas de réseau.
 
 - Le nombre maximum de classes. Les relais acceptent de 20 à 200 abonnements
   par connexion, et un seul abonnement peut suivre plusieurs classes : la
-  limite viendra plutôt du volume de messages. Une dizaine semble un bon point
-  de départ.
+  limite viendra plutôt du volume de messages. Le prototype la fixe à dix le
+  24 novembre 2026, à valider. Avec leurs secrets gardés, dix classes
+  s'ouvrent en 73 ms dans Chromium ([prototype.md](prototype.md)).
 - Le plafond de poids du site de l'apprenant : 300 Ko compressés au premier
   chargement sont retenus. Le cœur seul en pèse 186 ([mesures.md](mesures.md)).
 - Les largeurs où l'écran passe à deux puis à trois fenêtres : 600 et 901 px

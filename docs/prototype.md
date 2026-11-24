@@ -26,8 +26,8 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    Si son clone est trop court pour la version voulue (`VERSION_OC` dans
    `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
    --depth=1 origin <version>`.
-3. Vérifier que tout passe, comme le 23 novembre 2026 :
-   - `cd coeur && cargo test` : 63 tests ;
+3. Vérifier que tout passe, comme le 24 novembre 2026 :
+   - `cd coeur && cargo test` : 74 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
    - `cd ../site && npm run construire && npm run verifier && npm run
@@ -40,7 +40,7 @@ Pour une nouvelle discussion, dans un conteneur neuf.
 
 - Le travail avance sur une branche avant d'arriver sur `main`. Si une
   branche de travail a des commits que `main` n'a pas, demander au
-  mainteneur de les fusionner avant de reprendre. Le 23 novembre 2026, c'est
+  mainteneur de les fusionner avant de reprendre. Le 24 novembre 2026, c'est
   `claude/quirky-fermat-tgb4d4`.
 - Pousser sur `main` demande l'accord explicite du mainteneur, à chaque
   fois. La session le bloque sinon.
@@ -392,6 +392,48 @@ Awa repousse au lundi 30, Léa voit la demande, touche « Plus tard », et elle
 ne revient plus. Deux défauts posés exprès le font échouer : la demande qui
 revient après « Plus tard », et une demande faite à trois jours.
 
+Fait le 24 novembre 2026, plusieurs classes et « Mes cours », la suite de
+« Rejoindre une classe » :
+
+- chaque classe du téléphone a son suivi : il lit ses lettres, ses annonces
+  et sa porte même quand une autre classe est à l'écran. La boîte, les fils
+  et les portes passent chacun par un seul abonnement aux relais, pour toutes
+  les classes ;
+- ce qui était gardé à part rejoint sa classe : l'appel du formateur, et les
+  présences, les annonces et le prochain cours de l'apprenant. Les anciennes
+  clés sont relues une fois ;
+- l'app s'ouvre sur la classe du moment : celle d'un appel ouvert, puis celle
+  d'un cours connu aujourd'hui qui n'est pas fini, puis celle du prochain
+  cours le plus proche, puis la dernière classe montrée. Quand un appel
+  s'ouvre dans une autre classe, l'app la montre, si l'écran est sur l'entrée
+  d'une classe. Au milieu d'un geste, rien ne bouge ;
+- « Mes cours » s'ouvre depuis les entrées du formateur : ses classes, rangées
+  par l'heure du prochain cours, et « Créer une classe », qui a son
+  « Retour ». Chez l'apprenant qui a plusieurs classes, le nom de la classe
+  est un bouton dans la barre, sous le lieu : il ouvre « Mes classes » ;
+- la salle garde chaque classe à part, et montre celle dont le téléphone
+  lance l'appel ou qu'il montre à la salle ;
+- un téléphone suit dix classes au plus. Au-delà, on ne crée ni ne rejoint
+  une classe, et l'écran dit pourquoi ;
+- les secrets d'une classe se gardent avec elle : les tirer du code prend
+  140 ms par classe, à chaque ouverture ([mesures.md](mesures.md)). Dans le
+  cœur, leur format, avec son vecteur. 74 tests.
+
+Corrigé en passant : rouvrir le lien de sa classe redemandait d'y entrer, et
+effaçait l'acceptation de l'apprenant. Au rechargement, le reçu d'une
+présence déjà reçue ramenait l'apprenant à l'écran du jour, même depuis
+« Moi ». Un responsable qui n'avait pas l'appel de la séance pouvait
+répondre « appel clos » à une présence.
+
+Le scénario le joue, jeudi. Awa crée BTS SIO 1 depuis « Mes cours » et la
+montre à la salle. Inès la rejoint : elle suit deux classes, et passe à BTS
+SIO 2, où elle est en entreprise. Awa lance l'appel de BTS SIO 1 : le
+téléphone d'Inès montre BTS SIO 1, la salle aussi, et Inès signe. L'appel
+clos de BTS SIO 2, chez Awa, ne lui répond rien. Léa rouvre le lien de sa
+classe, qui s'ouvre. Sandrine Robert, au centre, tient dix classes : elle
+n'en crée ni n'en rejoint une onzième. Avec leurs secrets gardés, ses dix
+classes s'ouvrent en 73 ms, contre 1 443 ms sans. 102 vérifications.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -404,11 +446,13 @@ on construit directement la première version complète
    d'accueil redemandé avant plus de sept jours sans cours est fait le 23
    novembre 2026. Nommer un adjoint, passer la main et les horaires dans les
    réglages du chef sont faits le même jour, et corriger son nom chez
-   l'apprenant. Reste : corriger son nom chez un responsable (sa ligne est
-   dans la porte, que seul le chef signe), plusieurs classes et « Mes
-   cours », refaire l'invitation. Les
+   l'apprenant. Plusieurs classes et « Mes cours » sont faits le 24 novembre
+   2026. Reste : corriger son nom chez un responsable (sa ligne est dans la
+   porte, que seul le chef signe), et refaire l'invitation. Les
    interrupteurs des réglages viendront avec leurs fonctions : l'identité avec
-   « Moi », les documents à l'étape 5, le suivi à l'étape 6.
+   « Moi », les documents à l'étape 5, le suivi à l'étape 6. À l'ordinateur,
+   la conception met « Mes cours » à gauche et le cours au milieu. Le site
+   montre encore chaque écran du formateur comme au téléphone.
 2. L'appel complet : la caméra, l'appel annoncé sur le fil de la classe, les
    relais publics, l'écran d'entrée de chacun. Il passe avant la fin du 1 :
    sans les relais publics, rien ne marchait hors des tests. Les relais
@@ -611,6 +655,33 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
   sur iPhone, la raison reste « tu le retrouves d'un geste », car seul
   Safari efface après sept jours.
 
+Pour plusieurs classes (24 novembre 2026) :
+
+- la classe du moment : un appel ouvert passe d'abord, puis un cours connu
+  aujourd'hui qui n'est pas fini, puis le prochain cours le plus proche, puis
+  la dernière classe montrée. L'app ne change d'elle-même de classe que pour
+  une classe plus pressée, et seulement depuis l'écran d'entrée ;
+- chez le formateur, le cours de maintenant se reconnaît à son appel clos,
+  au prochain cours annoncé, ou, quand ce prochain cours est passé, à
+  l'habitude : un cours le même jour de la semaine, à la même demi-journée,
+  dans les huit semaines gardées ;
+- chez l'apprenant, une classe dont il ne sait rien ne passe pas devant une
+  classe dont il connaît le cours ;
+- au téléphone, « Mes cours » est un écran à part, ouvert depuis l'entrée du
+  même nom. La maquette ne le dessine qu'à l'ordinateur. Ses lignes ont un
+  chevron, comme les autres lignes qui ouvrent un écran au téléphone. Chez
+  l'apprenant, il s'appelle « Mes classes », et n'a pas « Créer une classe » ;
+- le nom de la classe, dans la barre de l'apprenant, est un bouton toujours
+  sous le lieu, quelle que soit la longueur de la date. Tant que la demande
+  attend, la barre porte déjà le nom de la classe : le bouton dit alors
+  « Mes classes » ;
+- un téléphone suit dix classes au plus
+  ([questions-ouvertes.md](questions-ouvertes.md)). Au-delà, l'écran dit
+  « Une classe fermée libère sa place » ;
+- la salle montre la classe de la dernière lettre « appel » ou « montrer »
+  du téléphone, et sa seule classe s'il n'en a qu'une ;
+- les secrets d'une classe se gardent sur l'appareil, avec elle.
+
 ## Ce qu'il tranche
 
 - Le poids réel du site, face au plafond de 300 Ko compressés
@@ -657,8 +728,10 @@ Pour l'écran d'entrée et le prochain cours (23 novembre 2026) :
   `npm run construire`, fait cette planche : il construit à part la version
   de la référence (`main` par défaut), pose la même classe inventée dans
   les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour`,
-  `signer`, `semaine`, `lire`, `prochain` et `redemande` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et
-  le geste qui mène à l'écran.
+  `signer`, `semaine`, `lire`, `prochain`, `redemande`, `membres`,
+  `adjoint`, `passer`, `reglages`, `moi`, `mes-cours` et `deux-classes`
+  existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le geste
+  qui mène à l'écran.
 - Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
   scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans
   une copie du site hors du dépôt, faite comme le fait `avant-apres.mjs`

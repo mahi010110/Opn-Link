@@ -21,6 +21,15 @@ export function salle(ctx: Contexte): void {
     ecrire('classes-de-la-salle', connues);
     ecrire('classe-de-la-salle', null);
   }
+  // Les secrets voyagent avec la classe : la salle ne les tire pas du code à chaque ouverture.
+  const reprendre = (c: ClasseGardee) => {
+    try {
+      if (c.secrets) coeur.reprendre_les_secrets(c.code, c.secrets);
+    } catch {
+      // Sans eux, le cœur les tire du code.
+    }
+  };
+  for (const c of Object.values(connues)) reprendre(c);
   const seules = Object.keys(connues);
   let code = seules.length === 1 ? seules[0] : undefined;
   const classe = () => (code ? connues[code] : undefined);
@@ -111,6 +120,7 @@ export function salle(ctx: Contexte): void {
   recevoir(coeur, relais, moi, (l) => {
     if (l.t === 'classe') {
       connues[l.classe.code] = l.classe;
+      reprendre(l.classe);
       ecrire('classes-de-la-salle', connues);
       code ??= Object.keys(connues).length === 1 ? l.classe.code : undefined;
     } else if (l.t === 'montrer') {

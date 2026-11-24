@@ -36,6 +36,8 @@ export const CLASSES_AU_PLUS = 10;
 
 export interface ClasseGardee {
   code: string;
+  /// Les secrets tirés du code, gardés par le cœur (opn-link·secrets·v1) : les tirer prend 140 ms.
+  secrets?: string;
   /// « chef » ou « adjoint » chez un responsable : la porte et ses passations disent qui est chef.
   role: 'chef' | 'adjoint' | 'apprenant';
   porte: string;
@@ -120,8 +122,11 @@ export function garderClasse(classe: ClasseGardee): void {
   ecrire('classes', liste);
 }
 
+/// Oublie une classe, et ce qui partait avec elle : son appel, et la dernière classe montrée.
 export function oublierClasse(code: string): void {
   ecrire('classes', classes().filter((c) => c.code !== code));
+  if (appelGarde(code)) garderAppel(code, undefined);
+  if (lire<string>('derniere-classe') === code) ecrire('derniere-classe', null);
 }
 
 // Les relais par défaut, mesurés le 15 novembre 2026 (docs/architecture.md). Les tests donnent les leurs.

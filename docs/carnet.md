@@ -520,3 +520,28 @@ refusés.
 - Corriger son nom est fait chez l'apprenant, depuis « Moi ». Choisi en
   codant, à valider : la fenêtre « Nom », qui n'était pas dessinée, et le
   thème dans « Moi », gardé sur l'appareil.
+
+## 24 novembre 2026 : plusieurs classes
+
+- Le mainteneur : « Comme tu veux, mais je veux du travail propre et soigné.
+  Donc let's go. » Le travail suit l'ordre de [prototype.md](prototype.md) :
+  la fin de « Rejoindre une classe », avec plusieurs classes et « Mes
+  cours ».
+- Un téléphone suit plusieurs classes, comme décidé le 15 novembre 2026.
+  L'app s'ouvre sur la classe du moment, « Mes cours » range les classes du
+  formateur par l'heure du prochain cours, et l'apprenant change de classe
+  depuis la barre. Choisis en codant, à valider : la façon de choisir la
+  classe du moment, le nom de la classe dans la barre de l'apprenant, et
+  « Mes cours » au téléphone, que la maquette ne dessine qu'à l'ordinateur
+  ([prototype.md](prototype.md), partie « Les choix du prototype, à
+  valider »).
+- La limite, qui restait à fixer au prototype : dix classes par téléphone,
+  à valider ([questions-ouvertes.md](questions-ouvertes.md)).
+- Tirer les secrets d'une classe de son code prend 140 ms dans Chromium
+  (mesuré) : avec dix classes, l'app attendrait 1,4 s à chaque ouverture.
+  L'appareil garde maintenant ces secrets avec la classe, dans un format du
+  contrat ([contrat.md](contrat.md), partie « Les secrets gardés »).
+- Corrigé en passant : rouvrir le lien de sa classe effaçait l'acceptation
+  de l'apprenant.
+- Une question ouverte, avec une recommandation : rejoindre une autre classe
+  en tapant son code ([questions-ouvertes.md](questions-ouvertes.md)).

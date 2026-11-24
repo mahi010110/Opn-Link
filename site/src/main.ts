@@ -1,4 +1,4 @@
-import { ouvrirLesClasses } from './classes';
+import { ouvrirLesClasses, plein } from './classes';
 import { chargerCoeur } from './coeur';
 import { creer } from './creer';
 import { rejoindreCommeAdjoint, rejoindreParLien } from './entree';
@@ -16,12 +16,13 @@ chargerCoeur().then((coeur) => {
   const ctx = { coeur, relais: new Relais(listeDesRelais(), envois), moi: clesDeLAppareil(coeur) };
   if (ecran === 'salle') return salle(ctx);
   rangerParClasse();
-  if (location.hash === '#creer') return creer(ctx);
+  if (location.hash === '#creer') return plein(ctx) || creer(ctx);
   const lien = lireLien(location.hash);
   const invitation = lireLienDAdjoint(location.hash);
   const code = (lien ?? invitation)?.code;
   // Le lien d'une classe qu'on suit déjà l'ouvre : y entrer une seconde fois effacerait l'acceptation.
   const connue = classes().some((c) => c.code === code);
+  if ((lien || invitation) && !connue && plein(ctx)) return;
   if (lien && !connue) return rejoindreParLien(ctx, lien.code, lien.chef);
   if (invitation && !connue) return rejoindreCommeAdjoint(ctx, invitation);
   if (code) history.replaceState(null, '', location.pathname + location.search);

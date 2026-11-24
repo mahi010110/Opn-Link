@@ -88,6 +88,24 @@ const PLANCHES = [
     images: [
       ['08-salle-rejoindre', 'Rejoindre', 'Le lien et le code de la classe, et combien ont rejoint.'],
       ['13-salle-appel', 'L’appel'],
+      ['25-salle-appel-autre-classe', 'L’appel d’une autre classe', 'Jeudi, Awa lance l’appel de BTS SIO 1 : la salle montre la classe de l’appel lancé.'],
+    ],
+  },
+  {
+    nom: 'planche-5-classes',
+    titre: 'Plusieurs classes',
+    sous: 'Jeudi, Awa crée BTS SIO 1 depuis « Mes cours ». Inès la rejoint : elle suit deux classes. L’appel qui s’ouvre en BTS SIO 1 montre cette classe sur son téléphone, qui montrait BTS SIO 2. Sandrine Robert, au centre, tient dix classes : c’est le plus.',
+    colonnes: 4,
+    largeur: 1360,
+    images: [
+      ['27-formateur-mes-cours', 'Mes cours, chez Awa', 'Rangées par l’heure du prochain cours. La classe de l’appel ouvert d’abord, « maintenant ».'],
+      ['22-apprenant-deuxieme-classe', 'Inès rejoint BTS SIO 1', 'Sa demande attend. « Mes classes », dans la barre, ramène à BTS SIO 2.'],
+      ['23-apprenant-deux-classes', 'Acceptée', 'Le nom de la classe est dans la barre, sous le lieu. Il ouvre « Mes classes ».'],
+      ['24-apprenant-mes-classes', 'Mes classes', 'La classe à l’écran est marquée. Le prochain cours range les autres.'],
+      ['26-apprenant-appel-autre-classe', 'L’appel s’ouvre en BTS SIO 1', 'Inès regardait BTS SIO 2, en entreprise : son téléphone montre BTS SIO 1.'],
+      ['28-centre-dix-classes', 'Dix classes', 'Chez Sandrine Robert : à la place de « Créer une classe », la limite.'],
+      ['29-centre-onzieme-classe', 'Une onzième', 'Ni créée, ni rejointe par son lien : l’écran dit pourquoi.'],
+      ['30-centre-mes-cours-200', 'Le texte agrandi à 200 %', 'À 360 pixels, les noms et les heures se replient.'],
     ],
   },
 ];

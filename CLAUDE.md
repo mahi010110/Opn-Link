@@ -18,7 +18,9 @@ de la classe, et l'apprenant signe en visant le QR de la salle. Le 23
 novembre 2026, le formateur lit le QR d'un apprenant sans réseau avec sa
 caméra, l'apprenant voit sa semaine et « En règle », et le prochain cours
 s'annonce à la clôture. Le même jour, le chef nomme des adjoints, passe la
-main et change les horaires, et l'apprenant corrige son nom. Les formats
+main et change les horaires, et l'apprenant corrige son nom. Le 24 novembre
+2026, un téléphone suit plusieurs classes, dix au plus : l'app s'ouvre sur
+la classe du moment, et « Mes cours » range celles du formateur. Les formats
 sont dans `docs/contrat.md`. Ce qui reste ouvert est dans
 `docs/questions-ouvertes.md`, et ce qui s'est décidé jour après jour dans
 `docs/carnet.md`.

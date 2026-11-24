@@ -3,11 +3,12 @@
 // l'heure, les horaires et les cours passés, ou celle qu'on choisit dans « Mes cours ».
 
 import { apprenant } from './apprenant';
+import type { Coeur } from './coeur';
 import { type Contexte, faits } from './contexte';
 import { joursEntre } from './creneaux';
 import { creer } from './creer';
 import { attenteDAdjoint, sansClasse } from './entree';
-import { type ClasseGardee, classes, ecrire, estResponsable, lire } from './etat';
+import { CLASSES_AU_PLUS, type ClasseGardee, classes, ecrire, estResponsable, garderClasse, lire } from './etat';
 import { formateur } from './formateur';
 import { afficher, dateIso, esc, horaire, ic, jour } from './vue';
 
@@ -24,8 +25,6 @@ export interface Moment {
 /// Le suivi d'une classe : ce que l'écran de la classe offre au reste de l'app.
 export interface Suivi {
   readonly code: string;
-  /// Le formateur ou le centre, plutôt que l'apprenant.
-  readonly responsable: boolean;
   rendre(): void;
   /// Remet la classe à son écran d'entrée, sans dessiner.
   revenir(): void;
@@ -59,6 +58,34 @@ let visibiliteEcoutee = false;
 /// « Mes cours » chez un formateur ou le centre, « Mes classes » chez un apprenant.
 export const titreDesClasses = (): string => (classes().some(estResponsable) ? 'Mes cours' : 'Mes classes');
 
+/// Les secrets d'une classe se tirent de son code en 140 ms, à chaque ouverture : le téléphone les
+/// garde avec la classe, et le cœur les reprend (docs/mesures.md).
+export function reprendreLesSecrets(coeur: Coeur, classe: ClasseGardee): void {
+  try {
+    if (classe.secrets) return coeur.reprendre_les_secrets(classe.code, classe.secrets);
+  } catch {
+    // Des secrets qu'il ne relit pas, le cœur les tire à nouveau du code.
+  }
+  garderClasse({ ...classe, secrets: coeur.secrets_de_la_classe(classe.code) });
+}
+
+/// Un téléphone suit dix classes au plus : en rejoindre ou en créer une de plus s'arrête là, et le dit.
+export function plein(contexte: Contexte): boolean {
+  if (classes().length < CLASSES_AU_PLUS) return false;
+  ctx = contexte;
+  aLEcran = 'ailleurs';
+  history.replaceState(null, '', location.pathname + location.search);
+  afficher(
+    'tel',
+    'Dix classes',
+    `<header class="barre"><h1 class="barre-titre">Dix classes</h1></header>
+     <main class="page"><section class="reponse">${ic('info-box', 'ic-32')}<div><h2 class="tres-gros" tabindex="-1">Dix classes au plus</h2><p class="mono">Ce téléphone en suit déjà ${CLASSES_AU_PLUS}. Une classe fermée libère sa place.</p></div></section></main>
+     <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button></div></footer>`,
+    { retour: () => ouvrirLesClasses(contexte) },
+  );
+  return true;
+}
+
 function suivre(classe: ClasseGardee): Suivi {
   const code = classe.code;
   const nav: Navigation = {
@@ -82,7 +109,11 @@ export function ouvrirLesClasses(contexte: Contexte, code?: string): void {
     suivi.arreter();
     suivis.delete(c);
   }
-  for (const classe of gardees) if (!suivis.has(classe.code)) suivis.set(classe.code, suivre(classe));
+  for (const classe of gardees) {
+    if (suivis.has(classe.code)) continue;
+    reprendreLesSecrets(contexte.coeur, classe);
+    suivis.set(classe.code, suivre(classe));
+  }
   contexte.relais.changement = () => {
     if (aLEcran === 'mes-cours') ecranMesCours();
     else if (aLEcran === 'classe') suivis.get(affichee ?? '')?.reseau();
@@ -136,7 +167,7 @@ function relancer(code: string): void {
   const classe = classes().find((c) => c.code === code);
   if (classe) suivis.set(code, suivre(classe));
   if (aLEcran === 'mes-cours') ecranMesCours();
-  else if (aLEcran === 'classe' && affichee === code) ouvrirLesClasses(ctx!, classe && code);
+  else if (aLEcran === 'classe' && affichee === code) ouvrirLesClasses(ctx!, classe ? code : undefined);
 }
 
 function ouvrirMesCours(): void {
@@ -167,13 +198,16 @@ function ecranMesCours(): void {
     return `<button class="rangee${ici ? ' ici' : ''}" data-geste="choisir" data-code="${suivi.code}"${ici ? ' aria-current="true"' : ''}><div><b>${esc(porte.nom)}</b><span class="mono">${esc([etat, porte.centre].filter(Boolean).join(' · '))}</span></div>${ic('chevron-right')}</button>`;
   });
   const responsable = classes().some(estResponsable);
+  const pourCreer = classes().length < CLASSES_AU_PLUS
+    ? `<div class="note-gestes"><button class="btn" data-geste="creer">${ic('plus')}Créer une classe</button></div>`
+    : `<p class="mono">Dix classes au plus sur ce téléphone.</p>`;
   afficher(
     'tel',
     titre,
     `<header class="barre"><h1 class="barre-titre" tabindex="-1">${titre}</h1></header>
      <main class="page">
        <div class="liste">${lignes.join('')}</div>
-       ${responsable ? `<div class="note-gestes"><button class="btn" data-geste="creer">${ic('plus')}Créer une classe</button></div>` : ''}
+       ${responsable ? pourCreer : ''}
      </main>
      <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button></div>${faits(relais)}</footer>`,
     {

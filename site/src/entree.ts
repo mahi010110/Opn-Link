@@ -217,7 +217,6 @@ export function attenteDAdjoint(ctx: Contexte, code: string, nav: Navigation): S
   });
   return {
     code,
-    responsable: true,
     rendre,
     revenir: () => {},
     aLEntree: () => true,

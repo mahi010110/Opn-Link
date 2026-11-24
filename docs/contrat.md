@@ -482,13 +482,13 @@ destinataire. Elles ne sont pas encore figées.
 
 | Lettre | De qui, à qui | Ce qu'elle porte |
 |---|---|---|
-| `appel` | le formateur, à ses propres appareils | le journal à l'ouverture et le secret, pour que l'écran de la salle montre le QR |
+| `appel` | le formateur, à ses propres appareils | le code de la classe, le journal à l'ouverture et le secret, pour que l'écran de la salle montre le QR |
 | `presence` | l'apprenant, au formateur | sa présence `OPS1.` |
 | `recu`, `refus` | le formateur, à l'apprenant | l'heure de réception et qui l'a reçue, ou le code de l'erreur |
 | `compte`, `clos`, `reouvert` | le formateur, à ses propres appareils | ce que la salle affiche : le compte, la clôture, son annulation |
 | `entree` | l'apprenant, à chaque responsable | sa demande d'entrée |
 | `admis` | le responsable, à l'apprenant | la porte, l'acceptation et le secret du fil |
-| `classe`, `montrer` | le formateur, à ses propres appareils | l'état de la classe, et ce que la salle montre |
+| `classe`, `montrer` | le formateur, à ses propres appareils | l'état d'une classe, et ce que la salle montre de quelle classe |
 | `adjoint` | l'adjoint invité, au chef seul | sa demande, signée comme celle d'un apprenant, et le jeton de l'invitation |
 | `nom` | l'apprenant, à chaque responsable | son nom corrigé (partie « Le nom corrigé ») |
 | `responsables` | un responsable, à chacun des autres | la porte et les passations, puis une lettre entre responsables (partie du même nom) |
@@ -522,32 +522,53 @@ montrée ou envoyée il y a moins de sept jours. La dernière lettre dit le
 rôle proposé, formateur ou centre ; le chef garde le rôle de son côté.
 
 Les clés de stockage du prototype commencent par `opl_proto_`, suivies du
-nom de l'appareil : `cles`, `moi`, `classes`, `appel`, `presences`,
-`classe-de-la-salle`, `accueil-propose`, `relais`, `envois`,
-`annonces-appel`, `prochain` et `theme`. Elles disparaîtront avec lui.
-`theme` porte le thème choisi dans « Moi », `clair` ou `sombre`, ou rien
-pour suivre le téléphone. `presence`,
-qui gardait la seule présence du moment, est remplacée par `presences` le
-23 novembre 2026 : une clé du prototype, que personne n'a encore. `relais` porte la liste des relais,
-`{"principaux": [...], "secours": [...]}` ; seuls les tests l'écrivent, et
-sans elle l'app prend la liste par défaut. `envois` porte les événements
-Nostr qu'aucun relais n'a encore acceptés, en texte. `annonces-appel` porte
-les annonces de l'appel des sept derniers jours, une par séance, déjà
-vérifiées. `presences` porte les présences signées, avec leur demi-journée
-et leur réception. `prochain` porte le dernier prochain cours vérifié. Chez
-le chef, `classes` garde aussi `cours`, les demi-journées où l'appel a été
-clos, `prochain`, le dernier annoncé, et `prochainEnAttente`, celui qui
-attend la fin des trente secondes pour partir. Chez chacun, `classes` garde
-`passations`, les passations du chef. Chez le chef, `invitations`, les
-invitations d'adjoint de moins de sept jours, `candidats`, les demandes
-d'adjoint qui attendent son accord, et `passationEnAttente`, la main qu'il
-passe dans trente secondes, et `horairesEnAttente`, les horaires qui
-changent dans trente secondes. Chez l'apprenant, `classes` garde `nom`, son
-dernier nom corrigé, et `nomEnAttente`, celui qui part dans trente secondes.
-Chez les responsables, `noms`, la correction la plus récente de chaque
-membre, qui voyage aussi entre eux. Le rôle `adjoint` marque un responsable qui
-n'est pas chef, ou qui attend l'accord du chef tant qu'il n'a pas le secret
-du fil.
+nom de l'appareil. Elles disparaîtront avec lui.
+
+- `cles`, `moi` : les clés de l'appareil, et le prénom et le nom de la
+  personne ;
+- `classes` : les classes que suit l'appareil, dix au plus ;
+- `appels` : chez un responsable, l'appel qu'il tient dans chaque classe,
+  son journal et son secret, par code de classe ;
+- `derniere-classe` : le code de la dernière classe montrée ;
+- `classes-de-la-salle` : sur l'ordinateur de la salle, l'état de chaque
+  classe, par code ;
+- `accueil-propose`, `accueil-redemande` : quand l'app a proposé l'écran
+  d'accueil, puis quand elle l'a redemandé ;
+- `theme` : le thème choisi dans « Moi », `clair` ou `sombre`, ou rien pour
+  suivre le téléphone ;
+- `relais` : la liste des relais, `{"principaux": [...], "secours": [...]}`.
+  Seuls les tests l'écrivent ; sans elle, l'app prend la liste par défaut ;
+- `envois` : les événements Nostr qu'aucun relais n'a encore acceptés, en
+  texte.
+
+Chaque classe de `classes` garde son code, le rôle de la personne, la porte
+et ses passations (`passations`), le secret du fil, et ses secrets gardés
+(`secrets`, partie « Les secrets gardés »). Le rôle `adjoint` marque un
+responsable qui n'est pas chef, ou qui attend l'accord du chef tant qu'il
+n'a pas le secret du fil. En plus :
+
+- chez l'apprenant : son acceptation, ou sa demande tant qu'il attend, ses
+  présences signées avec leur demi-journée et leur réception
+  (`presences`), les annonces de l'appel des sept derniers jours, une par
+  séance, déjà vérifiées (`annoncesAppel`), le dernier prochain cours
+  vérifié (`prochain`), son dernier nom corrigé (`nom`) et celui qui part
+  dans trente secondes (`nomEnAttente`) ;
+- chez les responsables : les acceptations, les demandes et les clés
+  laissées dehors, les demi-journées où l'appel a été clos (`cours`), le
+  dernier prochain cours annoncé (`prochain`) et celui qui attend la fin des
+  trente secondes (`prochainEnAttente`), et la correction la plus récente du
+  nom de chaque membre (`noms`), qui voyage aussi entre eux ;
+- chez le chef : les invitations d'adjoint de moins de sept jours
+  (`invitations`), les demandes d'adjoint qui attendent son accord
+  (`candidats`), la main qu'il passe (`passationEnAttente`) et les horaires
+  qui changent (`horairesEnAttente`), dans trente secondes.
+
+Le 24 novembre 2026, ce que l'appareil gardait à part rejoint sa classe :
+`appel` devient `appels`, `presences`, `annonces-appel` et `prochain` vont
+dans la classe de l'apprenant, et `classe-de-la-salle` devient
+`classes-de-la-salle`. L'app relit une fois les anciennes clés, puis les
+efface. `presence`, qui gardait la seule présence du moment, avait été
+remplacée par `presences` le 23 novembre 2026.
 
 Le service worker garde le site dans une réserve nommée `opn-link-` suivi de
 l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.

@@ -14,6 +14,8 @@
 //   node outils/avant-apres.mjs passer    la fenêtre « Passer la main »
 //   node outils/avant-apres.mjs reglages  les réglages du chef, puis les horaires
 //   node outils/avant-apres.mjs moi       « Moi » chez l'apprenant, puis la fenêtre « Nom »
+//   node outils/avant-apres.mjs mes-cours « Mes cours » chez le formateur, trois classes, puis « Créer une classe »
+//   node outils/avant-apres.mjs deux-classes  Léa dans deux classes : la barre, « Mes classes », l'appel de l'autre classe
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
 //
 // Léa et Awa sont posées dans le stockage, Léa déjà acceptée. Les annonces partent d'un relais local.
@@ -104,12 +106,33 @@ async function relaisAvec(...annonces) {
   }
   return relais;
 }
+// Une deuxième classe au même centre, et une troisième ailleurs : Awa les tient, Léa est aussi en BTS SIO 1.
+const ligneDAwa = ['Awa', 'Diallo', 'formateur', awa.cle(), awa.boite()].join('\t');
+const code1 = coeur.nouveau_code_de_classe().replace(/\s/g, '').toLowerCase();
+const porte1 = coeur.signer_porte(code1, 'BTS SIO 1', 'Centre Exemple', '9:00-12:30', '13:30-17:00', ligneDAwa, awa, OUVERTURE - 3600_000);
+const fil1 = coeur.nouveau_secret_du_fil();
+const acceptation1 = awa.accepter(code1, lea.demander_entree(code1, 'Léa', 'Martin', OUVERTURE - 3000_000), OUVERTURE - 2000_000);
+const code3 = coeur.nouveau_code_de_classe().replace(/\s/g, '').toLowerCase();
+const porte3 = coeur.signer_porte(code3, 'Titre pro TSSR', 'Institut Essai', '8:30-12:00', '13:00-16:30', ligneDAwa, awa, OUVERTURE - 3600_000);
+const fil3 = coeur.nouveau_secret_du_fil();
+const OUVERTURE_JEUDI = JEUDI - 10 * 60_000;
+const appel1 = coeur.Appel.ouvrir(code1, '2026-11-19', 'matin', awa, ['Léa', 'Martin', lea.cle(), lea.boite()].join('\t'), OUVERTURE_JEUDI);
+
 const relaisVide = await relaisAvec();
 const relaisOuvert = await relaisAvec(appel.annonce(fil, OUVERTURE));
 appel.clore(CLOTURE);
 const relaisClos = await relaisAvec(appel.annonce(fil, CLOTURE));
 const relaisProchain = await relaisAvec(appel.annonce(fil, CLOTURE), awa.prochain_cours(fil, '2026-11-23', 'matin', CLOTURE));
 const relaisLoin = await relaisAvec(appel.annonce(fil, CLOTURE), awa.prochain_cours(fil, '2026-11-30', 'matin', CLOTURE));
+const relaisAutreClasse = await relaisAvec(appel.annonce(fil, CLOTURE), awa.prochain_cours(fil, '2026-11-23', 'matin', CLOTURE));
+{
+  const s = Math.floor(Date.now() / 1000);
+  const ws = new WebSocket(relaisAutreClasse.url);
+  await new Promise((ok) => ws.on('open', ok));
+  ws.send(`["EVENT",${coeur.evenement_nostr(coeur.etiquette_du_fil(fil1), s + 3600, coeur.chiffrer_pour_le_fil(fil1, appel1.annonce(fil1, OUVERTURE_JEUDI)), s)}]`);
+  await new Promise((ok) => ws.on('message', ok));
+  ws.close();
+}
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
 const appelClos = { journal: appel.journal(), secret: appel.secret() };
 
@@ -124,6 +147,19 @@ const awaTientLaClasse = (heure, appelGarde, enPlus = {}) => ({
   classes: [{ code, role: 'chef', porte, fil, membres: [acceptation], portePubliee: heure, ...enPlus }],
   appel: appelGarde,
 });
+
+const leaDansDeuxClasses = { ...leaASigne, classes: [{ code, role: 'apprenant', porte, fil, acceptation }, { code: code1, role: 'apprenant', porte: porte1, fil: fil1, acceptation: acceptation1 }] };
+const awaTientTroisClasses = {
+  cles: awa.secrets(),
+  moi: { prenom: 'Awa', nom: 'Diallo' },
+  classes: [
+    { code, role: 'chef', porte, fil, membres: [acceptation], portePubliee: JEUDI, cours: ['2026-11-17 matin'], prochain: { date: '2026-11-23', demi: 'matin', quand: CLOTURE } },
+    { code: code1, role: 'chef', porte: porte1, fil: fil1, membres: [acceptation1], portePubliee: JEUDI },
+    { code: code3, role: 'chef', porte: porte3, fil: fil3, membres: [], portePubliee: JEUDI, prochain: { date: '2026-11-20', demi: 'apres-midi', quand: CLOTURE } },
+  ],
+  appel: appelClos,
+  appels: { [code]: appelClos, [code1]: { journal: appel1.journal(), secret: appel1.secret() } },
+};
 
 // La caméra simulée de Chromium filme un mur gris, sans QR : le viseur reste ouvert.
 const MUR = join(SORTIE, 'mur.y4m');
@@ -218,6 +254,31 @@ const CAS = {
       },
     ],
   },
+  'mes-cours': {
+    titre: '« Mes cours », chez le formateur',
+    etats: [
+      { nom: 'Trois classes, un appel ouvert en BTS SIO 1', qui: 'awa', relais: relaisVide, heure: JEUDI, stockage: awaTientTroisClasses, geste: (page) => page.locator('[data-geste="mesCours"]').click({ timeout: 5000 }) },
+      {
+        nom: '« Créer une classe », depuis « Mes cours »',
+        qui: 'awa',
+        relais: relaisVide,
+        heure: JEUDI,
+        stockage: awaTientTroisClasses,
+        geste: async (page) => {
+          await page.locator('[data-geste="mesCours"]').click({ timeout: 5000 });
+          await page.locator('[data-geste="creer"]').click({ timeout: 5000 });
+        },
+      },
+    ],
+  },
+  'deux-classes': {
+    titre: 'L’apprenant dans deux classes',
+    etats: [
+      { nom: 'Jeudi, BTS SIO 2 en entreprise', relais: relaisProchain, heure: JEUDI, stockage: leaDansDeuxClasses },
+      { nom: '« Mes classes »', relais: relaisProchain, heure: JEUDI, stockage: leaDansDeuxClasses, geste: (page) => page.locator('[data-geste="mesClasses"]').click({ timeout: 5000 }) },
+      { nom: 'Un appel ouvert en BTS SIO 1', relais: relaisAutreClasse, heure: JEUDI, stockage: leaDansDeuxClasses },
+    ],
+  },
   lire: {
     titre: '« Lire son QR », chez le formateur',
     etats: [
@@ -301,7 +362,7 @@ const planche = join(CAPTURES, `avant-apres-${cas}.png`);
 await page.screenshot({ path: planche, fullPage: true });
 await navigateur.close();
 await navigateurCamera.close();
-for (const r of [relaisVide, relaisOuvert, relaisClos, relaisProchain, relaisLoin]) await r.fermer();
+for (const r of [relaisVide, relaisOuvert, relaisClos, relaisProchain, relaisLoin, relaisAutreClasse]) await r.fermer();
 for (const [, , site] of VERSIONS) site.fermer();
 rmSync(AVANT, { recursive: true, force: true });
 console.log(`✓ captures/avant-apres-${cas}.png`);

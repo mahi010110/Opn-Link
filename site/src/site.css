@@ -67,3 +67,23 @@ button.rangee:first-child {
   outline: var(--focus-outline);
   outline-offset: -4px;
 }
+
+/* Avec plusieurs classes, la barre porte le nom de la classe, qui ouvre « Mes classes ». Il reste
+   sous le lieu, quelle que soit la longueur de la date. Sur la trame, il garde son fond et son relief. */
+.tel > .barre:has(> .btn)::after {
+  content: "";
+  flex-basis: 100%;
+  order: 1;
+}
+.tel > .barre > .btn {
+  order: 2;
+}
+.barre.pas-maintenant > .btn {
+  background: var(--surface-chrome);
+  box-shadow: var(--bevel-up), var(--shadow-raised);
+}
+
+/* La classe à l'écran, dans « Mes cours » : le chevron suit le texte de la ligne choisie. */
+.rangee.ici > .ic {
+  color: inherit;
+}

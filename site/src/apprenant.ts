@@ -1,4 +1,4 @@
-// Le téléphone de l'apprenant : attendre d'être accepté, puis signer sa présence.
+// Le téléphone de l'apprenant, dans une classe : attendre d'être accepté, puis signer sa présence.
 // Il apprend sur le fil de la classe que l'appel est ouvert, puis clos, et le prochain cours.
 // Sans réseau, il ne peut pas savoir si l'appel est ouvert : la touche « Signer ma présence »
 // reste là pendant les heures de la classe. Sans réponse au bout de dix secondes, l'écran montre
@@ -536,7 +536,7 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
       try {
         const nouvellePorte = coeur.lire_porte(classe.code, l.porte);
         coeur.lire_acceptation(classe.code, l.acceptation, nouvellePorte.responsables.map((r) => r.cle));
-        classe = { code: classe.code, role: 'apprenant', porte: l.porte, fil: l.fil, acceptation: l.acceptation };
+        classe = { code: classe.code, role: 'apprenant', secrets: classe.secrets, porte: l.porte, fil: l.fil, acceptation: l.acceptation };
         porte = nouvellePorte;
         garder();
         ecouterLAppel();
@@ -571,7 +571,6 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
 
   return {
     code,
-    responsable: false,
     rendre,
     revenir: () => {
       if (vue.ecran === 'signer') couper();
