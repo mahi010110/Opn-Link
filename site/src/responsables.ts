@@ -58,6 +58,32 @@ export function nomsAJour(ctx: Contexte, code: string, textes: string[]): string
   return [...parCle.values()].map((c) => c.texte).sort();
 }
 
+/// Le nom d'une personne, corrigé si elle l'a fait, parmi des corrections déjà vérifiées.
+export function nomCorrige(ctx: Contexte, code: string, noms: string[] | undefined, p: { cle: string; prenom: string; nom: string }): { prenom: string; nom: string } {
+  for (const texte of noms ?? []) {
+    try {
+      const c = ctx.coeur.lire_correction_de_nom(code, texte);
+      if (c.cle === p.cle) return { prenom: c.prenom, nom: c.nom };
+    } catch {
+      // Une correction illisible ne change pas le nom.
+    }
+  }
+  return { prenom: p.prenom, nom: p.nom };
+}
+
+/// Les noms corrigés des responsables de la porte, parmi des textes venus d'ailleurs. Ceux-là
+/// voyagent avec la porte, que toute la classe lit : jamais ceux des apprenants.
+export function nomsDesResponsables(ctx: Contexte, code: string, porte: string, textes: string[]): string[] {
+  const cles = ctx.coeur.lire_porte(code, porte).responsables.map((r) => r.cle);
+  return textes.filter((texte) => {
+    try {
+      return cles.includes(ctx.coeur.lire_correction_de_nom(code, texte).cle);
+    } catch {
+      return false;
+    }
+  });
+}
+
 /// Les passations valables de cette classe, parmi des textes venus d'ailleurs.
 export const passationsDe = (ctx: Contexte, code: string, textes: string[]): string[] =>
   textes.filter((t) => {

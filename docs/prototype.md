@@ -459,6 +459,26 @@ Un téléphone qui ne suit qu'une classe ne voit rien changer : l'écran du
 jour, le formateur après la clôture et « Membres » sont identiques, au pixel
 près, à ceux du 23 novembre 2026 (`node outils/avant-apres.mjs jour e39a689`).
 
+Fait ensuite le 24 novembre 2026, corriger son nom chez un responsable :
+
+- sa ligne est dans la porte, que seul le chef signe. Le responsable signe
+  donc lui-même son nom corrigé, avec son appareil, comme l'apprenant. La
+  correction voyage avec la porte, que toute la classe lit, et chaque
+  responsable la republie chaque jour avec elle. Les noms corrigés des
+  apprenants n'y passent jamais : qui a le code de la classe les lirait ;
+- « Moi » s'ouvre depuis les entrées du formateur, comme chez l'apprenant :
+  le nom que voit la classe, avec « Corriger », et le thème. La correction
+  part trente secondes après, avec « Annuler » entre-temps ;
+- les autres responsables voient l'ancien nom à côté du nouveau, dans
+  « Membres ». Les apprenants lisent le nouveau partout : l'appel, une
+  absence, le formateur à qui montrer son QR. L'écran « Rejoindre » le lit
+  aussi, avant d'entrer.
+
+Le scénario le joue : Awa, adjoint, devient Awa Diallo-Sow. Noah lit « appel
+clos par Awa Diallo-Sow », et Julien voit « avant : Awa Diallo ». Jeudi,
+l'app d'Awa republie sa correction avec la porte, et pas celle de Léa.
+108 vérifications.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -471,9 +491,10 @@ on construit directement la première version complète
    d'accueil redemandé avant plus de sept jours sans cours est fait le 23
    novembre 2026. Nommer un adjoint, passer la main et les horaires dans les
    réglages du chef sont faits le même jour, et corriger son nom chez
-   l'apprenant. Plusieurs classes et « Mes cours » sont faits le 24 novembre
-   2026. Reste : corriger son nom chez un responsable (sa ligne est dans la
-   porte, que seul le chef signe), et refaire l'invitation. Les
+   l'apprenant. Plusieurs classes, « Mes cours » et le nom corrigé d'un
+   responsable sont faits le 24 novembre 2026. « Refaire l'invitation »
+   attend le mainteneur, avec « Retirer un membre »
+   ([questions-ouvertes.md](questions-ouvertes.md)). Les
    interrupteurs des réglages viendront avec leurs fonctions : l'identité avec
    « Moi », les documents à l'étape 5, le suivi à l'étape 6. À l'ordinateur,
    la conception met « Mes cours » à gauche et le cours au milieu. Le site
@@ -709,6 +730,17 @@ Pour plusieurs classes (24 novembre 2026) :
   du téléphone, et sa seule classe s'il n'en a qu'une ;
 - les secrets d'une classe se gardent sur l'appareil, avec elle.
 
+Pour le nom d'un responsable (24 novembre 2026) :
+
+- le responsable signe lui-même son nom corrigé, plutôt que de demander au
+  chef de signer une porte où il change. La porte garde l'ancien nom, que
+  les autres responsables voient à côté du nouveau ;
+- le nom se corrige classe par classe, comme chez l'apprenant. Le prénom et
+  le nom de l'appareil, que reprend « Créer une classe », suivent la
+  dernière correction ;
+- « Moi » chez le formateur reprend celui de l'apprenant, sans maquette à
+  lui : le nom et le thème.
+
 ## Ce qu'il tranche
 
 - Le poids réel du site, face au plafond de 300 Ko compressés
@@ -756,8 +788,8 @@ Pour plusieurs classes (24 novembre 2026) :
   de la référence (`main` par défaut), pose la même classe inventée dans
   les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour`,
   `signer`, `semaine`, `lire`, `prochain`, `redemande`, `membres`,
-  `adjoint`, `passer`, `reglages`, `moi`, `mes-cours` et `deux-classes`
-  existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le geste
+  `adjoint`, `passer`, `reglages`, `moi`, `moi-formateur`, `mes-cours` et
+  `deux-classes` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le geste
   qui mène à l'écran.
 - Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
   scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans

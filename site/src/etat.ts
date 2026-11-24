@@ -67,10 +67,12 @@ export interface ClasseGardee {
   passationEnAttente?: { vers: string; part: number };
   /// Le chef qui change les horaires : les nouveaux, et quand la porte qui les porte part.
   horairesEnAttente?: { matin: string; apresMidi: string; part: number };
-  /// L'apprenant : son dernier nom corrigé, signé, et celui qui attend la fin du délai pour annuler.
+  /// L'apprenant : son dernier nom corrigé, signé. Chez chacun, le nom corrigé qui attend la fin
+  /// du délai pour annuler.
   nom?: string;
   nomEnAttente?: { prenom: string; nom: string; part: number };
-  /// Les responsables : les noms corrigés des membres, le plus récent de chacun.
+  /// Les noms corrigés, le plus récent de chacun : ceux des responsables chez tout le monde, et
+  /// ceux des membres chez les responsables.
   noms?: string[];
   /// L'apprenant : ses présences, huit semaines, et les annonces de l'appel, sept jours.
   presences?: PresenceGardee[];

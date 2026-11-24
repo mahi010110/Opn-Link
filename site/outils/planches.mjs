@@ -77,6 +77,10 @@ const PLANCHES = [
       ['20e-apprenant-moi', 'Moi, chez Léa', 'Le nom que voient les responsables, avec « Corriger », et le thème.'],
       ['20f-apprenant-nom-part', 'Son nom corrigé', 'Il part aux responsables dans trente secondes : le temps d’annuler.'],
       ['20g-julien-membres-nom', 'Chez Julien', 'Le nouveau nom, et l’ancien à côté. Les appels suivants prennent le nouveau.'],
+      ['20h-formateur-moi', 'Moi, chez Awa', 'Le nom que voit la classe, avec « Corriger », et le thème, comme chez l’apprenant.'],
+      ['20i-formateur-nom-part', 'Son nom corrigé', 'Il part à la classe dans trente secondes : le temps d’annuler.'],
+      ['20j-apprenant-nom-du-responsable', 'Chez Noah', 'Son absence dit le nouveau nom d’Awa : la correction voyage avec la porte.'],
+      ['20k-julien-membres-responsable', 'Chez Julien', 'Le nouveau nom d’Awa, et l’ancien à côté.'],
     ],
   },
   {

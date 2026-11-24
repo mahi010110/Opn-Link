@@ -663,6 +663,27 @@ try {
   verifier(await telJulien.getByText(/avant : Léa Martin ·/).count() === 1, 'chez Julien, le nouveau nom de Léa, et l’ancien à côté');
   await capturer(telJulien, '20g-julien-membres-nom');
 
+  // Awa, adjoint, corrige son nom depuis « Moi ». Sa ligne est dans la porte, que seul le chef
+  // signe : sa correction, signée de son appareil, voyage avec la porte, et toute la classe la lit.
+  await tel.click('[data-geste="moi"]');
+  await capturer(tel, '20h-formateur-moi');
+  await tel.click('[data-geste="corrigerNom"]');
+  await tel.fill('#nom', 'Diallo-Sow');
+  await tel.click('[data-geste="corriger"]');
+  const delaiDuNomDAwa = Number((await tel.getByText(/part à la classe dans \d+\ss/).textContent()).match(/dans (\d+)/)[1]);
+  verifier(
+    delaiDuNomDAwa >= 25 && (await tel.locator('[data-geste="annulerNom"]').count()) === 1,
+    `le nom corrigé d’un responsable attend trente secondes, avec « Annuler » (${delaiDuNomDAwa} s)`,
+  );
+  await capturer(tel, '20i-formateur-nom-part');
+  await telNoah.getByText(/appel clos à 9\sh\s\d+ par Awa Diallo-Sow/).waitFor({ timeout: 60_000 });
+  await capturer(telNoah, '20j-apprenant-nom-du-responsable');
+  verifier(true, 'chez Noah, son absence dit le nouveau nom d’Awa : la correction a voyagé avec la porte');
+  await telJulien.getByText(/avant : Awa Diallo/).waitFor({ timeout: 30_000 });
+  verifier((await telJulien.getByText('Awa Diallo-Sow').count()) === 1, 'chez Julien, le chef, le nouveau nom d’Awa, et l’ancien à côté');
+  await capturer(telJulien, '20k-julien-membres-responsable');
+  await tel.click('[data-geste="retour"]');
+
   // Le thème choisi dans « Moi » s'applique tout de suite, et reste au rechargement.
   await telLea.check('input[name="theme"][value="sombre"]');
   verifier(await telLea.evaluate(() => document.documentElement.dataset.theme) === 'dark', 'le thème « Sombre », choisi dans « Moi », s’applique tout de suite');
@@ -784,6 +805,21 @@ try {
   const secretsDAwa = await tel.evaluate(() => JSON.parse(localStorage.getItem('opl_proto_awa-tel_classes')).map((c) => c.secrets?.split('\n')[0]));
   verifier(secretsDAwa.length === 2 && secretsDAwa.every((s) => s === 'opn-link·secrets·v1'), 'chaque classe garde ses secrets : le téléphone ne les tire plus du code à chaque ouverture');
   verifier(coeur.etiquette_de_classe(codeSio1) !== etiquetteDeLaClasse, 'les deux classes ont chacune leur étiquette sur les relais');
+  // Jeudi, rouverte, l'app d'Awa a republié ce qui voyage avec la porte de BTS SIO 2 : son nom
+  // corrigé, mais jamais celui de Léa, qu'elle connaît comme responsable.
+  const nomsSousLaPorte = [...principal.gardes, ...secours.gardes]
+    .filter((e) => e.tags.some(([t, v]) => t === 'x' && v === etiquetteDeLaClasse))
+    .flatMap((e) => {
+      try {
+        return [coeur.lire_correction_de_nom(code, coeur.dechiffrer_pour_la_classe(code, e.content))];
+      } catch {
+        return [];
+      }
+    });
+  verifier(
+    nomsSousLaPorte.length >= 2 && nomsSousLaPorte.every((c) => c.prenom === 'Awa'),
+    `seuls les noms corrigés des responsables voyagent avec la porte, republiés chaque jour, jamais celui d’un apprenant (${nomsSousLaPorte.map((c) => `${c.prenom} ${c.nom}`).join(', ')})`,
+  );
 
   // Léa rouvre le lien du QR de sa classe : elle y est déjà, et rien ne lui redemande d'entrer.
   await telLea.goto('about:blank');

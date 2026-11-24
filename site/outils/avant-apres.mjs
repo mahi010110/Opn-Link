@@ -14,6 +14,7 @@
 //   node outils/avant-apres.mjs passer    la fenêtre « Passer la main »
 //   node outils/avant-apres.mjs reglages  les réglages du chef, puis les horaires
 //   node outils/avant-apres.mjs moi       « Moi » chez l'apprenant, puis la fenêtre « Nom »
+//   node outils/avant-apres.mjs moi-formateur  « Moi » chez le formateur, puis la fenêtre « Nom »
 //   node outils/avant-apres.mjs mes-cours « Mes cours » chez le formateur, trois classes, puis « Créer une classe »
 //   node outils/avant-apres.mjs deux-classes  Léa dans deux classes : la barre, « Mes classes », l'appel de l'autre classe
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
@@ -86,6 +87,7 @@ const porteAvecJulien = coeur.signer_porte(
   awa, OUVERTURE - 1000_000,
 );
 const fil = coeur.nouveau_secret_du_fil();
+const julienCorrige = julien.corriger_son_nom(code, 'Julien', 'Morel-Petit', OUVERTURE - 500_000);
 const appel = coeur.Appel.ouvrir(code, '2026-11-17', 'matin', awa, ['Léa', 'Martin', lea.cle(), lea.boite()].join('\t'), OUVERTURE);
 const appelOuvert = { journal: appel.journal(), secret: appel.secret() };
 const JEUDI = new Date('2026-11-19T10:00:00+01:00').getTime();
@@ -211,7 +213,34 @@ const CAS = {
   },
   membres: {
     titre: '« Membres », chez le chef, avec un adjoint',
-    etats: [{ nom: 'Awa est chef, Julien adjoint', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { porte: porteAvecJulien }), geste: ouvrirMembres }],
+    etats: [
+      { nom: 'Awa est chef, Julien adjoint', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { porte: porteAvecJulien }), geste: ouvrirMembres },
+      {
+        nom: 'Julien a corrigé son nom',
+        qui: 'awa',
+        relais: relaisVide,
+        heure: OUVERTURE - 6 * 60_000,
+        stockage: awaTientLaClasse(OUVERTURE, undefined, { porte: porteAvecJulien, noms: [julienCorrige] }),
+        geste: ouvrirMembres,
+      },
+    ],
+  },
+  'moi-formateur': {
+    titre: '« Moi », chez le formateur',
+    etats: [
+      { nom: 'Moi', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE), geste: (page) => page.locator('[data-geste="moi"]').click({ timeout: 5000 }) },
+      {
+        nom: 'Corriger son nom',
+        qui: 'awa',
+        relais: relaisVide,
+        heure: OUVERTURE - 6 * 60_000,
+        stockage: awaTientLaClasse(OUVERTURE),
+        geste: async (page) => {
+          await page.locator('[data-geste="moi"]').click({ timeout: 5000 });
+          await page.locator('[data-geste="corrigerNom"]').click({ timeout: 5000 });
+        },
+      },
+    ],
   },
   adjoint: {
     titre: 'La fenêtre « Adjoint »',

@@ -43,6 +43,28 @@ classes », qui mène à « Taper un code ». Le formateur montre le QR à la
 salle, mais un apprenant au fond de la salle, ou absent ce jour-là, n'a que
 le code.
 
+### Retirer un membre, refaire l'invitation
+
+[projet.md](projet.md), partie 5, reprend d'OpenContact : « Retirer un membre
+change le code de la classe ». La suite du prototype prévoit aussi de
+« refaire l'invitation », sans dire ce que c'est. Aucune maquette ne les
+dessine.
+
+Dans Opn-Link, le code ne fait qu'ouvrir la porte : il permet de demander à
+entrer. Les annonces passent par le secret du fil, remis à l'apprenant
+accepté. Et le code sert d'identité à la classe : ses séances, son étiquette
+sur les relais et ce que garde le téléphone en sont tirés. Le changer,
+c'est presque refaire la classe.
+
+Recommandation :
+
+- retirer un membre change le secret du fil, pas le code. Les autres
+  membres reçoivent le nouveau secret par une lettre, et le membre retiré
+  ne lit plus les annonces. Son appareil n'est plus sur la feuille ;
+- « refaire l'invitation » ne sert que si une photo du QR circule et que des
+  inconnus demandent à entrer. « Laisser dehors » y répond déjà : le
+  prototype ne refait pas le code.
+
 Recommandation : les garder.
 
 ### React ou pas
@@ -132,6 +154,12 @@ quand la caméra ne marche pas, le QR quand il n'y a pas de réseau.
   mainteneur de le faire depuis son compte. Le nom avait l'air libre le
   15 novembre 2026. L'adresse exacte du site (`opn-link.github.io`, avec ou
   sans chemin) se réglera au premier déploiement.
+- Mettre le site en ligne pour l'essayer. Le mainteneur le demande le
+  24 novembre 2026, et verra plus tard. Ce dépôt est privé : GitHub Pages
+  gratuit ne publie qu'un dépôt public, et le site doit d'abord être
+  construit. Recommandation : un dépôt public de l'organisation `opn-link`,
+  qui ne reçoit que le site construit, déposé par un workflow à chaque
+  fusion dans `main`. Ce dépôt-ci reste privé.
 - Vérifier que le nom est libre ailleurs : nom de domaine, INPI. Des noms
   proches comme « OpenLink » existent déjà.
 - Faire valider la feuille de présence exportée par deux ou trois OPCO et un

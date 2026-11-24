@@ -111,7 +111,8 @@ export function ecouterLeFil(coeur: Coeur, relais: Relais, fil: string, rappel: 
   });
 }
 
-/// Ce qui arrive sous l'étiquette de la classe : la porte, et les passations de ses chefs.
+/// Ce qui arrive sous l'étiquette de la classe : la porte, les passations de ses chefs, et les
+/// noms corrigés de ses responsables.
 /// Rend de quoi arrêter d'écouter.
 export function ecouterLaPorte(coeur: Coeur, relais: Relais, code: string, rappel: (texte: string) => void): () => void {
   portes ??= abonnementPartage(relais, 'portes', TRENTE_JOURS);
@@ -124,16 +125,17 @@ export function ecouterLaPorte(coeur: Coeur, relais: Relais, code: string, rappe
   });
 }
 
-/// Un responsable publie la porte de la classe, ou une passation, sous l'étiquette du code. Les
-/// relais la gardent trente jours.
+/// Un responsable publie la porte de la classe, une passation ou son nom corrigé, sous l'étiquette
+/// du code. Les relais les gardent trente jours.
 export function publierPorte(coeur: Coeur, relais: Relais, code: string, porte: string): void {
   const maintenant = secondes();
   const chiffree = coeur.chiffrer_pour_la_classe(code, porte);
   relais.publier(coeur.evenement_nostr(coeur.etiquette_de_classe(code), maintenant + TRENTE_JOURS, chiffree, maintenant));
 }
 
-/// Cherche la porte d'une classe sur les relais. Rend le code d'erreur du cœur si rien ne va.
-export async function chercherPorte(coeur: Coeur, relais: Relais, code: string, chef?: string): Promise<ReturnType<Coeur['choisir_porte']>> {
+/// Cherche la porte d'une classe sur les relais. Rend la porte, avec tout ce qui voyage sous son
+/// étiquette, déchiffré. Rend le code d'erreur du cœur si rien ne va.
+export async function chercherPorte(coeur: Coeur, relais: Relais, code: string, chef?: string): Promise<{ porte: ReturnType<Coeur['choisir_porte']>; textes: string[] }> {
   const evenements = await relais.chercher({ kinds: [8571], '#x': [coeur.etiquette_de_classe(code)] });
   const textes: string[] = [];
   // Les passations voyagent avec la porte : le cœur les suit depuis le chef du lien.
@@ -144,7 +146,7 @@ export async function chercherPorte(coeur: Coeur, relais: Relais, code: string, 
       // Ce qui ne se déchiffre pas n'est pas une porte de cette classe.
     }
   }
-  return coeur.choisir_porte(code, textes, chef);
+  return { porte: coeur.choisir_porte(code, textes, chef), textes };
 }
 
 /// Le code d'une classe sous la seule forme qu'on garde et qu'on compare : en minuscules, sans espaces.

@@ -7,10 +7,12 @@ import type { Moment, Navigation, Suivi } from './classes';
 import type { Appel } from './coeur';
 import { type Contexte, faits, nomDe } from './contexte';
 import { type Creneau, type Demi, bornes, enJour, enTexte, lireCreneau, lundiDe, ouvre, plusJours, proposerLeProchain, rang, suivant } from './creneaux';
-import { type ClasseGardee, type Moi, appelGarde, classes, garderAppel, garderClasse, lire } from './etat';
+import { type ClasseGardee, appelGarde, classes, ecrire, garderAppel, garderClasse } from './etat';
 import { type Horaires, champsDesHoraires, lireLesHoraires } from './horaires';
+import { type Erreurs, nomTape } from './entree';
 import { annoncerLAppel, annoncerLeProchain, ecouterLaPorte, envoyer, lienDAdjoint, lienDeLaClasse, nouveauJeton, publierPorte, recevoir } from './lettres';
-import { aDeQuoiRepondre, chefActuel, ecrireAuxResponsables, etatChange, fusionner, nomsAJour, passationsDe, porteAJour } from './responsables';
+import { type PourQui, afficherMoi, afficherNom } from './moi';
+import { aDeQuoiRepondre, chefActuel, ecrireAuxResponsables, etatChange, fusionner, nomCorrige, nomsAJour, nomsDesResponsables, passationsDe, porteAJour } from './responsables';
 import { codeDe, phrase } from './textes';
 import { afficher, codeAffiche, dateIso, demiJournee, esc, heure, heureCourte, horaire, ic, jour, paves } from './vue';
 
@@ -25,7 +27,9 @@ type Vue =
   | { ecran: 'adjoint'; jeton: string; role: 'formateur' | 'centre'; montre: boolean; copie?: boolean }
   | { ecran: 'passer'; vers: string }
   | { ecran: 'reglages' }
-  | { ecran: 'horaires'; saisis?: Horaires; erreur?: string; heuresFausses?: string[] };
+  | { ecran: 'horaires'; saisis?: Horaires; erreur?: string; heuresFausses?: string[] }
+  | { ecran: 'moi' }
+  | { ecran: 'monNom'; prenom: string; nom: string; erreurs?: Erreurs };
 
 const ANNULER_MS = 30_000;
 const HUIT_SEMAINES = 56;
@@ -48,13 +52,21 @@ const phraseDuQr = (code: string, formateur: string): string =>
 const UN_JOUR_MS = 24 * 3600 * 1000;
 const SEPT_JOURS_MS = 7 * UN_JOUR_MS;
 const enLigne = (r: { prenom: string; nom: string; role: string; cle: string; boite: string }) => [r.prenom, r.nom, r.role, r.cle, r.boite].join('\t');
+const POUR_LA_CLASSE: PourQui = {
+  voit: 'le nom que voit la classe',
+  part: 'part à la classe',
+  verront: 'Toute la classe verra ton nouveau nom. Les autres responsables verront l’ancien à côté.',
+};
 
 export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const { coeur, relais, moi } = ctx;
   let classe = classes().find((c) => c.code === code)!;
   let porte = coeur.lire_porte(classe.code, classe.porte);
   const responsables = () => porte.responsables.map((r) => r.cle);
-  const nomFormateur = nomDe(lire<Moi>('moi') ?? porte.responsables[0]);
+  // Le nom d'une personne, corrigé si elle l'a fait : celui d'un apprenant, ou d'un responsable.
+  const nomActuel = (p: { cle: string; prenom: string; nom: string }) => nomCorrige(ctx, classe.code, classe.noms, p);
+  const maLigne = () => porte.responsables.find((r) => r.cle === moi.cle()) ?? porte.responsables[0];
+  const nomFormateur = () => nomDe(nomActuel(maLigne()));
   const garde = appelGarde(code);
   let appel = garde ? coeur.Appel.relire(garde.journal, garde.secret ?? undefined, moi) : undefined;
   let vue: Vue = { ecran: 'cours' };
@@ -63,14 +75,6 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
 
   const membres = () => (classe.membres ?? []).map((a) => coeur.lire_acceptation(classe.code, a, responsables()));
   const demandes = () => (classe.demandes ?? []).map((d) => coeur.lire_demande(classe.code, d));
-  // Le nom qu'un apprenant a corrigé, s'il l'a fait : les nouveaux appels le prennent.
-  const nomActuel = (m: { cle: string; prenom: string; nom: string }): { prenom: string; nom: string } => {
-    for (const texte of classe.noms ?? []) {
-      const c = coeur.lire_correction_de_nom(classe.code, texte);
-      if (c.cle === m.cle) return { prenom: c.prenom, nom: c.nom };
-    }
-    return { prenom: m.prenom, nom: m.nom };
-  };
   const lien = () => lienDeLaClasse(coeur, classe.code, porte.responsables[0].cle);
 
   const estChef = () => chefActuel(ctx, classe) === moi.cle();
@@ -99,8 +103,14 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     publierPorte(coeur, relais, classe.code, nouvelle);
     changer({ ...classe, role: 'chef', porte: nouvelle, portePubliee: Date.now() });
   };
-  // Une porte ou une passation venue des relais : la porte suit le chef actuel.
+  // Une porte ou une passation venue des relais : la porte suit le chef actuel. Le nom corrigé
+  // d'un responsable voyage aussi par là.
   const suivreLaPorte = (texte: string) => {
+    const noms = nomsAJour(ctx, classe.code, [...(classe.noms ?? []), ...nomsDesResponsables(ctx, classe.code, classe.porte, [texte])]);
+    if (noms.join() !== (classe.noms ?? []).join()) {
+      changer({ ...classe, noms });
+      return rendre();
+    }
     const passations = [...new Set([...(classe.passations ?? []), ...passationsDe(ctx, classe.code, [texte])])];
     const nouvelle = porteAJour(ctx, classe.code, classe.porte, [texte, ...passations]);
     if (nouvelle === classe.porte && passations.length === (classe.passations ?? []).length) return;
@@ -147,6 +157,16 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     publierPorte(coeur, relais, classe.code, passation);
     changer({ ...classe, role: 'adjoint', passations: [...(classe.passations ?? []), passation], passationEnAttente: undefined });
   };
+  // Le nom corrigé part trente secondes après, le temps d'annuler (règle 6). Il voyage avec la
+  // porte, que toute la classe lit, et les autres responsables le reçoivent avec l'état partagé.
+  const envoyerMonNomALHeure = () => {
+    const attente = classe.nomEnAttente;
+    if (!attente || Date.now() < attente.part) return;
+    const correction = moi.corriger_son_nom(classe.code, attente.prenom, attente.nom, Date.now());
+    publierPorte(coeur, relais, classe.code, correction);
+    ecrire('moi', { prenom: attente.prenom, nom: attente.nom });
+    changer({ ...classe, noms: nomsAJour(ctx, classe.code, [...(classe.noms ?? []), correction]), nomEnAttente: undefined });
+  };
   // Les nouveaux horaires remplacent ceux de toute la classe : trente secondes pour annuler, puis
   // la porte qui les porte part, et les téléphones des apprenants la suivent.
   const changerLesHorairesALHeure = () => {
@@ -171,9 +191,11 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     preparerProchain(proposerLeProchain(cours.map(lireCreneau), ce));
   };
 
-  // Chaque responsable republie la porte et les passations : elles restent trente jours sur les relais.
+  // Chaque responsable republie la porte, les passations et les noms corrigés des responsables :
+  // ils restent trente jours sur les relais.
   if (!classe.portePubliee || Date.now() - classe.portePubliee > UN_JOUR_MS) {
-    for (const texte of [classe.porte, ...(classe.passations ?? [])]) publierPorte(coeur, relais, classe.code, texte);
+    const nomsCorriges = nomsDesResponsables(ctx, classe.code, classe.porte, classe.noms ?? []);
+    for (const texte of [classe.porte, ...(classe.passations ?? []), ...nomsCorriges]) publierPorte(coeur, relais, classe.code, texte);
     changer({ ...classe, portePubliee: Date.now() });
   }
 
@@ -214,7 +236,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     sauverLAppel();
     versLaSalle();
     const ligne = appel.lignes().find((l) => l.cle === cle);
-    if (qui && ligne) envoyer(coeur, relais, qui.boite, { v: 1, t: 'recu', seance: appel.seance(), quand: ligne.quand, par: nomFormateur });
+    if (qui && ligne) envoyer(coeur, relais, qui.boite, { v: 1, t: 'recu', seance: appel.seance(), quand: ligne.quand, par: nomFormateur() });
     return undefined;
   };
 
@@ -364,9 +386,11 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
       vers(
         vue.ecran === 'horaires'
           ? { ecran: 'reglages' }
-          : vue.ecran === 'adjoint' || vue.ecran === 'passer' || vue.ecran === 'reglages'
-            ? { ecran: 'membres' }
-            : { ecran: 'cours' },
+          : vue.ecran === 'monNom'
+            ? { ecran: 'moi' }
+            : vue.ecran === 'adjoint' || vue.ecran === 'passer' || vue.ecran === 'reglages'
+              ? { ecran: 'membres' }
+              : { ecran: 'cours' },
       ),
     ici: () => {
       if ((vue.ecran !== 'nom' && vue.ecran !== 'lire') || !appel) return;
@@ -417,9 +441,22 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
       rendre();
     },
     mesCours: () => nav.mesCours(),
+    moi: () => vers({ ecran: 'moi' }),
+    corrigerNom: () => vers({ ecran: 'monNom', ...nomActuel(maLigne()) }),
+    corriger: () => {
+      const { prenom, nom, erreurs } = nomTape();
+      if (erreurs) return vers({ ecran: 'monNom', prenom, nom, erreurs });
+      const actuel = nomActuel(maLigne());
+      if (prenom !== actuel.prenom || nom !== actuel.nom) changer({ ...classe, nomEnAttente: { prenom, nom, part: Date.now() + ANNULER_MS } });
+      vers({ ecran: 'moi' });
+    },
+    annulerNom: () => {
+      changer({ ...classe, nomEnAttente: undefined });
+      rendre();
+    },
   };
 
-  const MENU = `<nav class="menu" aria-label="Entrées"><a href="#" data-geste="classe">Classe</a><a href="#">Messages</a><a href="#" data-geste="mesCours">Mes cours</a><a href="#">Moi</a></nav>`;
+  const MENU = `<nav class="menu" aria-label="Entrées"><a href="#" data-geste="classe">Classe</a><a href="#">Messages</a><a href="#" data-geste="mesCours">Mes cours</a><a href="#" data-geste="moi">Moi</a></nav>`;
   const barre = (maintenant: number, ouvert: boolean) =>
     `<header class="barre${ouvert ? ' maintenant' : ''}"><h1 class="barre-titre" tabindex="-1">${esc(porte.centre)}</h1><span class="mono">${jour(maintenant)} · ${heure(maintenant)}</span></header>`;
   const retour = `<button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button>`;
@@ -523,7 +560,8 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
            .map((r) => {
              const devient = attente?.vers === r.cle ? ` · devient chef dans ${Math.max(1, Math.ceil((attente.part - Date.now()) / 1000))}\u00a0s` : '';
              const annuler = devient ? `<button class="btn" data-geste="annulerPassation">${ic('undo')}Annuler</button>` : '';
-             return `<div class="rangee" data-responsable="${r.cle}"><div><b>${esc(nomDe(r))}</b><span class="mono">${esc(r.role)} · ${r.cle === chef ? 'chef' : 'adjoint'}${devient}</span></div>${annuler}</div>`;
+             const corrige = nomDe(nomActuel(r)) !== nomDe(r) ? ` · avant : ${esc(nomDe(r))}` : '';
+             return `<div class="rangee" data-responsable="${r.cle}"><div><b>${esc(nomDe(nomActuel(r)))}</b><span class="mono">${esc(r.role)} · ${r.cle === chef ? 'chef' : 'adjoint'}${corrige}${devient}</span></div>${annuler}</div>`;
            })
            .join('')}</div></section>
          ${liste.length ? `<section class="bloc"><p class="etiquette">${pluriel(liste.length, 'apprenant')}</p><div class="liste">${liste
@@ -544,14 +582,14 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const ecranPasser = (v: Extract<Vue, { ecran: 'passer' }>) => {
     const choisi = adjoints().find((r) => r.cle === v.vers) ?? adjoints()[0];
     if (!choisi) return vers({ ecran: 'membres' });
-    const nom = esc(nomDe(choisi));
+    const nom = esc(nomDe(nomActuel(choisi)));
     afficher(
       'tel',
       'Passer la main',
       `<header class="barre"><h1 class="barre-titre" tabindex="-1">Passer la main</h1><span class="mono">${esc(porte.nom)} · chef</span></header>
        <main class="page">
          <section class="bloc"><p class="etiquette">Le nouveau chef</p><div class="choix" role="radiogroup" aria-label="Le nouveau chef">${adjoints()
-           .map((r) => `<label><input type="radio" name="chef" value="${r.cle}"${r.cle === choisi.cle ? ' checked' : ''}><span class="rond"></span><span>${esc(nomDe(r))}<span class="mono">${esc(r.role)} · adjoint</span></span></label>`)
+           .map((r) => `<label><input type="radio" name="chef" value="${r.cle}"${r.cle === choisi.cle ? ' checked' : ''}><span class="rond"></span><span>${esc(nomDe(nomActuel(r)))}<span class="mono">${esc(r.role)} · adjoint</span></span></label>`)
            .join('')}</div></section>
          <div class="faits-liste">
            <p>${nom} pourra nommer les adjoints, régler la classe et la fermer.</p>
@@ -701,7 +739,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
            <i class="viseur-coin hg"></i><i class="viseur-coin hd"></i><i class="viseur-coin bg"></i><i class="viseur-coin bd"></i>
            <p class="viseur-mot">${v.sansCamera ? 'La caméra ne s’ouvre pas' : 'Vise le QR de son téléphone'}</p>
          </div>
-         ${v.erreur ? `<p class="erreur" role="alert">${ic('info-box')}<span>${esc(phraseDuQr(v.erreur, nomFormateur))}</span></p>` : ''}
+         ${v.erreur ? `<p class="erreur" role="alert">${ic('info-box')}<span>${esc(phraseDuQr(v.erreur, nomFormateur()))}</span></p>` : ''}
          ${v.sansCamera ? `<div class="liste"><button class="rangee" data-geste="ici">${ic('smartphone', 'ic-24')}<div><b>Signer sur mon téléphone</b><span class="mono">à la place de son QR</span></div>${ic('chevron-right')}</button></div>` : ''}
        </main>
        <footer class="bas"><div class="gestes">${retour}</div>${faits(relais)}</footer>`,
@@ -791,6 +829,8 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const rendre = () => {
     if (arrete || !nav.affichee()) return;
     const maintenant = Date.now();
+    if (vue.ecran === 'moi') return afficherMoi(porte.nom, nomActuel(maLigne()), classe.nomEnAttente, POUR_LA_CLASSE, faits(relais), gestes);
+    if (vue.ecran === 'monNom') return afficherNom(porte.nom, vue, vue.erreurs ?? {}, POUR_LA_CLASSE, faits(relais), gestes);
     if (vue.ecran === 'prochain') return ecranProchain(vue);
     if (vue.ecran === 'adjoint') return ecranAdjoint(vue);
     if (vue.ecran === 'passer') return ecranPasser(vue);
@@ -872,9 +912,12 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     const avant = classe.prochainEnAttente;
     const passation = classe.passationEnAttente;
     const horaires = classe.horairesEnAttente;
+    const monNom = classe.nomEnAttente;
     envoyerLeProchainALHeure();
     passerLaMainALHeure();
     changerLesHorairesALHeure();
+    envoyerMonNomALHeure();
+    if (monNom && vue.ecran === 'moi') rendre();
     if (horaires && vue.ecran === 'reglages') rendre();
     const decompte = (appel?.close() && !appel.definitive(Date.now() - 2000)) || avant;
     if (decompte && vue.ecran === 'cours') rendre();
@@ -883,6 +926,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   envoyerLeProchainALHeure();
   passerLaMainALHeure();
   changerLesHorairesALHeure();
+  envoyerMonNomALHeure();
 
   return {
     code,
@@ -894,8 +938,9 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     },
     aLEntree: () => vue.ecran === 'cours',
     moment,
+    // Un redessin pendant qu'on tape son nom remettrait celui d'avant dans les champs.
     reseau: () => {
-      if (vue.ecran !== 'lire') rendre();
+      if (vue.ecran !== 'lire' && vue.ecran !== 'monNom') rendre();
     },
     arreter: () => {
       arrete = true;

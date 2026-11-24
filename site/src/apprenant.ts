@@ -8,10 +8,11 @@ import { couper, poser, viser } from './camera';
 import { type Moment, type Navigation, type Suivi, titreDesClasses } from './classes';
 import { type Contexte, faits, nomDe } from './contexte';
 import { type Creneau, type Demi, bornes, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
-import { type Erreurs, champDuNom, nomTape } from './entree';
-import { type AnnonceGardee, type PresenceGardee, type Theme, appliquerLeTheme, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
+import { type Erreurs, nomTape } from './entree';
+import { type AnnonceGardee, type PresenceGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
 import { ecouterLaPorte, ecouterLeFil, envoyer, recevoir } from './lettres';
-import { passationsDe, porteAJour } from './responsables';
+import { type PourQui, afficherMoi, afficherNom } from './moi';
+import { nomCorrige, nomsAJour, nomsDesResponsables, passationsDe, porteAJour } from './responsables';
 import { type CeQueSaitLeTelephone, absences, ajusterLaSemaine, semaineHtml } from './semaine';
 import { phrase } from './textes';
 import { afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
@@ -39,7 +40,14 @@ const SANS_VISITE_JOURS = 7;
 // Le temps de joindre un relais au démarrage, avant de conclure qu'il n'y a pas de réseau.
 const HORS_LIGNE_MS = 5_000;
 const MENU = `<nav class="menu" aria-label="Entrées"><a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#" data-geste="moi">Moi</a></nav>`;
+const POUR_LES_RESPONSABLES: PourQui = {
+  voit: 'le nom que voient les responsables',
+  part: 'part aux responsables',
+  verront: 'Les responsables de la classe verront ton nouveau nom, et l’ancien à côté.',
+};
 const ANNULER_MS = 30_000;
+// Les noms corrigés qui attendent leur porte : une poignée suffit, le reste revient chaque jour.
+const NOMS_EN_SUSPENS = 20;
 
 export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const { coeur, relais, moi } = ctx;
@@ -59,14 +67,15 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     garderClasse(classe);
   };
 
-  const formateur = () => nomDe(porte.responsables[0]);
+  const nomDuResponsableDe = (r: (typeof porte.responsables)[number]) => nomDe(nomCorrige(ctx, classe.code, classe.noms, r));
+  const formateur = () => nomDuResponsableDe(porte.responsables[0]);
   const maintenant = () => Date.now();
   const demi = () => demiJournee(maintenant(), porte.apres_midi);
   const creneau = (ms: number): Creneau => ({ date: dateIso(ms), demi: demiJournee(ms, porte.apres_midi) });
   const seance = () => coeur.seance(classe.code, dateIso(maintenant()), demi());
   const nomDuResponsable = (cle: string) => {
     const r = porte.responsables.find((x) => x.cle === cle);
-    return r ? nomDe(r) : formateur();
+    return r ? nomDuResponsableDe(r) : formateur();
   };
   // Un appel ouvert aujourd'hui passe d'abord ; sinon, l'annonce de la demi-journée en cours.
   const annonceDuMoment = (): AnnonceGardee | undefined => {
@@ -151,14 +160,40 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const ecouterLAppel = () => {
     if (classe.fil) arrets.push(ecouterLeFil(coeur, relais, classe.fil, recevoirDuFil));
   };
+  // Le nom corrigé d'un responsable voyage avec la porte. Les relais ne rendent pas les textes dans
+  // l'ordre : celui d'un adjoint peut arriver avant la porte qui le nomme, et attend qu'elle vienne.
+  const nomsEnSuspens = new Set<string>();
+  const prendreLesNoms = (textes: string[]): boolean => {
+    const verifies = nomsDesResponsables(ctx, classe.code, classe.porte, textes);
+    for (const texte of textes) if (!verifies.includes(texte)) nomsEnSuspens.add(texte);
+    for (const texte of verifies) nomsEnSuspens.delete(texte);
+    if (nomsEnSuspens.size > NOMS_EN_SUSPENS) nomsEnSuspens.delete(nomsEnSuspens.values().next().value!);
+    const noms = nomsAJour(ctx, classe.code, [...(classe.noms ?? []), ...verifies]);
+    if (noms.join() === (classe.noms ?? []).join()) return false;
+    classe = { ...classe, noms };
+    return true;
+  };
   // La porte change quand le chef nomme un adjoint ou passe la main : le téléphone la suit, pour
   // envoyer sa présence à chaque responsable et reconnaître leurs annonces.
+  const estUnNom = (texte: string) => {
+    try {
+      coeur.lire_correction_de_nom(classe.code, texte);
+      return true;
+    } catch {
+      return false;
+    }
+  };
   const suivreLaPorte = (texte: string) => {
-    const passations = [...new Set([...(classe.passations ?? []), ...passationsDe(ctx, classe.code, [texte])])];
-    const nouvelle = porteAJour(ctx, classe.code, classe.porte, [texte, ...passations]);
-    if (nouvelle === classe.porte && passations.length === (classe.passations ?? []).length) return;
-    classe = { ...classe, porte: nouvelle, passations };
-    porte = coeur.lire_porte(classe.code, nouvelle);
+    if (estUnNom(texte)) {
+      if (!prendreLesNoms([texte])) return;
+    } else {
+      const passations = [...new Set([...(classe.passations ?? []), ...passationsDe(ctx, classe.code, [texte])])];
+      const nouvelle = porteAJour(ctx, classe.code, classe.porte, [texte, ...passations]);
+      if (nouvelle === classe.porte && passations.length === (classe.passations ?? []).length) return;
+      classe = { ...classe, porte: nouvelle, passations };
+      porte = coeur.lire_porte(classe.code, nouvelle);
+      prendreLesNoms([...nomsEnSuspens]);
+    }
     garder();
     if (vue.ecran === 'jour') rendre();
   };
@@ -461,51 +496,8 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     );
   };
 
-  // « Moi » : le nom que voient les responsables, et le thème. Mes appareils et la phrase de
-  // secours viendront avec l'étape « Plusieurs appareils ».
-  const ecranMoi = () => {
-    const attente = classe.nomEnAttente;
-    const choisi = lire<Theme>('theme');
-    const choix = (valeur: string, libelle: string, coche: boolean) =>
-      `<label><input type="radio" name="theme" value="${valeur}"${coche ? ' checked' : ''}><span class="rond"></span>${libelle}</label>`;
-    const ligneDuNom = attente
-      ? `<div class="rangee"><div><b>${esc(nomDe(attente))}</b><span class="mono">part aux responsables dans ${Math.max(1, Math.ceil((attente.part - Date.now()) / 1000))}\u00a0s</span></div><button class="btn" data-geste="annulerNom">${ic('undo')}Annuler</button></div>`
-      : `<div class="rangee"><div><b>${esc(nomDe(monNom()))}</b><span class="mono">le nom que voient les responsables</span></div><button class="btn" data-geste="corrigerNom">Corriger</button></div>`;
-    afficher(
-      'tel',
-      'Moi',
-      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Moi</h1><span class="mono">${esc(porte.nom)}</span></header>
-       <main class="page">
-         <div class="liste">${ligneDuNom}</div>
-         <section class="bloc"><p class="etiquette">Thème</p><div class="choix" role="radiogroup" aria-label="Thème">${choix('telephone', 'Comme le téléphone', !choisi)}${choix('clair', 'Clair', choisi === 'clair')}${choix('sombre', 'Sombre', choisi === 'sombre')}</div></section>
-       </main>
-       <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button></div>${faits(relais)}</footer>`,
-      gestes,
-    );
-    for (const radio of document.querySelectorAll<HTMLInputElement>('input[name="theme"]')) {
-      radio.onchange = () => {
-        ecrire('theme', radio.value === 'telephone' ? null : radio.value);
-        appliquerLeTheme();
-      };
-    }
-  };
-
-  const ecranNom = (v: Extract<Vue, { ecran: 'nom' }>) => {
-    const erreurs = v.erreurs ?? {};
-    afficher(
-      'tel',
-      'Nom',
-      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Nom</h1><span class="mono">${esc(porte.nom)}</span></header>
-       <main class="page">
-         <div class="bloc">${champDuNom(erreurs, 'prenom', 'Prénom', v.prenom, 'given-name')}</div>
-         <div class="bloc">${champDuNom(erreurs, 'nom', 'Nom', v.nom, 'family-name')}</div>
-         <p class="mono">Les responsables de la classe verront ton nouveau nom, et l’ancien à côté.</p>
-       </main>
-       <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button><button class="touche" data-geste="corriger">${ic('pencil', 'ic-24')}<span>Corriger</span></button></div>${faits(relais)}</footer>`,
-      gestes,
-      true,
-    );
-  };
+  const ecranMoi = () => afficherMoi(porte.nom, monNom(), classe.nomEnAttente, POUR_LES_RESPONSABLES, faits(relais), gestes);
+  const ecranNom = (v: Extract<Vue, { ecran: 'nom' }>) => afficherNom(porte.nom, v, v.erreurs ?? {}, POUR_LES_RESPONSABLES, faits(relais), gestes);
 
   const rendre = () => {
     if (arrete || !nav.affichee()) return;

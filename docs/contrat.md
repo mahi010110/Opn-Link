@@ -266,8 +266,12 @@ opn-link·nom·v1
 <signature de la personne>
 ```
 
-- Elle part scellée dans la boîte de chaque responsable, et voyage entre
-  eux avec l'état de la classe.
+- Celle d'un apprenant part scellée dans la boîte de chaque responsable, et
+  voyage entre eux avec l'état de la classe.
+- Celle d'un responsable voyage aussi avec la porte, chiffrée comme elle
+  sous l'étiquette de la classe : toute la classe la lit, sans attendre le
+  chef, dont la signature sur la porte garde l'ancien nom. Celle d'un
+  apprenant n'y passe jamais : qui a le code de la classe lirait son nom.
 - La plus récente compte. Les responsables voient l'ancien nom à côté du
   nouveau.
 - Une feuille déjà ouverte garde le nom de son ouverture. Les appels
@@ -506,9 +510,10 @@ retire ainsi. S'il en sait plus que la lettre, il répond.
 La porte voyage autrement : un événement sous l'étiquette de la classe, dont
 le contenu est la porte chiffrée par la clé de la classe (`OPC1.`). Le chef
 la publie à la création. Chaque responsable la republie une fois par jour au
-plus, avec les passations, qui voyagent de la même façon. L'apprenant
-écoute cette étiquette : sa porte suit le chef, et il envoie sa présence à
-chaque responsable.
+plus, avec les passations et les noms corrigés des responsables, qui
+voyagent de la même façon. L'apprenant écoute cette étiquette : sa porte
+suit le chef, il envoie sa présence à chaque responsable, et il lit leurs
+noms à jour.
 
 Le lien du QR de la classe : l'adresse du site, puis
 `#r=<code en minuscules>.<clé du chef, forme courte>`. Ce qui suit `#` ne
@@ -547,17 +552,19 @@ et ses passations (`passations`), le secret du fil, et ses secrets gardés
 responsable qui n'est pas chef, ou qui attend l'accord du chef tant qu'il
 n'a pas le secret du fil. En plus :
 
+- chez chacun : le nom corrigé qui part dans trente secondes
+  (`nomEnAttente`), et la correction la plus récente du nom de chaque
+  responsable (`noms`) ;
 - chez l'apprenant : son acceptation, ou sa demande tant qu'il attend, ses
   présences signées avec leur demi-journée et leur réception
   (`presences`), les annonces de l'appel des sept derniers jours, une par
   séance, déjà vérifiées (`annoncesAppel`), le dernier prochain cours
-  vérifié (`prochain`), son dernier nom corrigé (`nom`) et celui qui part
-  dans trente secondes (`nomEnAttente`) ;
+  vérifié (`prochain`), et son dernier nom corrigé (`nom`) ;
 - chez les responsables : les acceptations, les demandes et les clés
   laissées dehors, les demi-journées où l'appel a été clos (`cours`), le
   dernier prochain cours annoncé (`prochain`) et celui qui attend la fin des
-  trente secondes (`prochainEnAttente`), et la correction la plus récente du
-  nom de chaque membre (`noms`), qui voyage aussi entre eux ;
+  trente secondes (`prochainEnAttente`). `noms` y garde aussi la correction
+  la plus récente du nom de chaque membre, qui voyage entre eux ;
 - chez le chef : les invitations d'adjoint de moins de sept jours
   (`invitations`), les demandes d'adjoint qui attendent son accord
   (`candidats`), la main qu'il passe (`passationEnAttente`) et les horaires

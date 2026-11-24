@@ -5,11 +5,19 @@ import { type Navigation, type Suivi, ouvrirLesClasses, titreDesClasses } from '
 import { type Contexte, faits, nomDe } from './contexte';
 import { classes, ecrire, garderClasse, oublierClasse } from './etat';
 import { chercherPorte, codeNormal, envoyer, recevoir } from './lettres';
-import { fusionner } from './responsables';
+import { fusionner, nomCorrige, nomsAJour, nomsDesResponsables } from './responsables';
 import { codeDe, phrase } from './textes';
 import { afficher, codeAffiche, esc, heure, ic } from './vue';
 
 type Porte = ReturnType<Contexte['coeur']['choisir_porte']>;
+// La porte trouvée, et les noms corrigés de ses responsables, qui voyagent avec elle.
+type Trouvee = { porte: Porte; noms: string[] };
+
+async function trouver(ctx: Contexte, tape: string, chef?: string): Promise<Trouvee> {
+  const code = codeNormal(tape);
+  const { porte, textes } = await chercherPorte(ctx.coeur, ctx.relais, code, chef);
+  return { porte, noms: nomsAJour(ctx, code, nomsDesResponsables(ctx, code, porte.texte, textes)) };
+}
 
 export function sansClasse(ctx: Contexte): void {
   ctx.relais.changement = () => {};
@@ -61,8 +69,7 @@ function taperLeCode(ctx: Contexte, texte = '', erreur?: string): void {
     const etat = document.querySelector('#etat');
     if (etat) etat.textContent = 'Je cherche la classe…';
     try {
-      const porte = await chercherPorte(ctx.coeur, ctx.relais, valeur);
-      rejoindre(ctx, codeNormal(valeur), porte);
+      rejoindre(ctx, codeNormal(valeur), await trouver(ctx, valeur));
     } catch (e) {
       taperLeCode(ctx, valeur, codeDe(e));
     }
@@ -73,12 +80,12 @@ function taperLeCode(ctx: Contexte, texte = '', erreur?: string): void {
 
 /// Le lien du QR mène ici : la classe s'affiche tout de suite, sans rien taper.
 export function rejoindreParLien(ctx: Contexte, code: string, chef: string): Promise<void> {
-  return chercherLaClasse(ctx, code, chef, (porte) => rejoindre(ctx, code, porte));
+  return chercherLaClasse(ctx, code, chef, (trouvee) => rejoindre(ctx, code, trouvee));
 }
 
 /// L'invitation d'un adjoint mène ici : la classe s'affiche, et le rôle proposé.
 export function rejoindreCommeAdjoint(ctx: Contexte, lien: Invitation): Promise<void> {
-  return chercherLaClasse(ctx, lien.code, lien.chef, (porte) => demanderAuChef(ctx, lien, porte));
+  return chercherLaClasse(ctx, lien.code, lien.chef, (trouvee) => demanderAuChef(ctx, lien, trouvee));
 }
 
 interface Invitation {
@@ -88,12 +95,12 @@ interface Invitation {
   role: 'formateur' | 'centre';
 }
 
-async function chercherLaClasse(ctx: Contexte, code: string, chef: string, suite: (porte: Porte) => void): Promise<void> {
+async function chercherLaClasse(ctx: Contexte, code: string, chef: string, suite: (trouvee: Trouvee) => void): Promise<void> {
   history.replaceState(null, '', location.pathname + location.search);
   const ecran = (corps: string) => afficher('tel', 'Rejoindre', `<header class="barre"><h1 class="barre-titre">Rejoindre</h1></header><main class="page">${corps}</main>`, {});
   const chercher = async () => {
     try {
-      suite(await chercherPorte(ctx.coeur, ctx.relais, code, chef));
+      suite(await trouver(ctx, code, chef));
     } catch (e) {
       if (codeDe(e) !== 'sans-reseau') return taperLeCode(ctx, codeAffiche(code), codeDe(e));
       ecran(
@@ -121,15 +128,17 @@ export function nomTape(): { prenom: string; nom: string; erreurs?: Erreurs } {
   return { prenom, nom, erreurs: { prenom: prenom ? undefined : 'Écris ton prénom.', nom: nom ? undefined : 'Écris ton nom.' } };
 }
 
-function rejoindre(ctx: Contexte, code: string, porte: Porte, prenom = '', nom = '', erreurs: Erreurs = {}): void {
+function rejoindre(ctx: Contexte, code: string, trouvee: Trouvee, prenom = '', nom = '', erreurs: Erreurs = {}): void {
+  const { porte, noms } = trouvee;
   const chef = porte.responsables[0];
+  const nomDuChef = nomDe(nomCorrige(ctx, code, noms, chef));
   const champ = (id: 'prenom' | 'nom', libelle: string, valeur: string, autocomplete: string) => champDuNom(erreurs, id, libelle, valeur, autocomplete);
   afficher(
     'tel',
     'Rejoindre',
     `<header class="barre"><h1 class="barre-titre">Rejoindre</h1></header>
      <main class="page">
-       <section><h2 class="tres-gros" tabindex="-1">${esc(porte.nom)}</h2><p class="mono">${esc(porte.centre)} · ${esc(nomDe(chef))}, ${esc(chef.role)}</p></section>
+       <section><h2 class="tres-gros" tabindex="-1">${esc(porte.nom)}</h2><p class="mono">${esc(porte.centre)} · ${esc(nomDuChef)}, ${esc(chef.role)}</p></section>
        <div class="bloc">${champ('prenom', 'Prénom', prenom, 'given-name')}</div>
        <div class="bloc">${champ('nom', 'Nom', nom, 'family-name')}</div>
        <p class="mono">Les responsables de la classe verront ton prénom et ton nom.</p>
@@ -138,10 +147,10 @@ function rejoindre(ctx: Contexte, code: string, porte: Porte, prenom = '', nom =
     {
       rejoindre: () => {
         const { prenom: p, nom: n, erreurs } = nomTape();
-        if (erreurs) return rejoindre(ctx, code, porte, p, n, erreurs);
+        if (erreurs) return rejoindre(ctx, code, trouvee, p, n, erreurs);
         const demande = ctx.moi.demander_entree(code, p, n, Date.now());
         for (const r of porte.responsables) envoyer(ctx.coeur, ctx.relais, r.boite, { v: 1, t: 'entree', code, demande });
-        garderClasse({ code, role: 'apprenant', porte: porte.texte, demande });
+        garderClasse({ code, role: 'apprenant', porte: porte.texte, demande, noms });
         ouvrirLesClasses(ctx, code);
       },
     },
@@ -150,15 +159,17 @@ function rejoindre(ctx: Contexte, code: string, porte: Porte, prenom = '', nom =
 
 // La demande d'un adjoint part au seul chef, avec le jeton de l'invitation : sans lui, le chef ne
 // la voit pas. Elle est signée comme celle d'un apprenant, par l'appareil de celui qui demande.
-function demanderAuChef(ctx: Contexte, lien: Invitation, porte: Porte, prenom = '', nom = '', erreurs: Erreurs = {}): void {
+function demanderAuChef(ctx: Contexte, lien: Invitation, trouvee: Trouvee, prenom = '', nom = '', erreurs: Erreurs = {}): void {
+  const { porte, noms } = trouvee;
   const chef = porte.responsables[0];
+  const nomDuChef = nomDe(nomCorrige(ctx, lien.code, noms, chef));
   afficher(
     'tel',
     'Rejoindre',
     `<header class="barre"><h1 class="barre-titre">Rejoindre</h1></header>
      <main class="page">
-       <section><h2 class="tres-gros" tabindex="-1">${esc(porte.nom)}</h2><p class="mono">${esc(porte.centre)} · ${esc(nomDe(chef))}, ${esc(chef.role)}</p></section>
-       <div class="liste"><div class="rangee">${ic('users', 'ic-24')}<div><b>${esc(nomDe(chef))} t’invite comme adjoint</b><span class="mono">${lien.role} · publier, faire l’appel, voir le suivi</span></div></div></div>
+       <section><h2 class="tres-gros" tabindex="-1">${esc(porte.nom)}</h2><p class="mono">${esc(porte.centre)} · ${esc(nomDuChef)}, ${esc(chef.role)}</p></section>
+       <div class="liste"><div class="rangee">${ic('users', 'ic-24')}<div><b>${esc(nomDuChef)} t’invite comme adjoint</b><span class="mono">${lien.role} · publier, faire l’appel, voir le suivi</span></div></div></div>
        <div class="bloc">${champDuNom(erreurs, 'prenom', 'Prénom', prenom, 'given-name')}</div>
        <div class="bloc">${champDuNom(erreurs, 'nom', 'Nom', nom, 'family-name')}</div>
        <p class="mono">Ta demande part au chef. Une fois acceptée, la classe verra ton prénom et ton nom.</p>
@@ -167,11 +178,11 @@ function demanderAuChef(ctx: Contexte, lien: Invitation, porte: Porte, prenom = 
     {
       demander: () => {
         const { prenom: p, nom: n, erreurs } = nomTape();
-        if (erreurs) return demanderAuChef(ctx, lien, porte, p, n, erreurs);
+        if (erreurs) return demanderAuChef(ctx, lien, trouvee, p, n, erreurs);
         const demande = ctx.moi.demander_entree(lien.code, p, n, Date.now());
         envoyer(ctx.coeur, ctx.relais, chef.boite, { v: 1, t: 'adjoint', code: lien.code, demande, jeton: lien.jeton });
         ecrire('moi', { prenom: p, nom: n });
-        garderClasse({ code: lien.code, role: 'adjoint', porte: porte.texte, demande });
+        garderClasse({ code: lien.code, role: 'adjoint', porte: porte.texte, demande, noms });
         ouvrirLesClasses(ctx, lien.code);
       },
     },
@@ -193,7 +204,7 @@ export function attenteDAdjoint(ctx: Contexte, code: string, nav: Navigation): S
       porte.nom,
       `<header class="barre pas-maintenant"><h1 class="barre-titre">${esc(porte.nom)}</h1><span class="mono">${esc(porte.centre)}</span>${nav.plusieurs() ? `<button class="btn" data-geste="mesCours">${titreDesClasses()}</button>` : ''}</header>
        <main class="page">
-         <section class="reponse">${ic('clock', 'ic-32')}<div><h2 class="tres-gros" tabindex="-1">Demande envoyée</h2><p class="mono">${heure(demande.quand)} · ${esc(nomDe(porte.responsables[0]))} va l’accepter</p></div></section>
+         <section class="reponse">${ic('clock', 'ic-32')}<div><h2 class="tres-gros" tabindex="-1">Demande envoyée</h2><p class="mono">${heure(demande.quand)} · ${esc(nomDe(nomCorrige(ctx, classe.code, classe.noms, porte.responsables[0])))} va l’accepter</p></div></section>
          <div class="liste"><div class="rangee"><div><b>${esc(nomDe(demande))}</b><span class="mono">adjoint · le nom que verra la classe</span></div></div></div>
          <p class="mono">Tu n’as rien à faire. La classe s’ouvre ici dès que c’est accepté.</p>
          <div class="note-gestes"><button class="btn" data-geste="pasMaClasse">Ce n’est pas ma classe</button></div>

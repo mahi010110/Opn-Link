@@ -545,3 +545,15 @@ refusés.
   de l'apprenant.
 - Une question ouverte, avec une recommandation : rejoindre une autre classe
   en tapant son code ([questions-ouvertes.md](questions-ouvertes.md)).
+- Le mainteneur, sur GitHub Pages : « bref continue on verra plus tard ».
+  Noté dans [questions-ouvertes.md](questions-ouvertes.md), partie « À
+  faire », avec une recommandation.
+- Corriger son nom est fait chez un responsable. Choisi en codant, à
+  valider : le responsable signe lui-même sa correction, qui voyage avec la
+  porte, et le nom se corrige classe par classe
+  ([prototype.md](prototype.md), partie « Les choix du prototype, à
+  valider »).
+- « Refaire l'invitation » n'est décrit nulle part, et « Retirer un membre
+  change le code de la classe » demanderait de refaire presque toute la
+  classe : une question ouverte, avec une recommandation
+  ([questions-ouvertes.md](questions-ouvertes.md)).
