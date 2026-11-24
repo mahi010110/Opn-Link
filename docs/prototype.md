@@ -479,6 +479,13 @@ clos par Awa Diallo-Sow », et Julien voit « avant : Awa Diallo ». Jeudi,
 l'app d'Awa republie sa correction avec la porte, et pas celle de Léa.
 108 vérifications.
 
+Cinq défauts posés exprès font chacun échouer le scénario : une correction
+sans délai, un apprenant qui ignore les noms venus avec la porte, une
+correction qui ne part pas avec la porte, « Membres » sans l'ancien nom, et
+une republication qui emporte aussi les noms des apprenants. « Moi » chez
+l'apprenant reste identique au pixel près
+(`node outils/avant-apres.mjs moi e39a689`).
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -492,8 +499,8 @@ on construit directement la première version complète
    novembre 2026. Nommer un adjoint, passer la main et les horaires dans les
    réglages du chef sont faits le même jour, et corriger son nom chez
    l'apprenant. Plusieurs classes, « Mes cours » et le nom corrigé d'un
-   responsable sont faits le 24 novembre 2026. « Refaire l'invitation »
-   attend le mainteneur, avec « Retirer un membre »
+   responsable sont faits le 24 novembre 2026. « Refaire l'invitation », qui
+   donnerait un nouveau code à la classe, attend le mainteneur
    ([questions-ouvertes.md](questions-ouvertes.md)). Les
    interrupteurs des réglages viendront avec leurs fonctions : l'identité avec
    « Moi », les documents à l'étape 5, le suivi à l'étape 6. À l'ordinateur,

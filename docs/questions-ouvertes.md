@@ -43,44 +43,24 @@ classes », qui mène à « Taper un code ». Le formateur montre le QR à la
 salle, mais un apprenant au fond de la salle, ou absent ce jour-là, n'a que
 le code.
 
-### Retirer un membre, refaire l'invitation
+### Refaire l'invitation
 
-[projet.md](projet.md), partie 5, reprend d'OpenContact : « Retirer un membre
-change le code de la classe ». La suite du prototype prévoit aussi de
-« refaire l'invitation », sans dire ce que c'est. Aucune maquette ne les
-dessine.
+[contrat.md](contrat.md), partie « Le secret du fil », dit déjà : retirer un
+membre change le secret du fil, et le code de la classe ne change que si le
+chef refait l'invitation. [projet.md](projet.md), partie 5, dit encore
+« Retirer un membre change le code de la classe », comme dans OpenContact.
+Aucune maquette ne dessine « refaire l'invitation ».
 
-Dans Opn-Link, le code ne fait qu'ouvrir la porte : il permet de demander à
-entrer. Les annonces passent par le secret du fil, remis à l'apprenant
-accepté. Et le code sert d'identité à la classe : ses séances, son étiquette
-sur les relais et ce que garde le téléphone en sont tirés. Le changer,
-c'est presque refaire la classe.
+Le code ne fait qu'ouvrir la porte : il permet de demander à entrer. Il sert
+aussi d'identité à la classe : ses séances, son étiquette sur les relais et
+ce que garde le téléphone en sont tirés. Le changer, c'est presque refaire la
+classe.
 
-Recommandation :
-
-- retirer un membre change le secret du fil, pas le code. Les autres
-  membres reçoivent le nouveau secret par une lettre, et le membre retiré
-  ne lit plus les annonces. Son appareil n'est plus sur la feuille ;
-- « refaire l'invitation » ne sert que si une photo du QR circule et que des
-  inconnus demandent à entrer. « Laisser dehors » y répond déjà : le
-  prototype ne refait pas le code.
-
-Recommandation : les garder.
-
-### React ou pas
-
-Le prototype a écrit trois interfaces en TypeScript, sans React : 6 Ko
-compressés, et le code reste lisible.
-
-Recommandation : rester sans React tant que les écrans restent aussi
-simples, et revoir la question quand viendront les grilles du centre.
-
-### Figer les formats
-
-Les formats du contrat sont en version 1, mais en brouillon. Une fois figés,
-ils ne changent plus de nom.
-
-Recommandation : les figer à la sortie de la première version.
+Recommandation : suivre le contrat, et corriger projet.md. Retirer un membre
+change le secret du fil, que les autres membres reçoivent par une lettre.
+Refaire l'invitation ne sert que si une photo du QR circule et que des
+inconnus demandent à entrer : « Laisser dehors » y répond déjà, et le
+prototype ne refait pas le code.
 
 ## La conception
 

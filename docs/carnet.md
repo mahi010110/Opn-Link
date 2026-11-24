@@ -553,7 +553,7 @@ refusés.
   porte, et le nom se corrige classe par classe
   ([prototype.md](prototype.md), partie « Les choix du prototype, à
   valider »).
-- « Refaire l'invitation » n'est décrit nulle part, et « Retirer un membre
-  change le code de la classe » demanderait de refaire presque toute la
+- « Refaire l'invitation » donnerait un nouveau code à la classe, d'après le
+  contrat. Aucune maquette ne la dessine, et le code sert d'identité à la
   classe : une question ouverte, avec une recommandation
   ([questions-ouvertes.md](questions-ouvertes.md)).
