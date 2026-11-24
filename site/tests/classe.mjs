@@ -311,6 +311,7 @@ try {
   verifier(!classeDeKevin.includes('"fil"'), 'Kevin n’a jamais reçu le secret du fil');
 
   await tel.click('[data-geste="classe"]');
+  await tel.click('[data-onglet="membres"]');
   await capturer(tel, '12-formateur-membres');
 
   // Awa nomme un adjoint, Julien Morel, formateur. L'invitation est un lien, avec un jeton.
@@ -343,6 +344,7 @@ try {
   await capturer(telJulien, '12e-adjoint-cours');
   verifier(await telJulien.getByText('Matin, 9 h à 12 h 30 · 4 apprenants').count() === 1, 'accepté, Julien voit la classe et ses quatre apprenants, partagés par Awa');
   await telJulien.click('[data-geste="classe"]');
+  await telJulien.click('[data-onglet="membres"]');
   verifier(
     (await telJulien.getByText('formateur · chef').count()) === 1 && (await telJulien.getByText('formateur · adjoint').count()) === 1 && (await telJulien.locator('[data-geste="nommer"]').count()) === 0,
     'Julien est adjoint : il ne voit pas « Nommer un adjoint », qui reste au chef',
@@ -363,6 +365,7 @@ try {
   verifier(coeur.lire_porte(code, porteDeLea).responsables[0].prenom === 'Awa', 'un apprenant ne se fait pas chef : sa porte n’est pas signée par le chef que suit la classe');
 
   await tel.click('[data-geste="classe"]');
+  await tel.click('[data-onglet="membres"]');
   await tel.click('[data-geste="retour"]');
 
   ecart = NEUF_HEURES - Date.now();
@@ -568,6 +571,7 @@ try {
   // Julien publie la porte où il est chef.
   await tel.emulateMedia({ colorScheme: 'light' });
   await tel.click('[data-geste="classe"]');
+  await tel.click('[data-onglet="membres"]');
   await tel.click('[data-geste="passer"]');
   await tel.click('[data-geste="passerLaMain"]');
   await tel.click('[data-geste="annulerPassation"]');
@@ -586,6 +590,7 @@ try {
   );
   await capturer(tel, '17c-formateur-passation-attend');
   await telJulien.click('[data-geste="classe"]');
+  await telJulien.click('[data-onglet="membres"]');
   await telJulien.locator('[data-geste="nommer"]').waitFor({ timeout: 60_000 });
   await capturer(telJulien, '17d-julien-chef');
   verifier(
@@ -635,6 +640,7 @@ try {
 
   // Julien, chef, avance le matin à 8 h 30. Trente secondes pour annuler, puis la porte part.
   await telJulien.click('[data-geste="classe"]');
+  await telJulien.click('[data-onglet="membres"]');
   await telJulien.click('[data-geste="reglages"]');
   await telJulien.click('[data-geste="horaires"]');
   await telJulien.fill('#matin-debut', 'neuf heures');
@@ -829,6 +835,113 @@ try {
     (await telLea.locator('#prenom').count()) === 0 && !!JSON.parse(await telLea.evaluate(() => localStorage.getItem('opl_proto_lea_classes')))[0].acceptation,
     'Léa rouvre le lien de sa classe : la classe s’ouvre, et son acceptation reste',
   );
+
+  // Les annonces de la classe. Jeudi, Awa publie sur le fil de BTS SIO 2 : trente secondes pour
+  // annuler, puis toute la classe la lit. Elle la modifie, puis en écrit une le soir, qui n'arrive
+  // qu'à l'ouverture suivante. Julien, le chef, retire la première. « Écouter » ne lit qu'avec une
+  // voix de l'appareil : Inès en a une, Noah n'a qu'une voix en ligne.
+  const voixSimulee = (locale) => {
+    window.__ditsALaVoix = [];
+    const voix = [{ name: 'Voix française', lang: 'fr-FR', localService: locale, default: true, voiceURI: 'fr' }];
+    const synthese = { getVoices: () => voix, speak: (u) => window.__ditsALaVoix.push(u.text), cancel: () => {}, addEventListener: () => {}, removeEventListener: () => {} };
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: synthese });
+    window.SpeechSynthesisUtterance = class {
+      constructor(texte) {
+        this.text = texte;
+      }
+    };
+  };
+  await pages.ines.contexte.addInitScript(voixSimulee, true);
+  await pages.noah.contexte.addInitScript(voixSimulee, false);
+  await pages.noah.contexte.clock.setSystemTime(new Date(horloge()));
+  const filDeLaClasse = JSON.parse(await telLea.evaluate(() => localStorage.getItem('opl_proto_lea_classes')))[0].fil;
+  const annoncesSurLeFil = () =>
+    [...principal.gardes, ...secours.gardes]
+      .filter((e) => e.tags.some(([t, v]) => t === 'x' && v === coeur.etiquette_du_fil(filDeLaClasse)))
+      .flatMap((e) => {
+        try {
+          const texte = coeur.dechiffrer_du_fil(filDeLaClasse, e.content);
+          return texte.startsWith('opn-link·annonce·v1') ? [texte] : [];
+        } catch {
+          return [];
+        }
+      });
+
+  await tel.click('[data-geste="mesCours"]');
+  await tel.click(`[data-geste="choisir"][data-code="${code}"]`);
+  await tel.click('[data-geste="classe"]');
+  verifier((await tel.getByText('Pas encore d’annonce.').count()) === 1 && (await tel.locator('#annonce').count()) === 1, '« Classe » s’ouvre sur le fil, vide, avec de quoi écrire');
+  await tel.fill('#annonce', 'Lundi 30, le cours a lieu en salle B12.\nApportez votre ordinateur, chargé.');
+  await capturer(tel, '31-formateur-fil');
+  await tel.click('[data-geste="publier"]');
+  await tel.click('[data-geste="annulerAnnonce"]');
+  verifier((await tel.inputValue('#annonce')).startsWith('Lundi 30'), '« Annuler » pendant les trente secondes : l’annonce ne part pas, et son texte revient');
+  await tel.click('[data-geste="publier"]');
+  const delaiDeLAnnonce = Number((await tel.getByText(/part à la classe dans \d+\ss/).textContent()).match(/dans (\d+)/)[1]);
+  verifier(delaiDeLAnnonce >= 25 && (await tel.locator('[data-geste="annulerAnnonce"]').count()) === 1, `une annonce attend trente secondes avant de partir à toute la classe, avec « Annuler » (${delaiDeLAnnonce} s)`);
+  await capturer(tel, '32-formateur-annonce-part');
+
+  await telInes.reload();
+  await telInes.click('[data-geste="mesClasses"]');
+  await telInes.click(`[data-geste="choisir"][data-code="${code}"]`);
+  await telInes.getByText('Lundi 30, le cours a lieu en salle B12.').waitFor({ timeout: 60_000 });
+  await capturer(telInes, '33-apprenant-a-lire');
+  verifier(
+    (await telInes.locator('section', { hasText: 'À lire' }).getByText(/Awa Diallo-Sow · formateur/).count()) === 1,
+    '« À lire » montre l’annonce en entier, et qui l’a écrite',
+  );
+  await telInes.click('[data-geste="ecouter"]');
+  verifier((await telInes.evaluate(() => window.__ditsALaVoix)).some((t) => t.startsWith('Lundi 30')), '« Écouter » lit l’annonce avec la voix française de l’appareil');
+  await telNoah.reload();
+  await telNoah.getByText('Lundi 30, le cours a lieu en salle B12.').waitFor({ timeout: 30_000 });
+  verifier((await telNoah.locator('[data-geste="ecouter"]').count()) === 0, 'sans voix française sur l’appareil, pas d’« Écouter » : une voix en ligne enverrait le texte sur Internet');
+
+  await tel.click('[data-geste="modifier"]');
+  await tel.fill('#annonce', 'Lundi 30, le cours a lieu en salle C4.\nApportez votre ordinateur, chargé.');
+  await tel.click('[data-geste="publier"]');
+  await telInes.click('[data-geste="classe"]');
+  await telInes.getByText('Lundi 30, le cours a lieu en salle C4.').waitFor({ timeout: 60_000 });
+  await capturer(telInes, '34-apprenant-classe');
+  verifier(
+    (await telInes.getByText(/· modifiée/).count()) === 1 && (await telInes.getByText('salle B12').count()) === 0,
+    'son autrice la modifie : la classe lit la nouvelle version, marquée « modifiée »',
+  );
+
+  // Le soir, l'annonce attend l'ouverture suivante : une heure avant le début du matin, 8 h 30.
+  const jeudiSoir = new Date('2026-11-19T21:14:00+01:00');
+  await pages['awa-tel'].contexte.clock.setSystemTime(jeudiSoir);
+  await tel.click('[data-geste="retour"]');
+  await tel.click('[data-geste="classe"]');
+  await tel.fill('#annonce', 'Demain, le centre ouvre à 7 h 30.');
+  const toucheDuSoir = await tel.locator('[data-geste="publier"]').innerText();
+  await capturer(tel, '35-formateur-fil-le-soir');
+  verifier(/arrivera demain à 7\sh\s30/.test(toucheDuSoir), `écrite le soir, la touche dit quand l’annonce arrivera (${toucheDuSoir.replace(/\s+/g, ' ')})`);
+  await tel.click('[data-geste="publier"]');
+  await tel.locator('[data-geste="annulerAnnonce"]').waitFor({ state: 'detached', timeout: 45_000 });
+  await telInes.waitForTimeout(2000);
+  verifier((await telInes.getByText('Demain, le centre ouvre').count()) === 0, 'chez Inès, jeudi matin, l’annonce du soir n’est pas encore arrivée');
+  await pages.ines.contexte.clock.setSystemTime(new Date('2026-11-20T07:31:00+01:00'));
+  await telInes.reload();
+  await telInes.click('[data-geste="mesClasses"]');
+  await telInes.click(`[data-geste="choisir"][data-code="${code}"]`);
+  await telInes.getByText('Demain, le centre ouvre à 7 h 30.').waitFor({ timeout: 15_000 });
+  verifier(true, 'vendredi à 7 h 31, elle est arrivée');
+
+  // Julien, le chef, retire l'annonce d'Awa. Son horloge retarde : le retrait date quand même
+  // d'après la version qu'il remplace.
+  await telJulien.click('[data-geste="retour"]');
+  await telJulien.click('[data-geste="classe"]');
+  await telJulien.getByText('Lundi 30, le cours a lieu en salle C4.').waitFor({ timeout: 30_000 });
+  await capturer(telJulien, '36-julien-fil');
+  await telJulien.locator('article', { hasText: 'salle C4' }).locator('[data-geste="retirer"]').click();
+  await telJulien.locator('[data-geste="annulerAnnonce"]').waitFor({ state: 'detached', timeout: 45_000 });
+  await telInes.click('[data-geste="classe"]');
+  await telInes.getByText('salle C4').waitFor({ state: 'detached', timeout: 30_000 });
+  verifier((await telInes.getByText('Demain, le centre ouvre').count()) === 1, 'un responsable retire l’annonce d’un autre : elle quitte la classe, et l’autre reste');
+  const annoncesParties = annoncesSurLeFil();
+  verifier(annoncesParties.length === 4, `sur le fil, la première annonce, sa nouvelle version, celle du soir et le retrait, et rien de l’annonce annulée (${annoncesParties.length})`);
+  await telInes.click('[data-geste="retour"]');
+  await tel.click('[data-geste="retour"]');
 
   // Dix classes au plus : Sandrine Robert, au centre, en tient dix, puis essaie d'en créer une
   // onzième et d'en rejoindre une autre.

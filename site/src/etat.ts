@@ -77,6 +77,12 @@ export interface ClasseGardee {
   /// L'apprenant : ses présences, huit semaines, et les annonces de l'appel, sept jours.
   presences?: PresenceGardee[];
   annoncesAppel?: AnnonceGardee[];
+  /// Chez chacun, les annonces à la classe, signées : la dernière version de chacune, jusqu'à son
+  /// retrait, et son retrait jusqu'à la fermeture de la classe.
+  annoncesDeLaClasse?: string[];
+  /// Le responsable : l'annonce qui part dans trente secondes, une nouvelle version ou un retrait,
+  /// le temps d'annuler. Sans texte, c'est un retrait ; sans création, une annonce neuve.
+  annonceEnAttente?: { id: string; auteur: string; creee?: number; texte?: string; part: number };
 }
 
 export const estResponsable = (c: ClasseGardee): boolean => c.role === 'chef' || c.role === 'adjoint';

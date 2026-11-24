@@ -27,7 +27,7 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
    --depth=1 origin <version>`.
 3. Vérifier que tout passe, comme le 24 novembre 2026 :
-   - `cd coeur && cargo test` : 74 tests ;
+   - `cd coeur && cargo test` : 79 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
    - `cd ../site && npm run construire && npm run verifier && npm run
@@ -486,6 +486,46 @@ une republication qui emporte aussi les noms des apprenants. « Moi » chez
 l'apprenant reste identique au pixel près
 (`node outils/avant-apres.mjs moi e39a689`).
 
+Fait ensuite le 24 novembre 2026, les annonces de la classe, le début de
+l'étape 3 :
+
+- dans le cœur, l'annonce à la classe, signée, avec son vecteur. L'auteur
+  la modifie en signant une nouvelle version, et n'importe quel responsable
+  la retire. 79 tests ;
+- chez le formateur, « Classe » s'ouvre sur ses onglets, ceux qui marchent
+  déjà : Fil et Membres. Le fil montre les annonces en vigueur, avec
+  « Modifier » pour les siennes et « Retirer » pour toutes, puis de quoi
+  écrire la sienne. Une annonce part trente secondes après, avec
+  « Annuler », qui rend son texte ;
+- écrite en dehors des heures de la classe, une annonce arrive à
+  l'ouverture suivante, une heure avant le début du matin. La touche le
+  dit : « Publier · arrivera demain à 7 h 30 ». C'est le téléphone de
+  l'apprenant qui attend pour la montrer ;
+- chez l'apprenant, « Classe » montre les annonces, et l'écran du jour la
+  dernière de la semaine, sous « À lire ». « Écouter » la lit avec une voix
+  française de l'appareil, jamais avec une voix en ligne, qui enverrait le
+  texte sur Internet ;
+- les relais gardent une annonce trente jours : passé trois semaines,
+  chaque responsable la republie, pour qu'un apprenant qui arrive plus tard
+  la reçoive encore ;
+- la lettre qui tient l'ordinateur de la salle au courant ne porte plus que
+  la porte, les membres et les demandes : avec les annonces, elle aurait pu
+  dépasser les 60 Ko d'un relais.
+
+Le scénario le joue, jeudi : Awa publie, annule, publie, puis modifie. Inès
+lit l'annonce sous « À lire », l'écoute, puis voit « modifiée ». Noah, qui
+n'a qu'une voix en ligne, n'a pas « Écouter ». Le soir, Awa écrit une
+annonce qui n'arrive chez Inès que vendredi à 7 h 30. Julien, dont l'horloge
+retarde de deux jours, retire la première : elle quitte la classe. Sur le
+fil, rien de l'annonce annulée. 120 vérifications.
+
+Sept défauts posés exprès font chacun échouer le scénario : une annonce qui
+part sans délai, « Annuler » qui perd le texte, une annonce montrée avant
+son heure, une voix en ligne prise pour lire, un retrait daté à l'heure de
+l'appareil, des responsables qui n'écoutent pas le fil, et « À lire » sans
+l'annonce. Les captures avant et après viennent de
+`node outils/avant-apres.mjs classe` et `node outils/avant-apres.mjs fil`.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -511,11 +551,15 @@ on construit directement la première version complète
    sans les relais publics, rien ne marchait hors des tests. Les relais
    publics, l'appel annoncé sur le fil et la caméra sont faits le 17
    novembre 2026. La caméra du formateur, la semaine de l'apprenant, « En
-   règle » et le prochain cours sont faits le 23 novembre 2026. Reste, pour
-   l'écran d'entrée : « Ensuite » et « À lire », qui viendront avec les
-   documents et les annonces, et l'écran d'entrée du centre et du tuteur,
-   qui viendront avec eux.
-3. Les annonces et les messages privés.
+   règle » et le prochain cours sont faits le 23 novembre 2026. « À lire »
+   montre les annonces depuis le 24 novembre 2026. Reste, pour l'écran
+   d'entrée : « Ensuite » et les documents dans « À lire », qui viendront
+   avec les documents, et l'écran d'entrée du centre et du tuteur, qui
+   viendront avec eux.
+3. Les annonces et les messages privés. Les annonces sont faites le 24
+   novembre 2026. Restent les messages privés, et « Répondre » à une
+   annonce, qui passe par eux. « Joindre » viendra avec les documents, à
+   l'étape 5.
 4. Les absences, et la page du tuteur.
 5. Les documents à signer, la feuille exportée en PDF et le registre
    public.
@@ -748,6 +792,21 @@ Pour le nom d'un responsable (24 novembre 2026) :
 - « Moi » chez le formateur reprend celui de l'apprenant, sans maquette à
   lui : le nom et le thème.
 
+Pour les annonces (24 novembre 2026) :
+
+- « Classe » chez le formateur s'ouvre sur le fil. Ses onglets sont ceux de
+  la maquette de l'ordinateur, à 44 px au téléphone : la maquette les
+  dessine pour la souris ;
+- « Modifier » et « Retirer » sont sous chaque annonce du fil : la maquette
+  ne les dessine pas. Retirer attend aussi trente secondes ;
+- « Annuler » rend le texte de l'annonce, pour la corriger ;
+- « À lire » montre la dernière annonce arrivée dans la semaine ;
+- une modification ou un retrait date d'après la version qu'il remplace,
+  même si l'horloge de l'appareil retarde, comme pour la porte ;
+- une annonce se republie passé trois semaines, et vit sur les appareils
+  jusqu'à son retrait ;
+- « Écouter » ne se montre que si l'appareil a une voix française à lui.
+
 ## Ce qu'il tranche
 
 - Le poids réel du site, face au plafond de 300 Ko compressés
@@ -795,8 +854,8 @@ Pour le nom d'un responsable (24 novembre 2026) :
   de la référence (`main` par défaut), pose la même classe inventée dans
   les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour`,
   `signer`, `semaine`, `lire`, `prochain`, `redemande`, `membres`,
-  `adjoint`, `passer`, `reglages`, `moi`, `moi-formateur`, `mes-cours` et
-  `deux-classes` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le geste
+  `adjoint`, `passer`, `reglages`, `moi`, `moi-formateur`, `mes-cours`,
+  `deux-classes`, `classe` et `fil` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le geste
   qui mène à l'écran.
 - Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
   scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans

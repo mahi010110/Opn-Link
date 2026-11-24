@@ -112,6 +112,21 @@ const PLANCHES = [
       ['30-centre-mes-cours-200', 'Le texte agrandi à 200 %', 'À 360 pixels, rien ne sort de l’écran : la liste défile en hauteur.'],
     ],
   },
+  {
+    nom: 'planche-6-annonces',
+    titre: 'Les annonces de la classe',
+    sous: 'Jeudi, Awa publie une annonce, l’annule pour la corriger, la publie, puis change la salle. Inès la lit sous « À lire », puis dans « Classe ». Le soir, Awa en écrit une qui n’arrivera que vendredi matin. Julien, dont l’horloge retarde de deux jours, retire la première.',
+    colonnes: 3,
+    largeur: 1100,
+    images: [
+      ['31-formateur-fil', 'Le fil, chez Awa', '« Classe » s’ouvre sur le fil. L’annonce s’écrit en bas, au-dessus de « Publier ».'],
+      ['32-formateur-annonce-part', 'Trente secondes pour annuler', 'L’annonce part à toute la classe. « Annuler » rend son texte, pour le corriger.'],
+      ['33-apprenant-a-lire', 'Chez Inès', 'La dernière annonce de la semaine, sous « À lire ». « Écouter » la lit avec une voix française du téléphone, jamais une voix en ligne.'],
+      ['34-apprenant-classe', 'Classe, chez Inès', 'Les annonces, la plus ancienne d’abord. Awa a changé la salle : « modifiée ».'],
+      ['35-formateur-fil-le-soir', 'Le soir', 'En dehors des heures de la classe, la touche dit quand l’annonce arrivera : demain, une heure avant le cours.'],
+      ['36-julien-fil', 'Chez Julien', 'Il peut retirer les annonces d’Awa, pas les modifier. Son horloge retarde de deux jours : la première lui semble encore à venir.'],
+    ],
+  },
 ];
 
 const echappe = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/« /g, '« ').replace(/ »/g, ' »').replace(/ :/g, ' :');

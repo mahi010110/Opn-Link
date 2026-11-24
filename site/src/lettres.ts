@@ -98,6 +98,14 @@ export function annoncerLeProchain(coeur: Coeur, relais: Relais, fil: string, pr
   relais.publier(coeur.evenement_nostr(coeur.etiquette_du_fil(fil), Math.max(lendemain, maintenant + UN_JOUR), coeur.chiffrer_pour_le_fil(fil, prochain), maintenant));
 }
 
+/// Un responsable publie une annonce à la classe, ou une nouvelle version, sur le fil. Les relais
+/// la gardent trente jours après son arrivée, ou après sa republication.
+export function publierSurLeFil(coeur: Coeur, relais: Relais, fil: string, annonce: string, arrivee: number): void {
+  const maintenant = secondes();
+  const expiration = Math.max(Math.floor(arrivee / 1000), maintenant) + TRENTE_JOURS;
+  relais.publier(coeur.evenement_nostr(coeur.etiquette_du_fil(fil), expiration, coeur.chiffrer_pour_le_fil(fil, annonce), maintenant));
+}
+
 /// Ce qui arrive sur le fil de la classe, déchiffré. Celui qui le lit vérifie qui l'a signé.
 /// Rend de quoi arrêter d'écouter.
 export function ecouterLeFil(coeur: Coeur, relais: Relais, fil: string, rappel: (texte: string) => void): () => void {

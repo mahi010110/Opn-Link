@@ -537,7 +537,7 @@ destinataire. Elles ne sont pas encore figées.
 | `compte`, `clos`, `reouvert` | le formateur, à ses propres appareils | ce que la salle affiche : le compte, la clôture, son annulation |
 | `entree` | l'apprenant, à chaque responsable | sa demande d'entrée |
 | `admis` | le responsable, à l'apprenant | la porte, l'acceptation et le secret du fil |
-| `classe`, `montrer` | le formateur, à ses propres appareils | l'état d'une classe, et ce que la salle montre de quelle classe |
+| `classe`, `montrer` | le formateur, à ses propres appareils | la porte, les membres et les demandes d'une classe, et ce que la salle montre de quelle classe |
 | `adjoint` | l'adjoint invité, au chef seul | sa demande, signée comme celle d'un apprenant, et le jeton de l'invitation |
 | `nom` | l'apprenant, à chaque responsable | son nom corrigé (partie « Le nom corrigé ») |
 | `responsables` | un responsable, à chacun des autres | la porte et les passations, puis une lettre entre responsables (partie du même nom) |
@@ -598,8 +598,9 @@ responsable qui n'est pas chef, ou qui attend l'accord du chef tant qu'il
 n'a pas le secret du fil. En plus :
 
 - chez chacun : le nom corrigé qui part dans trente secondes
-  (`nomEnAttente`), et la correction la plus récente du nom de chaque
-  responsable (`noms`) ;
+  (`nomEnAttente`), la correction la plus récente du nom de chaque
+  responsable (`noms`), et les annonces à la classe, signées, la dernière
+  version de chacune, retraits compris (`annoncesDeLaClasse`) ;
 - chez l'apprenant : son acceptation, ou sa demande tant qu'il attend, ses
   présences signées avec leur demi-journée et leur réception
   (`presences`), les annonces de l'appel des sept derniers jours, une par
@@ -608,8 +609,10 @@ n'a pas le secret du fil. En plus :
 - chez les responsables : les acceptations, les demandes et les clés
   laissées dehors, les demi-journées où l'appel a été clos (`cours`), le
   dernier prochain cours annoncé (`prochain`) et celui qui attend la fin des
-  trente secondes (`prochainEnAttente`). `noms` y garde aussi la correction
-  la plus récente du nom de chaque membre, qui voyage entre eux ;
+  trente secondes (`prochainEnAttente`), et l'annonce qui part dans trente
+  secondes, une nouvelle version ou un retrait (`annonceEnAttente`). `noms`
+  y garde aussi la correction la plus récente du nom de chaque membre, qui
+  voyage entre eux ;
 - chez le chef : les invitations d'adjoint de moins de sept jours
   (`invitations`), les demandes d'adjoint qui attendent son accord
   (`candidats`), la main qu'il passe (`passationEnAttente`) et les horaires
@@ -628,5 +631,4 @@ l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.
 ## Ce qui n'est pas encore écrit
 
 - Les clés de stockage, dans le navigateur et dans l'app pour ordinateur.
-- Tout ce qui n'est pas l'appel : les annonces, les messages, les documents,
-  les demandes.
+- Les messages privés, les documents et les demandes.

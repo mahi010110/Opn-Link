@@ -65,3 +65,20 @@ export function bornes(c: Creneau, horaires: { matin: string; apres_midi: string
   });
   return [debut, fin];
 }
+
+const UNE_HEURE_MS = 3600_000;
+
+/// L'heure où arrive ce qu'on écrit maintenant : tout de suite pendant les heures de la classe,
+/// sinon à l'ouverture suivante, une heure avant le début du matin du prochain jour de semaine
+/// (conception, partie 2, « Les heures de la classe »).
+export function arrivee(horaires: { matin: string; apres_midi: string }, maintenant: number): number {
+  const ouvertureDu = (date: string) => bornes({ date, demi: 'matin' }, horaires)[0] - UNE_HEURE_MS;
+  const aujourdhui = iso(new Date(maintenant));
+  if (ouvre(aujourdhui)) {
+    if (maintenant < ouvertureDu(aujourdhui)) return ouvertureDu(aujourdhui);
+    if (maintenant <= bornes({ date: aujourdhui, demi: 'apres-midi' }, horaires)[1]) return maintenant;
+  }
+  let date = plusJours(aujourdhui, 1);
+  while (!ouvre(date)) date = plusJours(date, 1);
+  return ouvertureDu(date);
+}

@@ -328,9 +328,10 @@ vie, écrite dans le contrat.
 
 Les relais ne gardent rien plus de 30 jours. Ce qui dure plus longtemps vit
 sur les appareils, et les archives du centre vivent dans son app pour
-ordinateur et dans les fichiers qu'il exporte. Comment un apprenant qui
-arrive en cours d'année reçoit les annonces plus anciennes : à régler au
-prototype.
+ordinateur et dans les fichiers qu'il exporte. Un apprenant qui arrive en
+cours d'année reçoit quand même les annonces en vigueur : chaque responsable
+republie celles qui ont plus de trois semaines (choix du prototype, à
+valider, [prototype.md](prototype.md)).
 
 ## Évolutivité
 

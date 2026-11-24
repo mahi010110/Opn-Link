@@ -557,3 +557,24 @@ refusés.
   contrat. Aucune maquette ne la dessine, et le code sert d'identité à la
   classe : une question ouverte, avec une recommandation
   ([questions-ouvertes.md](questions-ouvertes.md)).
+- Le mainteneur : « continue enchaine ». Le travail passe à l'étape 3 de
+  [prototype.md](prototype.md) : les annonces de la classe, puis les
+  messages privés.
+- Les annonces de la classe sont faites. L'auteur modifie la sienne, et
+  n'importe quel responsable en retire une ([contrat.md](contrat.md),
+  partie « L'annonce à la classe »). Écrite en dehors des heures de la
+  classe, elle arrive à l'ouverture suivante, comme le prévoit la
+  conception.
+- « Écouter » ne prend qu'une voix française de l'appareil : une voix en
+  ligne enverrait le texte de l'annonce sur Internet, contre la règle 1.
+- Un apprenant qui arrive en cours d'année reçoit les annonces en vigueur :
+  chaque responsable republie celles qui ont plus de trois semaines.
+  C'était à régler au prototype ([architecture.md](architecture.md)).
+  Choisi en codant, à valider, avec « Classe » qui s'ouvre sur ses onglets
+  Fil et Membres, « Modifier » et « Retirer » sous chaque annonce, et la
+  dernière annonce de la semaine sous « À lire »
+  ([prototype.md](prototype.md), partie « Les choix du prototype, à
+  valider »).
+- La lettre qui tient l'ordinateur de la salle au courant ne porte plus que
+  ce que la salle utilise : avec les annonces, elle aurait pu dépasser les
+  60 Ko qu'un relais accepte ([mesures.md](mesures.md)).

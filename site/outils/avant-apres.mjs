@@ -15,6 +15,8 @@
 //   node outils/avant-apres.mjs reglages  les réglages du chef, puis les horaires
 //   node outils/avant-apres.mjs moi       « Moi » chez l'apprenant, puis la fenêtre « Nom »
 //   node outils/avant-apres.mjs moi-formateur  « Moi » chez le formateur, puis la fenêtre « Nom »
+//   node outils/avant-apres.mjs classe    l'apprenant : « À lire » sur l'écran du jour, puis « Classe »
+//   node outils/avant-apres.mjs fil       le formateur : le fil de la classe, puis l'onglet « Membres »
 //   node outils/avant-apres.mjs mes-cours « Mes cours » chez le formateur, trois classes, puis « Créer une classe »
 //   node outils/avant-apres.mjs deux-classes  Léa dans deux classes : la barre, « Mes classes », l'appel de l'autre classe
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
@@ -88,6 +90,8 @@ const porteAvecJulien = coeur.signer_porte(
 );
 const fil = coeur.nouveau_secret_du_fil();
 const julienCorrige = julien.corriger_son_nom(code, 'Julien', 'Morel-Petit', OUVERTURE - 500_000);
+const LUNDI = OUVERTURE - 86_400_000;
+const annonceDAwa = awa.publier_annonce(fil, coeur.identifiant_d_annonce(), LUNDI, 'Lundi 23, le cours a lieu en salle B12.\nApportez votre ordinateur, chargé.', LUNDI, LUNDI);
 const appel = coeur.Appel.ouvrir(code, '2026-11-17', 'matin', awa, ['Léa', 'Martin', lea.cle(), lea.boite()].join('\t'), OUVERTURE);
 const appelOuvert = { journal: appel.journal(), secret: appel.secret() };
 const JEUDI = new Date('2026-11-19T10:00:00+01:00').getTime();
@@ -175,7 +179,12 @@ const lireSonQr = async (page) => {
   await page.waitForTimeout(1500);
 };
 const changerLeProchain = (page) => page.locator('[data-geste="changerProchain"]').click({ timeout: 5000 });
-const ouvrirMembres = (page) => page.locator('[data-geste="classe"]').click({ timeout: 5000 });
+// « Classe » s'ouvre sur le fil depuis le 24 novembre 2026 : « Membres » est un onglet. Avant, il
+// n'y avait pas d'onglet, et « Classe » menait droit aux membres.
+const ouvrirMembres = async (page) => {
+  await page.locator('[data-geste="classe"]').click({ timeout: 5000 });
+  await page.locator('[data-onglet="membres"]').click({ timeout: 1000 }).catch(() => {});
+};
 const puis = (geste) => async (page) => {
   await ouvrirMembres(page);
   await page.locator(`[data-geste="${geste}"]`).click({ timeout: 5000 });
@@ -308,6 +317,34 @@ const CAS = {
       { nom: 'Un appel ouvert en BTS SIO 1', relais: relaisAutreClasse, heure: JEUDI, stockage: leaDansDeuxClasses },
     ],
   },
+  classe: {
+    titre: 'Les annonces, chez l’apprenant',
+    etats: [
+      { nom: '« À lire », sur l’écran du jour', relais: relaisProchain, heure: CLOTURE + 3 * 60_000, voix: true, stockage: { ...leaASigne, classes: [{ code, role: 'apprenant', porte, fil, acceptation, annoncesDeLaClasse: [annonceDAwa] }] } },
+      {
+        nom: '« Classe »',
+        relais: relaisProchain,
+        heure: CLOTURE + 3 * 60_000,
+        voix: true,
+        stockage: { ...leaASigne, classes: [{ code, role: 'apprenant', porte, fil, acceptation, annoncesDeLaClasse: [annonceDAwa] }] },
+        geste: (page) => page.locator('[data-geste="classe"]').click({ timeout: 5000 }),
+      },
+    ],
+  },
+  fil: {
+    titre: '« Classe », chez le formateur',
+    etats: [
+      {
+        nom: 'Le fil',
+        qui: 'awa',
+        relais: relaisVide,
+        heure: OUVERTURE - 6 * 60_000,
+        stockage: awaTientLaClasse(OUVERTURE, undefined, { annoncesDeLaClasse: [annonceDAwa] }),
+        geste: (page) => page.locator('[data-geste="classe"]').click({ timeout: 5000 }),
+      },
+      { nom: 'L’onglet « Membres »', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { annoncesDeLaClasse: [annonceDAwa] }), geste: ouvrirMembres },
+    ],
+  },
   lire: {
     titre: '« Lire son QR », chez le formateur',
     etats: [
@@ -349,6 +386,13 @@ for (const [n, etat] of CAS[cas].etats.entries()) {
           ...(etat.iphone ? { userAgent: IPHONE } : {}),
         });
         await contexte.clock.setSystemTime(new Date(etat.heure));
+        // Une voix française de l'appareil, simulée : Chromium sans écran n'en a pas.
+        if (etat.voix) {
+          await contexte.addInitScript(() => {
+            const voix = [{ name: 'Voix française', lang: 'fr-FR', localService: true, default: true, voiceURI: 'fr' }];
+            Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { getVoices: () => voix, speak: () => {}, cancel: () => {}, addEventListener: () => {}, removeEventListener: () => {} } });
+          });
+        }
         const qui = etat.qui ?? 'lea';
         const stockage = qui === 'lea' ? { cles: lea.secrets(), classes: [classe], 'accueil-propose': 1, ...etat.stockage } : etat.stockage;
         await contexte.addInitScript(

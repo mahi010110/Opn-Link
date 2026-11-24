@@ -4,6 +4,7 @@
 // reste là pendant les heures de la classe. Sans réponse au bout de dix secondes, l'écran montre
 // seul le QR à tendre au formateur.
 
+import { type AnnonceDeLaClasse, ecouter, enVigueur, garderLaVersion, lireAnnonce, noteHtml, relireLesAnnonces, toucheEcouter } from './annonces';
 import { couper, poser, viser } from './camera';
 import { type Moment, type Navigation, type Suivi, titreDesClasses } from './classes';
 import { type Contexte, faits, nomDe } from './contexte';
@@ -22,7 +23,8 @@ type Vue =
   | { ecran: 'signer'; chiffres: string; erreur?: string; erreurQr?: string; sansCamera?: boolean }
   | { ecran: 'sans-reseau' }
   | { ecran: 'moi' }
-  | { ecran: 'nom'; prenom: string; nom: string; erreurs?: Erreurs };
+  | { ecran: 'nom'; prenom: string; nom: string; erreurs?: Erreurs }
+  | { ecran: 'classe' };
 
 type Annonce = ReturnType<Contexte['coeur']['lire_annonce_de_l_appel']>;
 interface Prochain extends Creneau {
@@ -39,13 +41,14 @@ const UNE_SEMAINE = 7;
 const SANS_VISITE_JOURS = 7;
 // Le temps de joindre un relais au démarrage, avant de conclure qu'il n'y a pas de réseau.
 const HORS_LIGNE_MS = 5_000;
-const MENU = `<nav class="menu" aria-label="Entrées"><a href="#">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#" data-geste="moi">Moi</a></nav>`;
+const MENU = `<nav class="menu" aria-label="Entrées"><a href="#" data-geste="classe">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#" data-geste="moi">Moi</a></nav>`;
 const POUR_LES_RESPONSABLES: PourQui = {
   voit: 'le nom que voient les responsables',
   part: 'part aux responsables',
   verront: 'Les responsables de la classe verront ton nouveau nom, et l’ancien à côté.',
 };
 const ANNULER_MS = 30_000;
+const SEPT_JOURS_MS = 7 * 86_400_000;
 // Les noms corrigés qui attendent leur porte : une poignée suffit, le reste revient chaque jour.
 const NOMS_EN_SUSPENS = 20;
 
@@ -62,8 +65,9 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   let annonces = (classe.annoncesAppel ?? []).filter((a) => a.date >= depuis(UNE_SEMAINE));
   let prochain = classe.prochain as Prochain | undefined;
   if (prochain && prochain.date < depuis(UNE_SEMAINE)) prochain = undefined;
+  let annoncesDeLaClasse = relireLesAnnonces(coeur, classe.fil, classe.annoncesDeLaClasse, porte.responsables.map((r) => r.cle));
   const garder = () => {
-    classe = { ...classe, presences, annoncesAppel: annonces, prochain };
+    classe = { ...classe, presences, annoncesAppel: annonces, prochain, annoncesDeLaClasse: annoncesDeLaClasse.map((a) => a.signee) };
     garderClasse(classe);
   };
 
@@ -141,7 +145,17 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     garder();
     if (vue.ecran === 'jour') rendre();
   };
+  // Une annonce à la classe : sa version la plus récente compte, et elle se montre une fois arrivée.
+  const recevoirUneAnnonce = (a: AnnonceDeLaClasse) => {
+    const ajour = garderLaVersion(annoncesDeLaClasse, a);
+    if (!ajour) return;
+    annoncesDeLaClasse = ajour;
+    garder();
+    if (vue.ecran === 'jour' || vue.ecran === 'classe') rendre();
+  };
   const recevoirDuFil = (texte: string) => {
+    const deLaClasse = lireAnnonce(coeur, classe.fil!, texte, responsables());
+    if (deLaClasse) return recevoirUneAnnonce(deLaClasse);
     let a: Annonce;
     try {
       a = coeur.lire_annonce_de_l_appel(classe.code, classe.fil!, texte, responsables());
@@ -392,6 +406,14 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
       rendre();
     },
     mesClasses: () => nav.mesCours(),
+    classe: () => {
+      vue = { ecran: 'classe' };
+      rendre();
+    },
+    ecouter: (c: HTMLElement) => {
+      const a = annoncesDeLaClasse.find((x) => x.id === c.dataset.annonce);
+      if (a) ecouter(a.texte);
+    },
   };
 
   const auClavier = (e: KeyboardEvent) => {
@@ -444,10 +466,12 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
       if (!surIPhone()) touche = `<div class="gestes"><button class="touche" data-geste="installer">${ic('download', 'ic-24')}<span>Installer</span></button></div>`;
     }
     const semaine = `<section class="bloc" aria-label="Ma semaine"><p class="etiquette">Ma semaine</p>${semaineHtml(sait())}</section>`;
+    const aLire = derniereAnnonce();
+    const lire = aLire ? `<section class="bloc"><p class="etiquette">À lire</p>${annonceHtml(aLire)}</section>` : '';
     afficher(
       'tel',
       'Aujourd’hui',
-      `${barre(ouvert)}${MENU}<main class="page"><section class="reponse">${reponse}</section>${fenetre}${semaine}</main><footer class="bas">${touche}${faits(relais)}</footer>`,
+      `${barre(ouvert)}${MENU}<main class="page"><section class="reponse">${reponse}</section>${fenetre}${semaine}${lire}</main><footer class="bas">${touche}${faits(relais)}</footer>`,
       gestes,
     );
     ajusterLaSemaine(sait());
@@ -499,11 +523,35 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const ecranMoi = () => afficherMoi(porte.nom, monNom(), classe.nomEnAttente, POUR_LES_RESPONSABLES, faits(relais), gestes);
   const ecranNom = (v: Extract<Vue, { ecran: 'nom' }>) => afficherNom(porte.nom, v, v.erreurs ?? {}, POUR_LES_RESPONSABLES, faits(relais), gestes);
 
+  // Une annonce, signée de son auteur, tel que la classe le voit.
+  const annonceHtml = (a: AnnonceDeLaClasse) => {
+    const r = porte.responsables.find((x) => x.cle === a.auteur);
+    return noteHtml(a, r ? nomDuResponsableDe(r) : 'Un responsable', r?.role ?? '', toucheEcouter(a));
+  };
+  // « À lire » : la dernière annonce arrivée, de la semaine.
+  const derniereAnnonce = () =>
+    enVigueur(annoncesDeLaClasse, maintenant())
+      .filter((a) => a.arrivee >= maintenant() - SEPT_JOURS_MS)
+      .sort((x, y) => x.arrivee - y.arrivee)
+      .pop();
+  const ecranClasse = () => {
+    const liste = enVigueur(annoncesDeLaClasse, maintenant());
+    afficher(
+      'tel',
+      'Classe',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Classe</h1><span class="mono">${esc(porte.nom)}</span></header>
+       <main class="page"><section class="bloc"><p class="etiquette">Annonces</p>${liste.length ? liste.map(annonceHtml).join('') : '<p class="mono">Pas encore d’annonce.</p>'}</section></main>
+       <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button></div>${faits(relais)}</footer>`,
+      gestes,
+    );
+  };
+
   const rendre = () => {
     if (arrete || !nav.affichee()) return;
     if (!classe.acceptation) return attente();
     if (vue.ecran === 'signer') return ecranSigner(vue);
     if (vue.ecran === 'moi') return ecranMoi();
+    if (vue.ecran === 'classe') return ecranClasse();
     if (vue.ecran === 'nom') return ecranNom(vue);
     if (vue.ecran === 'sans-reseau') return ecranSansReseau();
     return ecranDuJour();
@@ -551,11 +599,19 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     }
     rendre();
   }));
+  // Une annonce écrite en dehors des heures de la classe se montre à son heure d'arrivée.
+  let vuJusqua = Date.now();
   const chaqueSeconde = setInterval(() => {
     const avant = classe.nomEnAttente;
     envoyerLeNomALHeure();
     if (avant && vue.ecran === 'moi') rendre();
+    const arrivee = annoncesDeLaClasse.some((a) => a.arrivee > vuJusqua && a.arrivee <= Date.now());
+    vuJusqua = Date.now();
+    if (arrivee && (vue.ecran === 'jour' || vue.ecran === 'classe')) rendre();
   }, 1000);
+  // Les voix de l'appareil se chargent après la page : « Écouter » apparaît quand elles sont là.
+  const voixChargees = () => (vue.ecran === 'jour' || vue.ecran === 'classe') && rendre();
+  if ('speechSynthesis' in window) speechSynthesis.addEventListener('voiceschanged', voixChargees);
   envoyerLeNomALHeure();
   const reseauAttendu = setTimeout(() => vue.ecran === 'jour' && rendre(), HORS_LIGNE_MS + 100);
   ecouterLAppel();
@@ -581,6 +637,7 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
       clearInterval(chaqueSeconde);
       clearTimeout(reseauAttendu);
       document.removeEventListener('keydown', auClavier);
+      if ('speechSynthesis' in window) speechSynthesis.removeEventListener('voiceschanged', voixChargees);
     },
   };
 }

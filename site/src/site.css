@@ -87,3 +87,12 @@ button.rangee:first-child {
 .rangee.ici > .ic {
   color: inherit;
 }
+
+/* Les onglets de la classe : ceux des maquettes, au doigt. Une cible fait 44 px au téléphone. */
+.tel .onglets a {
+  display: grid;
+  place-items: center;
+  min-height: var(--control-h-touch);
+  padding: 0 14px;
+  font-size: var(--text-14);
+}

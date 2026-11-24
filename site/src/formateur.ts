@@ -2,25 +2,27 @@
 // La salle montre le QR, le téléphone montre les noms. Sa caméra lit le QR d'un apprenant sans réseau.
 // Le chef ou un adjoint : tous font l'appel. Seul le chef nomme les adjoints.
 
+import { type AnnonceDeLaClasse, enVigueur, garderLaVersion, lireAnnonce, noteHtml, relireLesAnnonces } from './annonces';
 import { couper, poser, viser } from './camera';
 import type { Moment, Navigation, Suivi } from './classes';
 import type { Appel } from './coeur';
 import { type Contexte, faits, nomDe } from './contexte';
-import { type Creneau, type Demi, bornes, enJour, enTexte, lireCreneau, lundiDe, ouvre, plusJours, proposerLeProchain, rang, suivant } from './creneaux';
+import { type Creneau, type Demi, arrivee, bornes, enJour, enTexte, lireCreneau, lundiDe, ouvre, plusJours, proposerLeProchain, rang, suivant } from './creneaux';
 import { type ClasseGardee, appelGarde, classes, ecrire, garderAppel, garderClasse } from './etat';
 import { type Horaires, champsDesHoraires, lireLesHoraires } from './horaires';
 import { type Erreurs, nomTape } from './entree';
-import { annoncerLAppel, annoncerLeProchain, ecouterLaPorte, envoyer, lienDAdjoint, lienDeLaClasse, nouveauJeton, publierPorte, recevoir } from './lettres';
+import { annoncerLAppel, annoncerLeProchain, ecouterLaPorte, ecouterLeFil, envoyer, lienDAdjoint, lienDeLaClasse, nouveauJeton, publierPorte, publierSurLeFil, recevoir } from './lettres';
 import { type PourQui, afficherMoi, afficherNom } from './moi';
 import { aDeQuoiRepondre, chefActuel, ecrireAuxResponsables, etatChange, fusionner, nomCorrige, nomsAJour, nomsDesResponsables, passationsDe, porteAJour } from './responsables';
 import { codeDe, phrase } from './textes';
-import { afficher, codeAffiche, dateIso, demiJournee, esc, heure, heureCourte, horaire, ic, jour, paves } from './vue';
+import { aQuelMoment, afficher, codeAffiche, dateIso, demiJournee, esc, heure, heureCourte, horaire, ic, jour, paves } from './vue';
 
 type Vue =
   | { ecran: 'cours' }
   | { ecran: 'inviter'; montre: boolean; copie?: boolean }
   | { ecran: 'accepter'; dehors: Set<string> }
   | { ecran: 'membres' }
+  | { ecran: 'fil'; brouillon: string; modifie?: string; erreur?: string }
   | { ecran: 'nom'; cle: string }
   | { ecran: 'lire'; cle: string; erreur?: string; sansCamera?: boolean }
   | { ecran: 'prochain'; choix: Creneau }
@@ -32,6 +34,9 @@ type Vue =
   | { ecran: 'monNom'; prenom: string; nom: string; erreurs?: Erreurs };
 
 const ANNULER_MS = 30_000;
+// Les relais gardent une annonce trente jours : passé trois semaines, chaque responsable la
+// republie, pour qu'un apprenant qui arrive plus tard la reçoive encore.
+const TROIS_SEMAINES_MS = 21 * 86_400_000;
 const HUIT_SEMAINES = 56;
 // « Changer » propose les trois semaines qui viennent : une alternance tient dedans.
 const JOURS_PROPOSES = 21;
@@ -72,6 +77,12 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   let vue: Vue = { ecran: 'cours' };
   let arrete = false;
   const arrets: (() => void)[] = [];
+  let annoncesDeLaClasse = relireLesAnnonces(coeur, classe.fil, classe.annoncesDeLaClasse, responsables());
+  // Ce qui ne regarde que cet appareil, sans lettre aux autres responsables ni à la salle.
+  const noter = (nouvelle: ClasseGardee) => {
+    classe = nouvelle;
+    garderClasse(classe);
+  };
 
   const membres = () => (classe.membres ?? []).map((a) => coeur.lire_acceptation(classe.code, a, responsables()));
   const demandes = () => (classe.demandes ?? []).map((d) => coeur.lire_demande(classe.code, d));
@@ -86,7 +97,9 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     classe = nouvelle;
     porte = coeur.lire_porte(classe.code, classe.porte);
     garderClasse(classe);
-    envoyer(coeur, relais, moi.boite(), { v: 1, t: 'classe', classe });
+    // La salle n'a besoin que de la porte, des membres et des demandes : la lettre reste petite.
+    const { code, role, porte: p, membres, demandes, secrets } = classe;
+    envoyer(coeur, relais, moi.boite(), { v: 1, t: 'classe', classe: { code, role, porte: p, membres, demandes, secrets } });
     if (diffuser && etatChange(avant, classe)) ecrireAuxResponsables(ctx, classe);
   };
   // Une nouvelle porte ou une passation date d'après la porte et la passation d'avant, même si
@@ -167,6 +180,32 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     ecrire('moi', { prenom: attente.prenom, nom: attente.nom });
     changer({ ...classe, noms: nomsAJour(ctx, classe.code, [...(classe.noms ?? []), correction]), nomEnAttente: undefined });
   };
+  // Une annonce part à toute la classe : trente secondes pour annuler (règle 6), puis elle part,
+  // signée. Une nouvelle version ou un retrait date d'après la version qu'il remplace, même si
+  // l'horloge de cet appareil retarde sur celle d'un autre responsable.
+  const envoyerLAnnonceALHeure = () => {
+    const attente = classe.annonceEnAttente;
+    if (!attente || Date.now() < attente.part || !classe.fil) return;
+    const avant = annoncesDeLaClasse.find((a) => a.id === attente.id);
+    const quand = Math.max(Date.now(), (avant?.quand ?? 0) + 1);
+    const creee = attente.creee ?? quand;
+    const signee =
+      attente.texte === undefined
+        ? moi.retirer_annonce(classe.fil, attente.id, attente.auteur, creee, quand)
+        : moi.publier_annonce(classe.fil, attente.id, creee, attente.texte, quand, arrivee(porte, quand));
+    const a = lireAnnonce(coeur, classe.fil, signee, responsables())!;
+    publierSurLeFil(coeur, relais, classe.fil, signee, a.arrivee);
+    annoncesDeLaClasse = garderLaVersion(annoncesDeLaClasse, a) ?? annoncesDeLaClasse;
+    noter({ ...classe, annonceEnAttente: undefined, annoncesDeLaClasse: annoncesDeLaClasse.map((x) => x.signee) });
+  };
+  const recevoirDuFil = (texte: string) => {
+    const a = lireAnnonce(coeur, classe.fil!, texte, responsables());
+    const ajour = a && garderLaVersion(annoncesDeLaClasse, a);
+    if (!ajour) return;
+    annoncesDeLaClasse = ajour;
+    noter({ ...classe, annoncesDeLaClasse: annoncesDeLaClasse.map((x) => x.signee) });
+    if (vue.ecran === 'fil') rendre();
+  };
   // Les nouveaux horaires remplacent ceux de toute la classe : trente secondes pour annuler, puis
   // la porte qui les porte part, et les téléphones des apprenants la suivent.
   const changerLesHorairesALHeure = () => {
@@ -196,6 +235,8 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   if (!classe.portePubliee || Date.now() - classe.portePubliee > UN_JOUR_MS) {
     const nomsCorriges = nomsDesResponsables(ctx, classe.code, classe.porte, classe.noms ?? []);
     for (const texte of [classe.porte, ...(classe.passations ?? []), ...nomsCorriges]) publierPorte(coeur, relais, classe.code, texte);
+    const anciennes = enVigueur(annoncesDeLaClasse).filter((a) => Date.now() - a.quand > TROIS_SEMAINES_MS);
+    if (classe.fil) for (const a of anciennes) publierSurLeFil(coeur, relais, classe.fil, a.signee, a.arrivee);
     changer({ ...classe, portePubliee: Date.now() });
   }
 
@@ -314,7 +355,37 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
       accepter(vue.dehors);
       vers({ ecran: 'cours' });
     },
-    classe: () => vers({ ecran: 'membres' }),
+    classe: () => vers({ ecran: 'fil', brouillon: '' }),
+    onglet: (c: HTMLElement) => vers(c.dataset.onglet === 'membres' ? { ecran: 'membres' } : { ecran: 'fil', brouillon: '' }),
+    publier: () => {
+      if (vue.ecran !== 'fil' || classe.annonceEnAttente) return;
+      const texte = vue.brouillon.trim();
+      if (!texte) return vers({ ...vue, erreur: 'Écris ton annonce.' });
+      const id = vue.modifie;
+      const avant = annoncesDeLaClasse.find((a) => a.id === id);
+      noter({ ...classe, annonceEnAttente: { id: avant?.id ?? coeur.identifiant_d_annonce(), auteur: moi.cle(), creee: avant?.creee, texte, part: Date.now() + ANNULER_MS } });
+      vers({ ecran: 'fil', brouillon: '' });
+    },
+    modifier: (c: HTMLElement) => {
+      const a = annoncesDeLaClasse.find((x) => x.id === c.dataset.annonce);
+      if (!a || a.auteur !== moi.cle()) return;
+      vers({ ecran: 'fil', brouillon: a.texte, modifie: a.id });
+      document.querySelector<HTMLTextAreaElement>('#annonce')?.focus();
+    },
+    retirer: (c: HTMLElement) => {
+      const a = annoncesDeLaClasse.find((x) => x.id === c.dataset.annonce);
+      if (!a || classe.annonceEnAttente) return;
+      noter({ ...classe, annonceEnAttente: { id: a.id, auteur: a.auteur, creee: a.creee, part: Date.now() + ANNULER_MS } });
+      rendre();
+    },
+    // Annuler rend le texte : on corrige, puis on publie de nouveau.
+    annulerAnnonce: () => {
+      const attente = classe.annonceEnAttente;
+      noter({ ...classe, annonceEnAttente: undefined });
+      if (attente?.texte === undefined) return rendre();
+      const modifie = annoncesDeLaClasse.some((a) => a.id === attente.id) ? attente.id : undefined;
+      vers({ ecran: 'fil', brouillon: attente.texte, modifie });
+    },
     nommer: () => vers({ ecran: 'adjoint', jeton: nouveauJeton(), role: 'formateur', montre: false }),
     montrerInvitation: () => {
       if (vue.ecran !== 'adjoint') return;
@@ -551,12 +622,9 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
       .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
     const chef = chefActuel(ctx, classe);
     const attente = classe.passationEnAttente;
-    afficher(
-      'tel',
-      'Membres',
-      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Membres</h1><span class="mono">${esc(porte.nom)}</span></header>
-       <main class="page">
-         <section class="bloc"><p class="etiquette">Responsables</p><div class="liste">${porte.responsables
+    fenetreClasse(
+      'membres',
+      `<section class="bloc"><p class="etiquette">Responsables</p><div class="liste">${porte.responsables
            .map((r) => {
              const devient = attente?.vers === r.cle ? ` · devient chef dans ${Math.max(1, Math.ceil((attente.part - Date.now()) / 1000))}\u00a0s` : '';
              const annuler = devient ? `<button class="btn" data-geste="annulerPassation">${ic('undo')}Annuler</button>` : '';
@@ -572,11 +640,73 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
            ${estChef() ? `<button class="btn" data-geste="nommer">${ic('plus')}Nommer un adjoint</button>` : ''}
            ${estChef() ? `<button class="btn" data-geste="reglages">${ic('settings-2')}Réglages</button>` : ''}
          </div>
-         ${estChef() && adjoints().length && !attente ? `<section class="bloc"><p class="etiquette">La fin</p><div class="note-gestes"><button class="btn" data-geste="passer">${ic('switch')}Passer la main</button></div></section>` : ''}
-       </main>
-       <footer class="bas"><div class="gestes">${retour}</div>${faits(relais)}</footer>`,
-      gestes,
+         ${estChef() && adjoints().length && !attente ? `<section class="bloc"><p class="etiquette">La fin</p><div class="note-gestes"><button class="btn" data-geste="passer">${ic('switch')}Passer la main</button></div></section>` : ''}`,
+      `<div class="gestes">${retour}</div>${faits(relais)}`,
     );
+  };
+
+  // La fenêtre « Classe » : ses onglets, ceux qui marchent déjà. Suivi, Présences et Documentation
+  // viendront avec leurs étapes.
+  const ONGLETS = [
+    ['fil', 'Fil'],
+    ['membres', 'Membres'],
+  ] as const;
+  const fenetreClasse = (onglet: (typeof ONGLETS)[number][0], contenu: string, bas: string, garderFocus = false) =>
+    afficher(
+      'tel',
+      ONGLETS.find(([id]) => id === onglet)![1],
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Classe</h1><span class="mono">${esc(porte.nom)}</span></header>
+       <nav class="onglets" aria-label="Dans la classe">${ONGLETS.map(([id, nom]) => `<a href="#" data-geste="onglet" data-onglet="${id}"${id === onglet ? ' class="ici" aria-current="page"' : ''}>${nom}</a>`).join('')}</nav>
+       <main class="page">${contenu}</main>
+       <footer class="bas">${bas}</footer>`,
+      gestes,
+      garderFocus,
+    );
+
+  // Le fil : les annonces en vigueur, avec leurs gestes, puis la sienne à écrire. Une annonce
+  // écrite en dehors des heures de la classe arrive à l'ouverture suivante : la touche le dit.
+  const auteurDe = (a: AnnonceDeLaClasse) => porte.responsables.find((r) => r.cle === a.auteur);
+  const ecranFil = (v: Extract<Vue, { ecran: 'fil' }>) => {
+    const maintenant = Date.now();
+    const attente = classe.annonceEnAttente;
+    const gestesDe = (a: AnnonceDeLaClasse) =>
+      attente
+        ? ''
+        : `${a.auteur === moi.cle() ? `<button class="btn" data-geste="modifier" data-annonce="${esc(a.id)}">${ic('pencil')}Modifier</button>` : ''}<button class="btn" data-geste="retirer" data-annonce="${esc(a.id)}">${ic('trash')}Retirer</button>`;
+    const notes = enVigueur(annoncesDeLaClasse)
+      .map((a) => {
+        const r = auteurDe(a);
+        return noteHtml(a, r ? nomDe(nomActuel(r)) : 'Un responsable', r?.role ?? '', gestesDe(a), maintenant);
+      })
+      .join('');
+    const arrive = arrivee(porte, maintenant);
+    const horsDesHeures = arrive > maintenant;
+    const contenu = attente
+      ? `<div class="liste"><div class="rangee"><div><b>${attente.texte === undefined ? 'L’annonce sera retirée' : 'Ton annonce'}</b><span class="mono">part à la classe dans ${Math.max(1, Math.ceil((attente.part - maintenant) / 1000))}\u00a0s</span></div><button class="btn" data-geste="annulerAnnonce">${ic('undo')}Annuler</button></div></div>`
+      : `<div class="bloc"><label class="champ-nom" for="annonce">${v.modifie ? 'Ton annonce, à modifier' : 'Ton annonce à la classe'}</label>
+         <textarea id="annonce" class="champ${v.erreur ? ' faux' : ''}" rows="3"${v.erreur ? ' aria-describedby="erreur-annonce"' : ''}>${esc(v.brouillon)}</textarea>
+         ${v.erreur ? `<p class="erreur" id="erreur-annonce">${ic('info-box')}<span>${esc(v.erreur)}</span></p>` : ''}</div>`;
+    const touche = attente
+      ? ''
+      : `<button class="touche" data-geste="publier">${ic('megaphone', 'ic-24')}<span>${v.modifie ? 'Modifier' : 'Publier'}${horsDesHeures ? `<small>arrivera ${aQuelMoment(arrive, maintenant)}</small>` : ''}</span></button>`;
+    const ligne = horsDesHeures && !relais.attend ? `<p class="faits"><span>${jour(maintenant)}, ${heure(maintenant)} · rouvre ${aQuelMoment(arrive, maintenant)}</span></p>` : faits(relais);
+    const ecrit = document.activeElement?.id === 'annonce' ? (document.activeElement as HTMLTextAreaElement) : undefined;
+    const selection = ecrit ? [ecrit.selectionStart, ecrit.selectionEnd] : undefined;
+    fenetreClasse(
+      'fil',
+      `${notes || '<p class="mono">Pas encore d’annonce.</p>'}<div style="flex: 1"></div>${contenu}`,
+      `<div class="gestes">${retour}${touche}</div>${ligne}`,
+      !!ecrit,
+    );
+    const champ = document.querySelector<HTMLTextAreaElement>('#annonce');
+    if (!champ) return;
+    champ.oninput = () => {
+      if (vue.ecran === 'fil') vue = { ...vue, brouillon: champ.value, erreur: undefined };
+    };
+    if (selection) {
+      champ.focus();
+      champ.setSelectionRange(selection[0], selection[1]);
+    }
   };
 
   const ecranPasser = (v: Extract<Vue, { ecran: 'passer' }>) => {
@@ -839,6 +969,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     if (vue.ecran === 'inviter') return inviter(vue);
     if (vue.ecran === 'accepter') return ecranAccepter(vue);
     if (vue.ecran === 'membres') return ecranMembres();
+    if (vue.ecran === 'fil') return ecranFil(vue);
     if (vue.ecran === 'nom' && appel && !appel.close()) return nom(appel, vue.cle);
     if (vue.ecran === 'lire' && appel && !appel.close()) return lireQr(vue);
     const autreDemi = appel && (appel.date() !== dateIso(maintenant) || appel.demi() !== demiJournee(maintenant, porte.apres_midi));
@@ -908,7 +1039,11 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     if (vue.ecran === 'cours' || vue.ecran === 'accepter' || vue.ecran === 'membres') rendre();
   }));
   arrets.push(ecouterLaPorte(coeur, relais, classe.code, suivreLaPorte));
+  if (classe.fil) arrets.push(ecouterLeFil(coeur, relais, classe.fil, recevoirDuFil));
   const chaqueSeconde = setInterval(() => {
+    const annonce = classe.annonceEnAttente;
+    envoyerLAnnonceALHeure();
+    if (annonce && vue.ecran === 'fil') rendre();
     const avant = classe.prochainEnAttente;
     const passation = classe.passationEnAttente;
     const horaires = classe.horairesEnAttente;
@@ -927,6 +1062,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   passerLaMainALHeure();
   changerLesHorairesALHeure();
   envoyerMonNomALHeure();
+  envoyerLAnnonceALHeure();
 
   return {
     code,

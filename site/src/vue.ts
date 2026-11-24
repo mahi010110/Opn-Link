@@ -1,5 +1,7 @@
 // Ce que partagent les écrans : écrire une page, les icônes, les heures, les gestes.
 
+import { joursEntre } from './creneaux';
+
 const echappes: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 export const esc = (t: string): string => t.replace(/[&<>"']/g, (c) => echappes[c]);
 
@@ -26,6 +28,17 @@ export const horaire = (h: string): string => {
   const [heures, minutes = '00'] = h.split(':');
   return minutes === '00' ? `${Number(heures)}${espace}h` : `${Number(heures)}${espace}h${espace}${minutes}`;
 };
+
+/// « aujourd’hui à 8 h », « demain à 8 h », « lundi à 8 h » dans la semaine, puis la date.
+export function aQuelMoment(ms: number, maintenant = Date.now()): string {
+  const d = new Date(ms);
+  const h = horaire(`${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`);
+  const dans = joursEntre(dateIso(maintenant), dateIso(ms));
+  if (dans === 0) return `aujourd’hui à ${h}`;
+  if (dans === 1) return `demain à ${h}`;
+  if (dans < 7) return `${new Intl.DateTimeFormat('fr-FR', { weekday: 'long' }).format(d)} à ${h}`;
+  return `${jour(ms)} à ${h}`;
+}
 
 /// Le matin ou l'après-midi, d'après les horaires de l'après-midi (« 13:30-17:00 »).
 /// L'appel de l'après-midi peut se lancer une heure avant son début.
