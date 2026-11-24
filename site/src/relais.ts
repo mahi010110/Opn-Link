@@ -40,11 +40,16 @@ interface Recherche {
   attendus: Set<Connexion>;
   finis: Set<Connexion>;
   repondu: boolean;
+  /// Le délai est passé sans rien trouver : le premier relais qui répond quelque chose suffit.
+  prolongee: boolean;
   finir: () => void;
 }
 
 const RECONNEXION_MS = 3000;
 const DELAI_DE_CONNEXION_MS = 8000;
+// Après une série d'échecs, Chromium retarde lui-même chaque connexion d'une à cinq secondes :
+// le relais qui a la réponse peut s'ouvrir après le délai d'une recherche.
+const RECHERCHE_AU_PLUS_MS = 20_000;
 const ECARTE_MS = 10 * 60 * 1000;
 const PRINCIPAUX_VOULUS = 2;
 const ENVOIS_GARDES = 300;
@@ -181,7 +186,7 @@ export class Relais {
   private plusAttendu(r: Recherche, c: Connexion): void {
     if (!r.attendus.delete(c)) return;
     r.finis.add(c);
-    if (!r.attendus.size) r.finir();
+    if (!r.attendus.size || (r.prolongee && r.trouves.size)) r.finir();
   }
 
   /// Les recherches en cours n'attendent plus cette connexion.
@@ -261,8 +266,9 @@ export class Relais {
 
   /// Ce que les relais gardent pour un filtre. La recherche attend chaque relais en service, même
   /// entre deux tentatives : un relais qui répond vite et n'a rien ne doit pas faire conclure
-  /// « rien » avant celui qui a la réponse. Elle s'arrête au bout du délai, et rend l'erreur
-  /// « sans-reseau » si aucun relais n'a répondu.
+  /// « rien » avant celui qui a la réponse. Au bout du délai, elle rend ce qu'elle a trouvé ; sans
+  /// rien, elle attend encore les relais en route, vingt secondes au plus en tout. Elle rend
+  /// l'erreur « sans-reseau » si aucun relais n'a répondu.
   chercher(filtre: Record<string, unknown>, delaiMs = 6000): Promise<EvenementNostr[]> {
     return new Promise((ok, refus) => {
       const id = `r${++this.compteur}`;
@@ -272,6 +278,7 @@ export class Relais {
         attendus: new Set(this.toutes.filter((c) => c.voulue && Date.now() >= c.ecarteeJusqua)),
         finis: new Set(),
         repondu: false,
+        prolongee: false,
         finir: () => {
           clearTimeout(minuterie);
           if (!this.recherches.delete(id)) return;
@@ -280,7 +287,11 @@ export class Relais {
           else refus(new Error('sans-reseau'));
         },
       };
-      const minuterie = setTimeout(recherche.finir, delaiMs);
+      let minuterie = setTimeout(() => {
+        if (recherche.trouves.size || !recherche.attendus.size) return recherche.finir();
+        recherche.prolongee = true;
+        minuterie = setTimeout(recherche.finir, RECHERCHE_AU_PLUS_MS - delaiMs);
+      }, delaiMs);
       this.recherches.set(id, recherche);
       if (!recherche.attendus.size) return recherche.finir();
       for (const c of this.toutes) c.envoyer(JSON.stringify(['REQ', id, filtre]));

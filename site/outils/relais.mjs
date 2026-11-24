@@ -114,14 +114,17 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 // Une passerelle vers un relais, que les tests coupent et rétablissent : c'est le réseau d'un
 // téléphone. Elle n'accepte la connexion qu'une fois le relais joint, comme un vrai réseau :
 // un relais tombé derrière elle reste injoignable, au lieu de s'ouvrir puis se fermer aussitôt.
+// Retardée, elle ne joint le relais qu'au bout du délai : un relais lent, ou une connexion que le
+// navigateur fait attendre.
 export async function lancerPasserelle(vers) {
   const http = createServer();
   const serveur = new WebSocketServer({ noServer: true });
   await new Promise((ok) => http.listen(0, '127.0.0.1', ok));
   let coupee = false;
+  let retard = 0;
   const liaisons = new Set();
-  http.on('upgrade', (requete, socket, tete) => {
-    if (coupee) return socket.destroy();
+  http.on('upgrade', (requete, socket, tete) => setTimeout(() => {
+    if (coupee || socket.destroyed) return socket.destroy();
     const relais = new WebSocket(vers);
     relais.on('error', () => socket.destroy());
     relais.once('open', () => {
@@ -144,7 +147,7 @@ export async function lancerPasserelle(vers) {
         relais.on('close', fermer);
       });
     });
-  });
+  }, retard));
   return {
     url: `ws://127.0.0.1:${http.address().port}`,
     couper: () => {
@@ -156,6 +159,9 @@ export async function lancerPasserelle(vers) {
     },
     retablir: () => {
       coupee = false;
+    },
+    retarder: (ms) => {
+      retard = ms;
     },
     fermer: () => new Promise((ok) => {
       for (const l of liaisons) {

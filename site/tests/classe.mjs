@@ -81,11 +81,13 @@ async function reseau() {
     liste: { principaux: [p, f], secours: [s, mort.url] },
     couper: () => passerelles.forEach((x) => x.couper()),
     retablir: () => passerelles.forEach((x) => x.retablir()),
+    retarderLeSecours: (ms) => passerelles[2].retarder(ms),
     fermer: () => Promise.all(passerelles.map((x) => x.fermer())),
   };
 }
 const reseauDInes = await reseau();
 const reseauDeNoah = await reseau();
+const reseauDeNadia = await reseau();
 
 const navigateur = await chromium.launch();
 // La caméra simulée de Chromium filme un fichier. On y écrit, au moment de signer, l'image du QR
@@ -705,8 +707,18 @@ try {
   const ancreSio1 = (await salle.locator('[data-lien]').getAttribute('data-lien')).split('#')[1];
   const codeSio1 = await salle.locator('[data-code]').getAttribute('data-code');
 
+  // Le seul relais qui a la porte répond sept secondes après l'autre, qui n'a rien : la recherche
+  // l'attend, au lieu de conclure « Aucune classe n'a ce code ».
+  reseauDeNadia.retarderLeSecours(7000);
+  const telNadia = await appareil('nadia', TEL, { url: `/index.html#${ancreSio1}`, liste: reseauDeNadia.liste });
+  await telNadia.locator('#prenom').waitFor({ timeout: 25_000 });
+  verifier(true, 'le seul relais qui a la porte répond sept secondes après l’autre : la recherche l’attend, et la classe s’affiche');
+
+  // Le téléphone d'Inès tourne depuis des minutes, avec un relais mort dans sa liste : Chromium
+  // retarde ses nouvelles connexions, et la recherche peut dépasser les quinze secondes de rejoindre().
   await telInes.goto('about:blank');
   await telInes.goto(`${site}/index.html?appareil=ines#${ancreSio1}`);
+  await telInes.locator('#prenom').waitFor({ timeout: 25_000 });
   await rejoindre(telInes, 'Inès', 'Roux');
   await capturer(telInes, '22-apprenant-deuxieme-classe');
   verifier((await telInes.locator('header.barre [data-geste="mesClasses"]').innerText()) === 'Mes classes', 'Inès demande à entrer en BTS SIO 1 : « Mes classes » est dans la barre, pour revenir à BTS SIO 2');
@@ -897,6 +909,7 @@ try {
   await navigateurCamera.close();
   await reseauDInes.fermer();
   await reseauDeNoah.fermer();
+  await reseauDeNadia.fermer();
   for (const r of [principal, ferme, secours, mort]) await r.fermer();
   serveur.close();
 }

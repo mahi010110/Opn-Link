@@ -425,6 +425,14 @@ présence déjà reçue ramenait l'apprenant à l'écran du jour, même depuis
 « Moi ». Un responsable qui n'avait pas l'appel de la séance pouvait
 répondre « appel clos » à une présence.
 
+Corrigé aussi, parce que le scénario a échoué une fois : une recherche
+concluait « Aucune classe n'a ce code » au bout de six secondes, sur la
+réponse vide d'un relais, avant que le seul relais qui avait la porte ne
+réponde. Après une série d'échecs de connexion, un relais mort dans la liste
+par exemple, Chromium retarde lui-même chaque nouvelle connexion d'une à cinq
+secondes. Sans rien trouvé, la recherche attend maintenant les relais encore
+en route, vingt secondes au plus en tout.
+
 Le scénario le joue, jeudi. Awa crée BTS SIO 1 depuis « Mes cours » et la
 montre à la salle. Inès la rejoint : elle suit deux classes, et passe à BTS
 SIO 2, où elle est en entreprise. Awa lance l'appel de BTS SIO 1 : le
@@ -432,7 +440,9 @@ téléphone d'Inès montre BTS SIO 1, la salle aussi, et Inès signe. L'appel
 clos de BTS SIO 2, chez Awa, ne lui répond rien. Léa rouvre le lien de sa
 classe, qui s'ouvre. Sandrine Robert, au centre, tient dix classes : elle
 n'en crée ni n'en rejoint une onzième. Avec leurs secrets gardés, ses dix
-classes s'ouvrent en 73 ms, contre 1 443 ms sans. 102 vérifications.
+classes s'ouvrent en 73 ms, contre 1 443 ms sans. Nadia ouvre le lien de BTS
+SIO 1 sur un réseau où le seul relais qui a la porte répond sept secondes
+après l'autre : la classe s'affiche.
 
 ## La suite : la première version complète
 
@@ -582,7 +592,9 @@ Pour les relais (17 novembre 2026) :
   seulement ;
 - une connexion qui ne s'ouvre pas en huit secondes est abandonnée, et
   retentée trois secondes plus tard ;
-- une recherche attend six secondes au plus ;
+- une recherche rend ce qu'elle a trouvé au bout de six secondes. Sans rien
+  trouvé, elle attend encore les relais en route, vingt secondes au plus en
+  tout (corrigé le 24 novembre 2026) ;
 - l'appareil garde au plus 300 envois en mémoire pour les relais qui se
   connectent plus tard. Ce qu'aucun relais n'a accepté n'est jamais écarté
   avant son expiration.
