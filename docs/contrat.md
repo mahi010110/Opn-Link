@@ -400,6 +400,51 @@ alternance, le prochain cours est parfois loin.
 Vecteur : `coeur/tests/vecteurs/prochain-v1.txt`, signé par Awa pour le même
 fil, à la clôture du 17 novembre 2026 à 9 h 12, pour le lundi 23 au matin.
 
+## L'annonce à la classe
+
+Seuls les responsables publient sur le fil. Toute la classe lit.
+
+```
+opn-link·annonce·v1
+<étiquette du fil>
+<identifiant>
+<clé de l'auteur>
+<créée>
+<heure>
+<arrivée>
+<état>
+<texte>
+<clé du signataire>
+<signature du signataire>
+```
+
+- L'identifiant fait 16 octets tirés au hasard, en base64url. Toutes les
+  versions d'une annonce le portent, avec la même heure de création.
+- L'état vaut `publiee` ou `retiree`. Une version publiée est signée par
+  son auteur : lui seul modifie son annonce. Un retrait est signé par
+  n'importe quel responsable de la porte, et vaut tout de suite.
+- Le texte, en UTF-8, s'écrit en base64url : une annonce a souvent
+  plusieurs lignes, et un champ n'en a qu'une. Il fait 8 Ko au plus. Un
+  retrait n'a pas de texte : `-`.
+- L'arrivée est l'heure où la montrer. Écrite pendant les heures de la
+  classe, une annonce arrive tout de suite. Sinon, à l'ouverture suivante :
+  une heure avant le début du matin, le prochain jour de semaine. C'est
+  l'appareil qui la reçoit qui attend.
+- Pour un même identifiant, la version la plus récente compte. Une version
+  qui ne porte pas l'auteur et la création de la première ne compte pas.
+- Elle montre « modifiée » quand son heure est après sa création.
+
+Elle voyage chiffrée par la clé du fil (`OPC1.`), dans un événement sous
+l'étiquette du fil, qui expire trente jours après son arrivée. Chaque
+responsable republie, une fois par jour au plus, les annonces en vigueur qui
+ont plus de trois semaines : un apprenant qui arrive plus tard les reçoit
+encore. Sur les appareils, une annonce vit jusqu'à son retrait, et son
+retrait jusqu'à la fermeture de la classe.
+
+Vecteur : `coeur/tests/vecteurs/annonce-v1.txt`, publiée par Awa pour le
+même fil le dimanche 22 novembre 2026 à 21 h 14, et qui arrive le lundi à
+8 h.
+
 ## La feuille de présence
 
 Un journal où l'on ne peut qu'ajouter. La première ligne vaut

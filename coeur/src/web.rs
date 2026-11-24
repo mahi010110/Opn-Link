@@ -6,6 +6,7 @@ use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
 use crate::annonce::{AnnonceDeLAppel, EtatDeLAppel, ProchainCours};
+use crate::annonce_de_la_classe::{AnnonceDeLaClasse, EtatDeLAnnonce};
 use crate::appel::{Demi, IdSeance, Presence, Qr};
 use crate::classe::{Acceptation, CodeDeClasse, Membre, SecretsDeClasse};
 use crate::cles::{CleAppareil, ClePublique};
@@ -135,6 +136,25 @@ impl Appareil {
         let fil = SecretDuFil::lire(fil)?;
         ProchainCours::signer(&fil, date, demi(demi_journee)?, &self.0, heure(maintenant))?.texte(&fil)
     }
+
+    /// Le responsable publie une annonce à la classe, ou une nouvelle version de la sienne : même
+    /// identifiant, même heure de création. Elle arrive à l'heure dite.
+    pub fn publier_annonce(&self, fil: &str, id: &str, creee: f64, texte: &str, maintenant: f64, arrivee: f64) -> Result<String, Erreur> {
+        let fil = SecretDuFil::lire(fil)?;
+        AnnonceDeLaClasse::publier(&fil, id, heure(creee), texte, &self.0, heure(maintenant), heure(arrivee))?.texte(&fil)
+    }
+
+    /// Le responsable retire une annonce, la sienne ou celle d'un autre.
+    pub fn retirer_annonce(&self, fil: &str, id: &str, auteur: &str, creee: f64, maintenant: f64) -> Result<String, Erreur> {
+        let fil = SecretDuFil::lire(fil)?;
+        AnnonceDeLaClasse::retirer(&fil, id, &ClePublique::lire(auteur)?, heure(creee), &self.0, heure(maintenant))?.texte(&fil)
+    }
+}
+
+/// Un identifiant d'annonce neuf.
+#[wasm_bindgen]
+pub fn identifiant_d_annonce() -> Result<String, Erreur> {
+    crate::annonce_de_la_classe::identifiant_d_annonce()
 }
 
 /// L'étiquette de la classe, que voient les relais.
@@ -403,6 +423,38 @@ pub struct AnnonceJs {
     pub quand: f64,
     /// La clé du responsable qui l'a signée.
     pub par: String,
+}
+
+/// Une version d'une annonce à la classe, telle qu'un responsable l'a signée.
+#[wasm_bindgen(getter_with_clone)]
+pub struct AnnonceDeLaClasseJs {
+    pub id: String,
+    pub auteur: String,
+    pub creee: f64,
+    pub quand: f64,
+    pub arrivee: f64,
+    pub retiree: bool,
+    /// Vide pour une annonce retirée.
+    pub texte: String,
+    /// La clé du responsable qui a signé cette version.
+    pub par: String,
+}
+
+/// Relit une annonce à la classe venue du fil, et vérifie qu'un des responsables donnés l'a signée.
+#[wasm_bindgen]
+pub fn lire_annonce(fil: &str, texte: &str, responsables: Vec<String>) -> Result<AnnonceDeLaClasseJs, Erreur> {
+    let responsables = responsables.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
+    let a = AnnonceDeLaClasse::lire(&SecretDuFil::lire(fil)?, texte, &responsables)?;
+    Ok(AnnonceDeLaClasseJs {
+        id: a.id,
+        auteur: a.auteur.texte(),
+        creee: a.creee as f64,
+        quand: a.quand as f64,
+        arrivee: a.arrivee as f64,
+        retiree: a.etat == EtatDeLAnnonce::Retiree,
+        texte: a.texte,
+        par: a.par.texte(),
+    })
 }
 
 /// Le prochain cours d'une classe, tel qu'un responsable l'a annoncé sur le fil.

@@ -5,6 +5,7 @@
 //! dans `docs/contrat.md`.
 
 mod annonce;
+mod annonce_de_la_classe;
 mod appel;
 mod chiffre;
 mod classe;
@@ -24,6 +25,7 @@ mod responsables;
 mod web;
 
 pub use annonce::{AnnonceDeLAppel, EtatDeLAppel, ProchainCours};
+pub use annonce_de_la_classe::{AnnonceDeLaClasse, EtatDeLAnnonce, TEXTE_AU_PLUS, identifiant_d_annonce};
 pub use appel::{Demi, IdSeance, PAS_DU_QR_MS, Presence, Qr, SecretDeSeance, VALIDITE_DU_CODE_MS, code_du_qr};
 pub use classe::{Acceptation, CodeDeClasse, Membre, SecretsDeClasse};
 pub use cles::{CleAppareil, ClePublique, Signature};

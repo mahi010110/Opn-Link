@@ -105,6 +105,11 @@ const PASSATION: &str = include_str!("vecteurs/passation-v1.txt");
 const ENTRE_RESPONSABLES: &str = include_str!("vecteurs/responsables-v1.txt");
 const NOM_CORRIGE: &str = include_str!("vecteurs/nom-v1.txt");
 const SECRETS_GARDES: &str = include_str!("vecteurs/secrets-v1.txt");
+const ANNONCE_DE_LA_CLASSE: &str = include_str!("vecteurs/annonce-v1.txt");
+const TEXTE_DE_L_ANNONCE: &str = "Lundi 23, le cours a lieu en salle B12.\nApportez votre ordinateur, chargé.";
+// Le dimanche 22 novembre 2026 à 21 h 14, heure de Paris ; elle arrive le lundi à 8 h.
+const ECRITE: u64 = 1_795_378_440_000;
+const ARRIVEE: u64 = 1_795_417_200_000;
 const JULIEN_CLE: &str = "BHQxsY8FWshzset9dNhxatHj3waQiwDML5ARU_jrZCgYSGfA_asznGxJCjmucE0ptbTC8SRDUKKQWWIs9JtCEVU";
 
 #[test]
@@ -201,4 +206,17 @@ fn les_secrets_gardes() {
     let relus = SecretsDeClasse::lire(&code, SECRETS_GARDES).unwrap();
     assert_eq!(relus.etiquette(), ETIQUETTE);
     assert_eq!(relus.seance("2026-11-17", Demi::Matin).unwrap().texte(), SEANCE_MATIN);
+}
+
+#[test]
+fn l_annonce_de_la_classe() {
+    let fil = SecretDuFil::depuis_octets([9u8; 32]);
+    let annonce = AnnonceDeLaClasse::lire(&fil, ANNONCE_DE_LA_CLASSE, &[awa().publique()]).unwrap();
+    assert_eq!(
+        (annonce.id.as_str(), annonce.auteur.clone(), annonce.creee, annonce.quand, annonce.arrivee),
+        ("QkJCQkJCQkJCQkJCQkJCQg", awa().publique(), ECRITE, ECRITE, ARRIVEE)
+    );
+    assert_eq!((annonce.etat, annonce.texte.as_str()), (EtatDeLAnnonce::Publiee, TEXTE_DE_L_ANNONCE));
+    let signee = AnnonceDeLaClasse::publier(&fil, "QkJCQkJCQkJCQkJCQkJCQg", ECRITE, TEXTE_DE_L_ANNONCE, &awa(), ECRITE, ARRIVEE).unwrap();
+    assert_eq!(signee.texte(&fil).unwrap(), ANNONCE_DE_LA_CLASSE);
 }
