@@ -442,7 +442,22 @@ classe, qui s'ouvre. Sandrine Robert, au centre, tient dix classes : elle
 n'en crée ni n'en rejoint une onzième. Avec leurs secrets gardés, ses dix
 classes s'ouvrent en 73 ms, contre 1 443 ms sans. Nadia ouvre le lien de BTS
 SIO 1 sur un réseau où le seul relais qui a la porte répond sept secondes
-après l'autre : la classe s'affiche.
+après l'autre : la classe s'affiche. 104 vérifications.
+
+Quatorze défauts posés exprès font chacun échouer le scénario : l'app qui ne
+change plus d'elle-même de classe, la séance qu'on ne compare plus avant de
+répondre, « Mes classes » rangé sans le prochain cours, le nom de la classe
+absent de la barre, la salle qui ignore la classe qu'on lui montre, une
+limite à onze classes, des secrets qu'on ne garde pas, ou qu'on ne reprend
+pas, le lien d'une classe connue qui redemande d'y entrer, l'appel ouvert
+qui ne passe plus devant dans « Mes cours », une ligne de « Mes classes » qui
+ne change pas de classe, « Créer une classe » sans « Retour », « Créer une
+classe » ouvert par son lien au-delà de dix classes, et la recherche qui
+conclut au bout de six secondes.
+
+Un téléphone qui ne suit qu'une classe ne voit rien changer : l'écran du
+jour, le formateur après la clôture et « Membres » sont identiques, au pixel
+près, à ceux du 23 novembre 2026 (`node outils/avant-apres.mjs jour e39a689`).
 
 ## La suite : la première version complète
 

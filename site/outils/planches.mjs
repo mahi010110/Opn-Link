@@ -105,7 +105,7 @@ const PLANCHES = [
       ['26-apprenant-appel-autre-classe', 'L’appel s’ouvre en BTS SIO 1', 'Inès regardait BTS SIO 2, en entreprise : son téléphone montre BTS SIO 1.'],
       ['28-centre-dix-classes', 'Dix classes', 'Chez Sandrine Robert : à la place de « Créer une classe », la limite.'],
       ['29-centre-onzieme-classe', 'Une onzième', 'Ni créée, ni rejointe par son lien : l’écran dit pourquoi.'],
-      ['30-centre-mes-cours-200', 'Le texte agrandi à 200 %', 'À 360 pixels, les noms et les heures se replient.'],
+      ['30-centre-mes-cours-200', 'Le texte agrandi à 200 %', 'À 360 pixels, rien ne sort de l’écran : la liste défile en hauteur.'],
     ],
   },
 ];
