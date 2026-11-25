@@ -110,6 +110,11 @@ const TEXTE_DE_L_ANNONCE: &str = "Lundi 23, le cours a lieu en salle B12.\nAppor
 // Le dimanche 22 novembre 2026 à 21 h 14, heure de Paris ; elle arrive le lundi à 8 h.
 const ECRITE: u64 = 1_795_378_440_000;
 const ARRIVEE: u64 = 1_795_417_200_000;
+const MESSAGE: &str = include_str!("vecteurs/message-v1.txt");
+const TEXTE_DU_MESSAGE: &str = "Je n’ai pas d’ordinateur portable.\nJe peux en emprunter un au centre ?";
+// Le lundi 23 novembre 2026 à 21 h 14, heure de Paris ; il arrive le mardi à 8 h.
+const MESSAGE_ECRIT: u64 = 1_795_464_840_000;
+const MESSAGE_ARRIVE: u64 = 1_795_503_600_000;
 const JULIEN_CLE: &str = "BHQxsY8FWshzset9dNhxatHj3waQiwDML5ARU_jrZCgYSGfA_asznGxJCjmucE0ptbTC8SRDUKKQWWIs9JtCEVU";
 
 #[test]
@@ -219,4 +224,27 @@ fn l_annonce_de_la_classe() {
     assert_eq!((annonce.etat, annonce.texte.as_str()), (EtatDeLAnnonce::Publiee, TEXTE_DE_L_ANNONCE));
     let signee = AnnonceDeLaClasse::publier(&fil, "QkJCQkJCQkJCQkJCQkJCQg", ECRITE, TEXTE_DE_L_ANNONCE, &awa(), ECRITE, ARRIVEE).unwrap();
     assert_eq!(signee.texte(&fil).unwrap(), ANNONCE_DE_LA_CLASSE);
+}
+
+#[test]
+fn le_message_prive() {
+    let classe = CodeDeClasse::lire(CODE).unwrap().secrets();
+    let message = MessagePrive::lire(&classe, MESSAGE, &awa().publique(), &[lea().publique()]).unwrap();
+    assert_eq!((message.de.clone(), message.pour.clone()), (lea().publique(), awa().publique()));
+    assert_eq!(
+        (message.quand, message.arrivee, message.annonce.as_deref()),
+        (MESSAGE_ECRIT, MESSAGE_ARRIVE, Some("QkJCQkJCQkJCQkJCQkJCQg"))
+    );
+    assert_eq!(message.texte, TEXTE_DU_MESSAGE);
+    let ecrit = MessagePrive::ecrire(
+        &classe,
+        &lea(),
+        &awa().publique(),
+        Some("QkJCQkJCQkJCQkJCQkJCQg"),
+        TEXTE_DU_MESSAGE,
+        MESSAGE_ECRIT,
+        MESSAGE_ARRIVE,
+    )
+    .unwrap();
+    assert_eq!(ecrit.texte(&classe).unwrap(), MESSAGE);
 }

@@ -5,16 +5,13 @@
 //! l'ouverture suivante, et c'est l'appareil qui la reçoit qui attend.
 
 use crate::cles::{CleAppareil, ClePublique, Signature};
-use crate::encodage::{a_signer, b64, de_b64, lire_signe};
+use crate::encodage::{a_signer, b64, de_b64, identifiant, lire_signe, texte_ecrit};
 use crate::erreur::Erreur;
 use crate::fil::SecretDuFil;
 use crate::hasard;
 
 const FORMAT: &str = "opn-link·annonce·v1";
 const SANS_TEXTE: &str = "-";
-
-/// Le texte d'une annonce, en octets : il tient dans un événement des relais (60 Ko), avec de la marge.
-pub const TEXTE_AU_PLUS: usize = 8 * 1024;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EtatDeLAnnonce {
@@ -63,17 +60,6 @@ pub fn identifiant_d_annonce() -> Result<String, Erreur> {
     Ok(b64(&hasard::octets::<16>()?))
 }
 
-fn identifiant(id: &str) -> Result<&str, Erreur> {
-    if de_b64(id).is_ok_and(|o| o.len() == 16) { Ok(id) } else { Err(Erreur::ChampInvalide) }
-}
-
-fn texte_publie(texte: &str) -> Result<&str, Erreur> {
-    if texte.trim().is_empty() || texte.len() > TEXTE_AU_PLUS {
-        return Err(Erreur::ChampInvalide);
-    }
-    Ok(texte)
-}
-
 impl AnnonceDeLaClasse {
     #[allow(clippy::too_many_arguments)]
     fn octets(
@@ -88,7 +74,7 @@ impl AnnonceDeLaClasse {
         par: &ClePublique,
     ) -> Result<Vec<u8>, Erreur> {
         let texte = match etat {
-            EtatDeLAnnonce::Publiee => b64(texte_publie(texte)?.as_bytes()),
+            EtatDeLAnnonce::Publiee => b64(texte_ecrit(texte)?.as_bytes()),
             EtatDeLAnnonce::Retiree => SANS_TEXTE.into(),
         };
         if !(creee <= quand && quand <= arrivee) {
@@ -292,7 +278,7 @@ mod tests {
         let (fil, awa, _, _) = cles();
         let id = identifiant_d_annonce().unwrap();
         assert_eq!(AnnonceDeLaClasse::publier(&fil, &id, 5, "  \n ", &awa, 5, 5), Err(Erreur::ChampInvalide));
-        assert_eq!(AnnonceDeLaClasse::publier(&fil, &id, 5, &"é".repeat(TEXTE_AU_PLUS), &awa, 5, 5), Err(Erreur::ChampInvalide));
+        assert_eq!(AnnonceDeLaClasse::publier(&fil, &id, 5, &"é".repeat(crate::TEXTE_AU_PLUS), &awa, 5, 5), Err(Erreur::ChampInvalide));
         assert_eq!(AnnonceDeLaClasse::publier(&fil, &id, 5, TEXTE, &awa, 5, 4), Err(Erreur::ChampInvalide));
         assert_eq!(AnnonceDeLaClasse::publier(&fil, &id, 6, TEXTE, &awa, 5, 5), Err(Erreur::ChampInvalide));
         assert_eq!(AnnonceDeLaClasse::publier(&fil, "court", 5, TEXTE, &awa, 5, 5), Err(Erreur::ChampInvalide));

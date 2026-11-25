@@ -24,6 +24,24 @@ pub(crate) fn sha256(morceaux: &[&[u8]]) -> [u8; 32] {
     h.finalize().into()
 }
 
+/// Le texte d'une annonce ou d'un message, en octets : il tient dans un événement des relais
+/// (60 Ko), avec de la marge.
+pub const TEXTE_AU_PLUS: usize = 8 * 1024;
+
+/// Ce qu'une personne écrit, sur plusieurs lignes : pas vide, et pas trop long. Il entre en
+/// base64url dans un format signé.
+pub(crate) fn texte_ecrit(texte: &str) -> Result<&str, Erreur> {
+    if texte.trim().is_empty() || texte.len() > TEXTE_AU_PLUS {
+        return Err(Erreur::ChampInvalide);
+    }
+    Ok(texte)
+}
+
+/// Un identifiant tiré au hasard : 16 octets en base64url.
+pub(crate) fn identifiant(id: &str) -> Result<&str, Erreur> {
+    if de_b64(id).is_ok_and(|o| o.len() == 16) { Ok(id) } else { Err(Erreur::ChampInvalide) }
+}
+
 /// Un texte qui entre dans un format signé : ni saut de ligne, ni tabulation,
 /// ni autre caractère de contrôle, et pas vide.
 pub(crate) fn champ(texte: &str) -> Result<&str, Erreur> {

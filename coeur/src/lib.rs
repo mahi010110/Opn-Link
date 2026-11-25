@@ -19,23 +19,26 @@ mod fil;
 mod hasard;
 mod lecture;
 mod lettre;
+mod message;
 mod nostr;
 mod responsables;
 #[cfg(target_arch = "wasm32")]
 mod web;
 
 pub use annonce::{AnnonceDeLAppel, EtatDeLAppel, ProchainCours};
-pub use annonce_de_la_classe::{AnnonceDeLaClasse, EtatDeLAnnonce, TEXTE_AU_PLUS, identifiant_d_annonce};
+pub use annonce_de_la_classe::{AnnonceDeLaClasse, EtatDeLAnnonce, identifiant_d_annonce};
 pub use appel::{Demi, IdSeance, PAS_DU_QR_MS, Presence, Qr, SecretDeSeance, VALIDITE_DU_CODE_MS, code_du_qr};
 pub use classe::{Acceptation, CodeDeClasse, Membre, SecretsDeClasse};
 pub use cles::{CleAppareil, ClePublique, Signature};
 pub use dessin::svg_du_qr;
+pub use encodage::TEXTE_AU_PLUS;
 pub use entree::{Demande, Porte, Responsable, Role, choisir_porte};
 pub use erreur::Erreur;
 pub use feuille::{ANNULER_CLOTURE_MS, EtatMembre, EtatPresence, Feuille, Ligne, Recu, Voie, verifier_journal};
 pub use fil::SecretDuFil;
 pub use lecture::lire_qr;
 pub use lettre::{etiquette_de_boite, ouvrir, sceller};
+pub use message::MessagePrive;
 pub use nostr::{SORTE as SORTE_NOSTR, evenement as evenement_nostr};
 pub use responsables::{CorrectionDeNom, EntreResponsables, Passation, Regne, lignee};
 

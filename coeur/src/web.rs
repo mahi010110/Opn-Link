@@ -15,6 +15,7 @@ use crate::entree::{Demande, Porte, Responsable, Role};
 use crate::erreur::Erreur;
 use crate::feuille::{EtatPresence, Feuille, Recu, Voie};
 use crate::fil::SecretDuFil;
+use crate::message::MessagePrive;
 use crate::responsables::{CorrectionDeNom, EntreResponsables, Passation};
 use crate::{appel, feuille, lettre};
 
@@ -129,6 +130,22 @@ impl Appareil {
     /// Une lettre aux autres responsables, signée : leurs boîtes sont dans la porte, que tous lisent.
     pub fn ecrire_aux_responsables(&self, code: &str, contenu: &str, maintenant: f64) -> Result<String, Erreur> {
         EntreResponsables::signer(&secrets(code)?, &self.0, contenu, heure(maintenant))
+    }
+
+    /// Écrit un message privé à quelqu'un de la classe, en réponse à une annonce ou non. Il se
+    /// montre à l'heure d'arrivée.
+    pub fn ecrire_message(
+        &self,
+        code: &str,
+        pour: &str,
+        annonce: Option<String>,
+        texte: &str,
+        maintenant: f64,
+        arrivee: f64,
+    ) -> Result<String, Erreur> {
+        let classe = secrets(code)?;
+        MessagePrive::ecrire(&classe, &self.0, &ClePublique::lire(pour)?, annonce.as_deref(), texte, heure(maintenant), heure(arrivee))?
+            .texte(&classe)
     }
 
     /// Le responsable dit à la classe, sur le fil, la date et la demi-journée du prochain cours.
@@ -454,6 +471,33 @@ pub fn lire_annonce(fil: &str, texte: &str, responsables: Vec<String>) -> Result
         retiree: a.etat == EtatDeLAnnonce::Retiree,
         texte: a.texte,
         par: a.par.texte(),
+    })
+}
+
+/// Un message privé, tel que celui qui l'a écrit l'a signé.
+#[wasm_bindgen(getter_with_clone)]
+pub struct MessageJs {
+    pub de: String,
+    pub pour: String,
+    pub quand: f64,
+    pub arrivee: f64,
+    /// L'annonce de la classe à laquelle il répond.
+    pub annonce: Option<String>,
+    pub texte: String,
+}
+
+/// Relit un message privé de la classe, entre `moi` et l'une des clés données, et vérifie qui l'a signé.
+#[wasm_bindgen]
+pub fn lire_message(code: &str, texte: &str, moi: &str, autres: Vec<String>) -> Result<MessageJs, Erreur> {
+    let autres = autres.iter().map(|c| ClePublique::lire(c)).collect::<Result<Vec<_>, Erreur>>()?;
+    let m = MessagePrive::lire(&secrets(code)?, texte, &ClePublique::lire(moi)?, &autres)?;
+    Ok(MessageJs {
+        de: m.de.texte(),
+        pour: m.pour.texte(),
+        quand: m.quand as f64,
+        arrivee: m.arrivee as f64,
+        annonce: m.annonce,
+        texte: m.texte,
     })
 }
 
