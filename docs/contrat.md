@@ -482,6 +482,33 @@ Vecteur : `coeur/tests/vecteurs/message-v1.txt`, écrit par Léa à Awa le
 lundi 23 novembre 2026 à 21 h 14, en réponse à l'annonce ci-dessus, et qui
 arrive le mardi à 8 h.
 
+## La justification d'une absence
+
+L'apprenant dit pourquoi il était absent. Le motif ne va qu'aux
+responsables.
+
+```
+opn-link·justification·v1
+<étiquette de la classe>
+<clé de l'apprenant>
+<séance>
+<date>
+<demi>
+<motif>
+<heure>
+<signature de l'apprenant>
+```
+
+- Elle est signée par l'appareil qui a manqué l'appel, et ne compte que pour
+  la séance de sa demi-journée, dans cette classe.
+- Le motif vaut `maladie`, `transport`, `entreprise` ou `autre`.
+- Elle part scellée dans la boîte de chaque responsable, qui ne la garde que
+  pour un apprenant de la classe. Pour une même absence, la plus récente
+  compte.
+
+Vecteur : `coeur/tests/vecteurs/justification-v1.txt`, Léa justifie son
+absence du mardi 17 novembre 2026, le matin, par le transport, à midi.
+
 ## La feuille de présence
 
 Un journal où l'on ne peut qu'ajouter. La première ligne vaut
@@ -536,8 +563,11 @@ données possible ». Pour l'appel :
 - un envoi qu'aucun relais n'a encore accepté vit sur l'appareil jusqu'à ce
   qu'un relais l'accepte, au plus jusqu'à l'expiration de son événement :
   7 jours pour une lettre, 30 pour un message privé et pour la porte ;
-- l'annonce de l'appel reste un jour sur les relais. Sur le téléphone de
-  l'apprenant, sept jours, pour dessiner sa semaine ;
+- l'annonce de l'appel reste trente jours sur les relais : un apprenant qui
+  rouvre l'app plus tard apprend encore son absence. Sur son téléphone, huit
+  semaines, pour sa semaine et « Mes présences » ;
+- une justification reste trente jours sur les relais. Sur les appareils,
+  huit semaines ;
 - le prochain cours reste sur les relais jusqu'au surlendemain du cours. Sur
   le téléphone de l'apprenant, le plus récent seulement, jusqu'à sept jours
   après sa date ;
@@ -586,6 +616,7 @@ destinataire. Elles ne sont pas encore figées.
 | `responsables` | un responsable, à chacun des autres | la porte et les passations, puis une lettre entre responsables (partie du même nom) |
 | `message` | l'apprenant ou un responsable, à celui à qui il écrit | le code de la classe, et le message privé signé (partie « Le message privé ») |
 | `feuille` | le responsable qui a tenu l'appel, à chacun des autres | le code de la classe, et le journal de la feuille close, quand la clôture ne s'annule plus |
+| `justification` | l'apprenant, à chaque responsable | le code de la classe, et la justification signée (partie « La justification d'une absence ») |
 
 La lettre entre responsables porte en contenu
 `{"v":1,"t":"classe","etat":{...}}` : la porte, les passations, le secret du
@@ -650,8 +681,9 @@ n'a pas le secret du fil. En plus :
   ouverts marqués `nouveau` (`messages`) ;
 - chez l'apprenant : son acceptation, ou sa demande tant qu'il attend, ses
   présences signées avec leur demi-journée et leur réception
-  (`presences`), les annonces de l'appel des sept derniers jours, une par
-  séance, déjà vérifiées (`annoncesAppel`), le dernier prochain cours
+  (`presences`), les annonces de l'appel des huit dernières semaines, une
+  par séance, déjà vérifiées (`annoncesAppel`), ses absences justifiées
+  (`justifications`), le dernier prochain cours
   vérifié (`prochain`), et son dernier nom corrigé (`nom`) ;
 - chez les responsables : les acceptations, les demandes et les clés
   laissées dehors, les demi-journées où l'appel a été clos (`cours`), le
@@ -661,7 +693,8 @@ n'a pas le secret du fil. En plus :
   y garde aussi la correction la plus récente du nom de chaque membre, qui
   voyage entre eux. Les feuilles closes de la classe, huit semaines, déjà
   vérifiées : leur demi-journée, qui a tenu l'appel, l'heure de chaque
-  présence et les absents (`feuilles`) ;
+  présence et les absents (`feuilles`). Les absences que les apprenants ont
+  justifiées, huit semaines (`justifications`) ;
 - chez le chef : les invitations d'adjoint de moins de sept jours
   (`invitations`), les demandes d'adjoint qui attendent son accord
   (`candidats`), la main qu'il passe (`passationEnAttente`) et les horaires

@@ -21,7 +21,8 @@ export type Lettre =
   | { v: 1; t: 'nom'; code: string; correction: string }
   | { v: 1; t: 'responsables'; code: string; porte: string; passations: string[]; lettre: string }
   | { v: 1; t: 'message'; code: string; message: string }
-  | { v: 1; t: 'feuille'; code: string; journal: string };
+  | { v: 1; t: 'feuille'; code: string; journal: string }
+  | { v: 1; t: 'justification'; code: string; justification: string };
 
 const UN_JOUR = 24 * 3600;
 const SEPT_JOURS = 7 * UN_JOUR;
@@ -100,11 +101,11 @@ function abonnementPartage(relais: Relais, id: string, depuis: number) {
 let fils: ReturnType<typeof abonnementPartage> | undefined;
 let portes: ReturnType<typeof abonnementPartage> | undefined;
 
-/// Un responsable dit à la classe, sur le fil, que l'appel est ouvert ou clos. L'annonce ne sert
-/// que le jour même : les relais la gardent un jour.
+/// Un responsable dit à la classe, sur le fil, que l'appel est ouvert ou clos. Les relais gardent
+/// l'annonce trente jours : un apprenant qui rouvre l'app plus tard apprend encore son absence.
 export function annoncerLAppel(coeur: Coeur, relais: Relais, fil: string, annonce: string): void {
   const maintenant = secondes();
-  relais.publier(coeur.evenement_nostr(coeur.etiquette_du_fil(fil), maintenant + UN_JOUR, coeur.chiffrer_pour_le_fil(fil, annonce), maintenant));
+  relais.publier(coeur.evenement_nostr(coeur.etiquette_du_fil(fil), maintenant + TRENTE_JOURS, coeur.chiffrer_pour_le_fil(fil, annonce), maintenant));
 }
 
 /// Un responsable dit le prochain cours. Les relais le gardent jusqu'au lendemain de ce cours.

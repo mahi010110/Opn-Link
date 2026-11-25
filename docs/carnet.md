@@ -614,3 +614,10 @@ refusés.
   recommandation de [questions-ouvertes.md](questions-ouvertes.md), partie
   « Le poids du site de l'apprenant » ; l'autre moitié, le cœur, attend le
   mainteneur.
+- Justifier une absence est fait, sans le justificatif, qui viendra avec le
+  fichier en morceaux. L'apprenant choisit le motif ; il part aux seuls
+  responsables, signé ([contrat.md](contrat.md), partie « La justification
+  d'une absence »). Choisis en codant, à valider : l'annonce de l'appel
+  gardée trente jours sur les relais, et la touche « Justifier une absence »
+  sur l'écran du jour ([prototype.md](prototype.md), partie « Les choix du
+  prototype, à valider »).

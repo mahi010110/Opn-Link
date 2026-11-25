@@ -20,6 +20,7 @@
 //   node outils/avant-apres.mjs messages  l'apprenant : « À lire » avec un message, « Messages », la conversation, le soir
 //   node outils/avant-apres.mjs messages-formateur  le formateur : « À suivre », « Messages », la conversation
 //   node outils/avant-apres.mjs sa-semaine  le formateur : la conversation avec Léa, et sa semaine d'après les feuilles closes
+//   node outils/avant-apres.mjs absences  l'apprenant : une absence, « Mes présences », « Justifier »
 //   node outils/avant-apres.mjs mes-cours « Mes cours » chez le formateur, trois classes, puis « Créer une classe »
 //   node outils/avant-apres.mjs deux-classes  Léa dans deux classes : la barre, « Mes classes », l'appel de l'autre classe
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
@@ -216,6 +217,22 @@ const CAS = {
       { nom: 'Avant l’appel', relais: relaisVide, heure: OUVERTURE - 6 * 60_000 },
       { nom: 'L’appel est ouvert', relais: relaisOuvert, heure: OUVERTURE + 4 * 60_000 },
       { nom: 'L’appel clos sans sa présence', relais: relaisClos, heure: CLOTURE + 3 * 60_000 },
+    ],
+  },
+  absences: {
+    titre: 'Les absences, chez l’apprenant',
+    etats: [
+      { nom: 'L’appel clos sans sa présence', relais: relaisClos, heure: CLOTURE + 3 * 60_000 },
+      { nom: '« Mes présences »', relais: relaisClos, heure: CLOTURE + 3 * 60_000, geste: (page) => page.locator('[data-geste="presences"]').click({ timeout: 5000 }) },
+      {
+        nom: 'Justifier une absence',
+        relais: relaisClos,
+        heure: CLOTURE + 3 * 60_000,
+        geste: async (page) => {
+          await page.locator('.touche[data-geste="justifier"]').click({ timeout: 5000 });
+          await page.check('input[value="transport"]');
+        },
+      },
     ],
   },
   signer: {

@@ -60,12 +60,19 @@ export function garderLaFeuille(feuilles: FeuilleGardee[], f: FeuilleGardee, dep
 }
 
 /// Ce que disent les feuilles d'un apprenant : de quoi dessiner sa semaine comme sur son téléphone.
-export function ceQueDisentLesFeuilles(feuilles: FeuilleGardee[], cle: string, maintenant: Creneau, prochain?: CeQueSaitLeTelephone['prochain']): CeQueSaitLeTelephone {
+export function ceQueDisentLesFeuilles(
+  feuilles: FeuilleGardee[],
+  cle: string,
+  maintenant: Creneau,
+  prochain?: CeQueSaitLeTelephone['prochain'],
+  justifiees: Creneau[] = [],
+): CeQueSaitLeTelephone {
   const siennes = feuilles.filter((f) => cle in f.presents || f.absents.includes(cle));
   return {
     maintenant,
     presences: siennes.filter((f) => cle in f.presents).map((f) => ({ date: f.date, demi: f.demi, signee: f.presents[cle] })),
     appels: siennes.map((f) => ({ date: f.date, demi: f.demi, etat: 'clos' })),
     prochain,
+    justifiees,
   };
 }

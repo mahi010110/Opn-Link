@@ -456,7 +456,7 @@ try {
   await capturer(tel, '16-formateur-clos');
   await clotureALaSalle;
   verifier(await tel.getByText('Noah Petit').count() === 1, 'Noah, qui n’a pas signé, est noté absent');
-  await telNoah.getByText('Une absence').waitFor({ timeout: 15_000 });
+  await telNoah.getByText('Une absence', { exact: true }).waitFor({ timeout: 15_000 });
   await capturer(telNoah, '16b-apprenant-absence');
   verifier(await telNoah.getByText(/Matin · appel clos à 9\sh\s0\d par Awa Diallo/).count() === 1, 'l’appel clos, le téléphone de Noah dit « Une absence », et qui a clos');
   verifier(await telNoah.locator('.case.absent').count() === 1, 'sa semaine le montre : une case rouge, mardi matin');
@@ -1113,6 +1113,95 @@ try {
   await telNoah.goto(`${site}/index.html?appareil=noah`);
   await telNoah.getByText('Julien Morel t’a écrit').waitFor({ timeout: 20_000 });
   verifier(true, 'Noah rouvre l’app dix jours après un message de Julien : il le reçoit, la boîte se relit sur trente jours');
+
+  // Les annonces de l'appel restent trente jours sur les relais : un apprenant qui rouvre l'app plus
+  // tard apprend encore son absence.
+  const annoncesDAppel = [...principal.gardes, ...secours.gardes]
+    .filter((e) => e.tags.some(([t, v]) => t === 'x' && v === coeur.etiquette_du_fil(filDeLaClasse)))
+    .filter((e) => {
+      try {
+        // La fausse annonce de Yanis, qui ne vit qu'une heure, n'est pas signée par un responsable.
+        coeur.lire_annonce_de_l_appel(code, filDeLaClasse, coeur.dechiffrer_du_fil(filDeLaClasse, e.content), [coeur.Appareil.relire(clesDAwa).cle(), clesDeJulien.cle()]);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  const dureeSurLesRelais = (e) => Number(e.tags.find(([t]) => t === 'expiration')[1]) - e.created_at;
+  verifier(annoncesDAppel.length > 0 && annoncesDAppel.every((e) => dureeSurLesRelais(e) >= 29 * 86_400), `les annonces de l’appel restent trente jours sur les relais (${annoncesDAppel.length})`);
+
+  // « Mes présences », chez Noah : son absence de mardi 17, à justifier. « C'est une erreur » écrit
+  // à Awa, qui a clos l'appel. Puis, mercredi, la touche de l'écran du jour mène à « Justifier ».
+  await telNoah.click('[data-geste="presences"]');
+  const absenceDeMardi = telNoah.locator('.rangee', { hasText: 'Absence mardi 17, matin' });
+  await absenceDeMardi.waitFor({ timeout: 15_000 });
+  verifier(
+    (await absenceDeMardi.innerText()).includes('pas encore justifiée') && (await telNoah.locator('[data-geste="erreur"]').count()) === 1,
+    '« Mes présences » montre l’absence de mardi 17, pas encore justifiée, avec « Justifier » et « C’est une erreur »',
+  );
+  await capturer(telNoah, '44-apprenant-presences');
+  await telNoah.click('[data-geste="erreur"]');
+  verifier(
+    (await telNoah.locator('.barre-titre').textContent()) === 'Awa Diallo-Sow' && (await telNoah.inputValue('#message')).startsWith('Mon absence du mardi 17 novembre, matin, est une erreur'),
+    '« C’est une erreur » ouvre la conversation avec Awa, qui a clos l’appel, la phrase déjà écrite',
+  );
+  await telNoah.click('[data-geste="retour"]');
+  await pages.noah.contexte.clock.setSystemTime(new Date('2026-11-18T10:00:00+01:00'));
+  await telNoah.reload();
+  await telNoah.locator('.touche[data-geste="justifier"]').waitFor({ timeout: 15_000 });
+  await capturer(telNoah, '45-apprenant-absence-a-justifier');
+  verifier((await telNoah.getByText('Une absence', { exact: true }).count()) === 1, 'mercredi, l’écran du jour dit l’absence de mardi, et sa touche mène à « Justifier une absence »');
+  const avantLaJustification = evenementsSurLesRelais();
+  await telNoah.click('[data-geste="justifier"]');
+  await telNoah.click('[data-geste="envoyerJustification"]');
+  verifier(
+    (await telNoah.getByText('Choisis pourquoi tu étais absent.').count()) === 1 && evenementsSurLesRelais() === avantLaJustification,
+    'sans motif, rien ne part : l’écran le dit sous les choix',
+  );
+  await telNoah.check('input[value="transport"]');
+  await capturer(telNoah, '46-apprenant-justifier');
+  await telNoah.click('[data-geste="envoyerJustification"]');
+  await telNoah.locator('[data-geste="justifier"]').waitFor({ state: 'detached', timeout: 15_000 });
+  verifier(
+    (await telNoah.getByText('Une absence', { exact: true }).count()) === 0 && (await telNoah.locator('.semaine .case.justifiee').count()) === 1,
+    'justifiée, l’absence ne demande plus rien : la touche s’en va, et la case de mardi le dit',
+  );
+  const justificationChez = async (page, qui) =>
+    (JSON.parse(await page.evaluate((q) => localStorage.getItem(`opl_proto_${q}_classes`), qui)).find((c) => c.code === code).justifications ?? []).find(
+      (j) => j.date === '2026-11-17' && j.demi === 'matin',
+    );
+  let chezAwa;
+  let chezJulien;
+  for (let essai = 0; essai < 30 && !(chezAwa && chezJulien); essai++) {
+    [chezAwa, chezJulien] = [await justificationChez(tel, 'awa-tel'), await justificationChez(telJulien, 'julien')];
+    if (!(chezAwa && chezJulien)) await tel.waitForTimeout(500);
+  }
+  verifier(chezAwa?.motif === 'transport' && chezJulien?.motif === 'transport', 'la justification part aux deux responsables, Awa et Julien, avec son motif');
+  // Quelqu'un qui n'est pas dans la classe justifie la même demi-journée : rien ne change chez Awa.
+  const intrus = new coeur.Appareil();
+  const boiteDAwaPourJustifier = coeur.Appareil.relire(clesDAwa).boite();
+  const justificationDeLIntrus = intrus.justifier(code, '2026-11-17', 'matin', 'maladie', horloge());
+  await publierAuSecours(
+    coeur.etiquette_de_boite(boiteDAwaPourJustifier),
+    coeur.sceller(boiteDAwaPourJustifier, JSON.stringify({ v: 1, t: 'justification', code, justification: justificationDeLIntrus })),
+  );
+  await tel.waitForTimeout(1500);
+  const justificationsChezAwa = JSON.parse(await tel.evaluate(() => localStorage.getItem('opl_proto_awa-tel_classes'))).find((c) => c.code === code).justifications;
+  verifier(justificationsChezAwa.length === 1 && justificationsChezAwa[0].motif === 'transport', 'la justification de quelqu’un qui n’est pas dans la classe ne compte pas');
+  verifier(
+    [...principal.gardes, ...secours.gardes].every((e) => !e.content.includes('opn-link·justification')),
+    'elle part scellée pour chacun d’eux : aucun relais ne lit le motif',
+  );
+  await pages['awa-tel'].contexte.clock.setSystemTime(new Date('2026-11-20T10:00:00+01:00'));
+  await tel.click('[data-geste="messages"]');
+  await tel.fill('#chercher', 'noah');
+  await tel.locator('[data-geste="ecrire"]', { hasText: 'Noah Petit' }).click();
+  verifier(
+    (await tel.locator('.rangee', { hasText: 'Sa semaine' }).getByText('1 absence justifiée').count()) === 1 && (await tel.locator('.dix .case.justifiee').count()) === 1,
+    'chez Awa, la semaine de Noah montre l’absence de mardi, justifiée',
+  );
+  await tel.click('[data-geste="retour"]');
+  await tel.click('[data-geste="retour"]');
 
   // Une annonce de plus de 8 Ko : le cœur refuserait de la signer, l'écran le dit tout de suite.
   await tel.click('[data-geste="classe"]');

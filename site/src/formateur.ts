@@ -2,6 +2,7 @@
 // La salle montre le QR, le téléphone montre les noms. Sa caméra lit le QR d'un apprenant sans réseau.
 // Le chef ou un adjoint : tous font l'appel. Seul le chef nomme les adjoints.
 
+import { garderLaJustification, leMotif, lireJustification } from './absences';
 import { type AnnonceDeLaClasse, enVigueur, garderLaVersion, lireAnnonce, noteHtml, relireLesAnnonces, tropLong } from './annonces';
 import { couper, poser, viser } from './camera';
 import type { Moment, Navigation, Suivi } from './classes';
@@ -84,6 +85,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   let annoncesDeLaClasse = relireLesAnnonces(coeur, classe.fil, classe.annoncesDeLaClasse, responsables());
   let messages = classe.messages ?? [];
   let feuilles = classe.feuilles ?? [];
+  let justifications = classe.justifications ?? [];
   const huitSemainesAvant = () => plusJours(dateIso(Date.now()), -HUIT_SEMAINES);
   // Ce qui ne regarde que cet appareil, sans lettre aux autres responsables ni à la salle.
   const noter = (nouvelle: ClasseGardee) => {
@@ -963,7 +965,10 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
          ${aSuivre([
            ...lignesDesCandidats(),
            ...lignesDesNonLus(messages, nomDeLaCle),
-           ...absents.map((l) => `<div class="rangee"><div><b>${esc(l.prenom)} ${esc(l.nom)}</b><span class="mono">une absence ce ${a.demi() === 'matin' ? 'matin' : 'après-midi'}</span></div></div>`),
+           ...absents.map((l) => {
+             const j = justifications.find((x) => x.cle === l.cle && x.date === a.date() && x.demi === a.demi());
+             return `<div class="rangee"><div><b>${esc(l.prenom)} ${esc(l.nom)}</b><span class="mono">une absence ce ${a.demi() === 'matin' ? 'matin' : 'après-midi'}${j ? ` · justifiée : ${esc(leMotif(j.motif))}` : ''}</span></div></div>`;
+           }),
          ])}
        </main>
        <footer class="bas">${reste > 0 ? `<div class="gestes"><button class="btn retour" data-geste="annuler">${ic('undo', 'ic-20')}Annuler la clôture · ${reste} s</button></div>` : ''}${faits(relais, reste > 0 ? 'La feuille part au registre public dans 30 secondes' : `Feuille close · empreinte ${a.empreinte().slice(0, 12)}`)}</footer>`,
@@ -1022,9 +1027,17 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const saSemaine = (cle: string) => {
     const creneau = (ms: number): Creneau => ({ date: dateIso(ms), demi: demiJournee(ms, porte.apres_midi) });
     const prochain = classe.prochain && { annonce: creneau(classe.prochain.quand), cours: { date: classe.prochain.date, demi: classe.prochain.demi as Demi } };
-    const sait = ceQueDisentLesFeuilles(feuilles, cle, creneau(Date.now()), prochain);
-    const n = absences(sait).length;
-    return `<div class="liste"><div class="rangee"><div><b>Sa semaine</b><span class="mono">${n ? pluriel(n, 'absence') : 'aucune absence'}</span></div>${dixHtml(sait)}</div></div>`;
+    const sait = ceQueDisentLesFeuilles(feuilles, cle, creneau(Date.now()), prochain, justifications.filter((j) => j.cle === cle));
+    const toutes = absences(sait, true).length;
+    const aJustifier = absences(sait).length;
+    const combien = !toutes
+      ? 'aucune absence'
+      : !aJustifier
+        ? `${pluriel(toutes, 'absence')} ${toutes > 1 ? 'justifiées' : 'justifiée'}`
+        : aJustifier < toutes
+          ? `${pluriel(toutes, 'absence')}, ${pluriel(toutes - aJustifier, 'justifiée')}`
+          : pluriel(toutes, 'absence');
+    return `<div class="liste"><div class="rangee"><div><b>Sa semaine</b><span class="mono">${combien}</span></div>${dixHtml(sait)}</div></div>`;
   };
   const ecranConversation = (v: Extract<Vue, { ecran: 'conversation' }>) => {
     const c = correspondants().find((x) => x.cle === v.cle);
@@ -1134,6 +1147,14 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
       if (!gardees) return;
       feuilles = gardees;
       noter({ ...classe, feuilles });
+      if (vue.ecran === 'conversation') return rendre();
+    } else if (l.t === 'justification' && l.code === classe.code) {
+      const j = lireJustification(coeur, classe.code, l.justification);
+      // Seul un apprenant de la classe justifie ses absences.
+      const gardees = j && membres().some((m) => m.cle === j.cle) && garderLaJustification(justifications, j, huitSemainesAvant());
+      if (!gardees) return;
+      justifications = gardees;
+      noter({ ...classe, justifications });
       if (vue.ecran === 'conversation') return rendre();
     } else if (l.t === 'message' && l.code === classe.code) {
       const m = lireMessage(coeur, classe.code, l.message, moi.cle(), correspondants().map((c) => c.cle));

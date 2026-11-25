@@ -27,6 +27,16 @@ export interface AnnonceGardee extends Creneau {
   par: string;
 }
 
+/// Une absence justifiée, déjà vérifiée : chez l'apprenant, les siennes ; chez les responsables,
+/// celles des apprenants de la classe. La dernière justification d'une absence compte.
+export interface JustificationGardee extends Creneau {
+  cle: string;
+  seance: string;
+  /// `maladie`, `transport`, `entreprise` ou `autre`.
+  motif: string;
+  quand: number;
+}
+
 /// Le formateur : l'appel qu'il tient, son journal et son secret.
 export interface AppelGarde {
   journal: string;
@@ -89,6 +99,8 @@ export interface ClasseGardee {
   messages?: MessageGarde[];
   /// Chez les responsables, les feuilles closes de la classe, huit semaines, déjà vérifiées.
   feuilles?: FeuilleGardee[];
+  /// Les absences justifiées, huit semaines.
+  justifications?: JustificationGardee[];
 }
 
 export const estResponsable = (c: ClasseGardee): boolean => c.role === 'chef' || c.role === 'adjoint';

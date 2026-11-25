@@ -10,9 +10,11 @@ export interface CeQueSaitLeTelephone {
   presences: (Creneau & { signee: number })[];
   appels: (Creneau & { etat: string })[];
   prochain?: { annonce: Creneau; cours: Creneau };
+  /// Les absences que l'apprenant a justifiées.
+  justifiees?: Creneau[];
 }
 
-type Etat = 'faite' | 'maintenant' | 'ailleurs' | 'absent' | '';
+type Etat = 'faite' | 'maintenant' | 'ailleurs' | 'absent' | 'justifiee' | '';
 interface Case {
   etat: Etat;
   texte: string;
@@ -28,17 +30,19 @@ export function caseDe(c: Creneau, sait: CeQueSaitLeTelephone): Case {
   const presence = sait.presences.find((p) => pareil(p, c));
   if (presence) return { etat: 'faite', texte: heureCourte(presence.signee), dit: `présence signée à ${heure(presence.signee)}` };
   const appel = sait.appels.find((a) => pareil(a, c));
+  if (appel?.etat === 'clos' && sait.justifiees?.some((j) => pareil(j, c))) return { etat: 'justifiee', texte: 'just.', dit: 'une absence justifiée' };
   if (appel?.etat === 'clos') return { etat: 'absent', texte: 'abs.', dit: 'une absence' };
   if (appel?.etat === 'ouvert' && pareil(c, sait.maintenant)) return { etat: 'maintenant', texte: 'appel', dit: 'l’appel est ouvert' };
   if (sait.prochain && sansCours(c, sait.prochain.annonce, sait.prochain.cours)) return { etat: 'ailleurs', texte: '', dit: 'pas de cours' };
   return { etat: '', texte: '', dit: rang(c) < rang(sait.maintenant) ? 'rien de connu' : 'à venir' };
 }
 
-/// Les absences de la semaine que le téléphone connaît, la plus récente d'abord.
-export function absences(sait: CeQueSaitLeTelephone): Creneau[] {
-  const lundi = lundiDe(sait.maintenant.date);
+/// Les absences d'une semaine que le téléphone connaît, la plus récente d'abord : celles à
+/// justifier, ou avec celles déjà justifiées.
+export function absences(sait: CeQueSaitLeTelephone, avecLesJustifiees = false, lundi = lundiDe(sait.maintenant.date)): Creneau[] {
+  const etats = avecLesJustifiees ? ['absent', 'justifiee'] : ['absent'];
   return sait.appels
-    .filter((a) => a.date >= lundi && rang(a) <= rang(sait.maintenant) && caseDe(a, sait).etat === 'absent')
+    .filter((a) => a.date >= lundi && a.date < plusJours(lundi, 7) && rang(a) <= rang(sait.maintenant) && etats.includes(caseDe(a, sait).etat))
     .sort((a, b) => rang(b).localeCompare(rang(a)));
 }
 
@@ -63,9 +67,9 @@ export function semaineHtml(sait: CeQueSaitLeTelephone, enRangs = false): string
   return `<div class="semaine"><span></span>${jours.map((j) => jour(j, true)).join('')}${rangee('Matin', 'matin')}${rangee('Après-<br>midi', 'apres-midi')}</div>`;
 }
 
-/// La même semaine en petit, dix cases sans texte : « Sa semaine », chez le formateur.
-export function dixHtml(sait: CeQueSaitLeTelephone): string {
-  const lundi = lundiDe(sait.maintenant.date);
+/// Une semaine en petit, dix cases sans texte : « Sa semaine » chez le formateur, et les semaines
+/// de « Mes présences ».
+export function dixHtml(sait: CeQueSaitLeTelephone, lundi = lundiDe(sait.maintenant.date)): string {
   const uneCase = (date: string, demi: Demi) => {
     const { etat, dit } = caseDe({ date, demi }, sait);
     return `<span class="case ${etat}" role="img" aria-label="${esc(`${quand(date, demi)} : ${dit}`)}"></span>`;

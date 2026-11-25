@@ -15,6 +15,7 @@ use crate::entree::{Demande, Porte, Responsable, Role};
 use crate::erreur::Erreur;
 use crate::feuille::{EtatPresence, Feuille, Recu, Voie};
 use crate::fil::SecretDuFil;
+use crate::justification::{Justification, Motif};
 use crate::message::MessagePrive;
 use crate::responsables::{CorrectionDeNom, EntreResponsables, Passation};
 use crate::{appel, feuille, lettre};
@@ -146,6 +147,11 @@ impl Appareil {
         let classe = secrets(code)?;
         MessagePrive::ecrire(&classe, &self.0, &ClePublique::lire(pour)?, annonce.as_deref(), texte, heure(maintenant), heure(arrivee))?
             .texte(&classe)
+    }
+
+    /// Justifie son absence à une demi-journée : le motif part aux seuls responsables.
+    pub fn justifier(&self, code: &str, date: &str, demi_journee: &str, motif: &str, maintenant: f64) -> Result<String, Erreur> {
+        Justification::signer(&secrets(code)?, &self.0, date, demi(demi_journee)?, Motif::lire(motif)?, heure(maintenant))
     }
 
     /// Le responsable dit à la classe, sur le fil, la date et la demi-journée du prochain cours.
@@ -471,6 +477,33 @@ pub fn lire_annonce(fil: &str, texte: &str, responsables: Vec<String>) -> Result
         retiree: a.etat == EtatDeLAnnonce::Retiree,
         texte: a.texte,
         par: a.par.texte(),
+    })
+}
+
+/// L'absence qu'un apprenant justifie, telle qu'il l'a signée.
+#[wasm_bindgen(getter_with_clone)]
+pub struct JustificationJs {
+    pub apprenant: String,
+    pub seance: String,
+    pub date: String,
+    /// `matin` ou `apres-midi`.
+    pub demi: String,
+    /// `maladie`, `transport`, `entreprise` ou `autre`.
+    pub motif: String,
+    pub quand: f64,
+}
+
+/// Relit la justification d'une absence, et vérifie que l'apprenant qu'elle porte l'a signée.
+#[wasm_bindgen]
+pub fn lire_justification(code: &str, texte: &str) -> Result<JustificationJs, Erreur> {
+    let j = Justification::lire(&secrets(code)?, texte)?;
+    Ok(JustificationJs {
+        apprenant: j.apprenant.texte(),
+        seance: j.seance.texte().to_owned(),
+        date: j.date,
+        demi: j.demi.texte().to_owned(),
+        motif: j.motif.texte().to_owned(),
+        quand: j.quand as f64,
     })
 }
 

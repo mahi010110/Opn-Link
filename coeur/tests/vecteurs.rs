@@ -115,6 +115,9 @@ const TEXTE_DU_MESSAGE: &str = "Je n’ai pas d’ordinateur portable.\nJe peux 
 // Le lundi 23 novembre 2026 à 21 h 14, heure de Paris ; il arrive le mardi à 8 h.
 const MESSAGE_ECRIT: u64 = 1_795_464_840_000;
 const MESSAGE_ARRIVE: u64 = 1_795_503_600_000;
+const JUSTIFICATION: &str = include_str!("vecteurs/justification-v1.txt");
+// Le mardi 17 novembre 2026 à midi, heure de Paris.
+const JUSTIFIEE: u64 = 1_794_913_200_000;
 const JULIEN_CLE: &str = "BHQxsY8FWshzset9dNhxatHj3waQiwDML5ARU_jrZCgYSGfA_asznGxJCjmucE0ptbTC8SRDUKKQWWIs9JtCEVU";
 
 #[test]
@@ -247,4 +250,17 @@ fn le_message_prive() {
     )
     .unwrap();
     assert_eq!(ecrit.texte(&classe).unwrap(), MESSAGE);
+}
+
+#[test]
+fn la_justification_d_une_absence() {
+    let classe = CodeDeClasse::lire(CODE).unwrap().secrets();
+    let justification = Justification::lire(&classe, JUSTIFICATION).unwrap();
+    assert_eq!(
+        (justification.apprenant.clone(), justification.date.as_str(), justification.demi),
+        (lea().publique(), "2026-11-17", Demi::Matin)
+    );
+    assert_eq!((justification.motif, justification.quand), (Motif::Transport, JUSTIFIEE));
+    assert_eq!(justification.seance.texte(), SEANCE_MATIN);
+    assert_eq!(Justification::signer(&classe, &lea(), "2026-11-17", Demi::Matin, Motif::Transport, JUSTIFIEE).unwrap(), JUSTIFICATION);
 }

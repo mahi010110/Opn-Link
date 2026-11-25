@@ -4,18 +4,19 @@
 // reste là pendant les heures de la classe. Sans réponse au bout de dix secondes, l'écran montre
 // seul le QR à tendre au formateur.
 
+import { MOTIFS, garderLaJustification, lAbsence, leMotif, lireJustification } from './absences';
 import { type AnnonceDeLaClasse, ecouter, enVigueur, garderLaVersion, lireAnnonce, noteHtml, relireLesAnnonces, toucheEcouter } from './annonces';
 import { couper, poser, viser } from './camera';
 import { type Moment, type Navigation, type Suivi, titreDesClasses } from './classes';
 import { type Contexte, faits, nomDe } from './contexte';
-import { type Creneau, type Demi, arrivee, bornes, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
+import { type Creneau, type Demi, arrivee, bornes, enJour, joursEntre, lundiDe, ouvre, plusJours, rang, sansCours } from './creneaux';
 import { type Erreurs, nomTape } from './entree';
 import { type AnnonceGardee, type PresenceGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
-import { ecouterLaPorte, ecouterLeFil, envoyer, envoyerUnMessage, recevoir } from './lettres';
+import { ecouterLaPorte, ecouterLeFil, envoyer, envoyerPourUnMois, envoyerUnMessage, recevoir } from './lettres';
 import { afficherConversation, avec, bullesHtml, dejaGarde, lignesDesNonLus, lireMessage, marquerLus, nonLus, phraseDuMessage } from './messages';
 import { type PourQui, afficherMoi, afficherNom } from './moi';
 import { nomCorrige, nomsAJour, nomsDesResponsables, passationsDe, porteAJour } from './responsables';
-import { type CeQueSaitLeTelephone, absences, ajusterLaSemaine, semaineHtml } from './semaine';
+import { type CeQueSaitLeTelephone, absences, ajusterLaSemaine, dixHtml, semaineHtml } from './semaine';
 import { phrase } from './textes';
 import { aQuelMoment, afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
 
@@ -27,7 +28,9 @@ type Vue =
   | { ecran: 'nom'; prenom: string; nom: string; erreurs?: Erreurs }
   | { ecran: 'classe' }
   | { ecran: 'messages' }
-  | { ecran: 'conversation'; cle: string; brouillon: string; annonce?: string; erreur?: string; retour: 'jour' | 'classe' | 'messages' };
+  | { ecran: 'conversation'; cle: string; brouillon: string; annonce?: string; erreur?: string; retour: 'jour' | 'classe' | 'messages' | 'presences' }
+  | { ecran: 'presences' }
+  | { ecran: 'absence'; date: string; demi: Demi; motif?: string; erreur?: string; retour: 'jour' | 'presences' };
 
 type Annonce = ReturnType<Contexte['coeur']['lire_annonce_de_l_appel']>;
 interface Prochain extends Creneau {
@@ -64,16 +67,19 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const demarrage = Date.now();
   const depuis = (jours: number) => plusJours(dateIso(Date.now()), -jours);
   let presences = (classe.presences ?? []).filter((p) => p.date >= depuis(HUIT_SEMAINES));
-  // Les annonces de l'appel, une par séance : la plus récente compte.
-  let annonces = (classe.annoncesAppel ?? []).filter((a) => a.date >= depuis(UNE_SEMAINE));
+  // Les annonces de l'appel, une par séance : la plus récente compte. Huit semaines, comme les
+  // présences : de quoi retrouver ses absences dans « Mes présences ».
+  let annonces = (classe.annoncesAppel ?? []).filter((a) => a.date >= depuis(HUIT_SEMAINES));
   let prochain = classe.prochain as Prochain | undefined;
   if (prochain && prochain.date < depuis(UNE_SEMAINE)) prochain = undefined;
   let annoncesDeLaClasse = relireLesAnnonces(coeur, classe.fil, classe.annoncesDeLaClasse, porte.responsables.map((r) => r.cle));
   let messages = classe.messages ?? [];
+  let justifications = (classe.justifications ?? []).filter((j) => j.date >= depuis(HUIT_SEMAINES));
   const garder = () => {
-    classe = { ...classe, presences, annoncesAppel: annonces, prochain, annoncesDeLaClasse: annoncesDeLaClasse.map((a) => a.signee), messages };
+    classe = { ...classe, presences, annoncesAppel: annonces, prochain, annoncesDeLaClasse: annoncesDeLaClasse.map((a) => a.signee), messages, justifications };
     garderClasse(classe);
   };
+  const justifiee = (c: Creneau) => justifications.some((j) => j.date === c.date && j.demi === c.demi);
 
   const nomDuResponsableDe = (r: (typeof porte.responsables)[number]) => nomDe(nomCorrige(ctx, classe.code, classe.noms, r));
   const formateur = () => nomDuResponsableDe(porte.responsables[0]);
@@ -112,6 +118,7 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     presences,
     appels: annonces,
     prochain: prochain && { annonce: creneau(prochain.quand), cours: prochain },
+    justifiees: justifications,
   });
   const sansCoursMaintenant = () => !ouvre(dateIso(maintenant())) || (!!prochain && sansCours(creneau(maintenant()), creneau(prochain.quand), prochain));
   // Un appel peut venir : un jour de cours, avant la fin de la demi-journée en cours.
@@ -166,7 +173,7 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     } catch {
       return recevoirProchain(texte); // Le fil porte aussi le prochain cours.
     }
-    if (a.date < depuis(UNE_SEMAINE)) return;
+    if (a.date < depuis(HUIT_SEMAINES)) return;
     const avant = annonces.find((x) => x.seance === a.seance);
     if (avant && avant.quand >= a.quand) return;
     annonces = [...annonces.filter((x) => x.seance !== a.seance), { seance: a.seance, date: a.date, demi: a.demi as Demi, etat: a.etat, quand: a.quand, par: a.par }];
@@ -385,6 +392,22 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     rendre();
   };
 
+  // La justification part aux seuls responsables, signée : le motif ne va nulle part ailleurs.
+  const envoyerLaJustification = () => {
+    if (vue.ecran !== 'absence') return;
+    const v = vue;
+    if (!v.motif) {
+      vue = { ...v, erreur: 'Choisis pourquoi tu étais absent.' };
+      return rendre();
+    }
+    const texte = moi.justifier(classe.code, v.date, v.demi, v.motif, Date.now());
+    for (const r of porte.responsables) envoyerPourUnMois(coeur, relais, r.boite, { v: 1, t: 'justification', code: classe.code, justification: texte });
+    justifications = garderLaJustification(justifications, lireJustification(coeur, classe.code, texte)!, depuis(HUIT_SEMAINES)) ?? justifications;
+    garder();
+    vue = { ecran: v.retour };
+    rendre();
+  };
+
   const gestes = {
     plusTard: () => {
       const demande = demandeDAccueil();
@@ -402,7 +425,7 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     effacer,
     retour: () => {
       couper();
-      vue = vue.ecran === 'nom' ? { ecran: 'moi' } : vue.ecran === 'conversation' ? { ecran: vue.retour } : { ecran: 'jour' };
+      vue = vue.ecran === 'nom' ? { ecran: 'moi' } : vue.ecran === 'conversation' || vue.ecran === 'absence' ? { ecran: vue.retour } : { ecran: 'jour' };
       rendre();
     },
     messages: () => {
@@ -420,6 +443,24 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
       rendre();
     },
     envoyerMessage: () => envoyerLeMessage(),
+    presences: () => {
+      vue = { ecran: 'presences' };
+      rendre();
+    },
+    justifier: (c: HTMLElement) => {
+      vue = { ecran: 'absence', date: c.dataset.date!, demi: c.dataset.demi as Demi, retour: vue.ecran === 'presences' ? 'presences' : 'jour' };
+      rendre();
+    },
+    // « C'est une erreur » écrit au responsable qui a clos l'appel, avec la phrase déjà prête.
+    erreur: (c: HTMLElement) => {
+      const date = c.dataset.date!;
+      const demiDeLAbsence = c.dataset.demi as Demi;
+      const a = annonces.find((x) => x.date === date && x.demi === demiDeLAbsence);
+      const cle = a && porte.responsables.some((r) => r.cle === a.par) ? a.par : porte.responsables[0].cle;
+      vue = { ecran: 'conversation', cle, brouillon: `Mon absence du ${lAbsence(date, demiDeLAbsence)}, est une erreur : j’étais là.`, retour: 'presences' };
+      rendre();
+    },
+    envoyerJustification: () => envoyerLaJustification(),
     moi: () => {
       vue = { ecran: 'moi' };
       rendre();
@@ -466,6 +507,8 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   };
   document.addEventListener('keydown', auClavier);
 
+  const toucheJustifier = (c: Creneau) =>
+    `<div class="gestes"><button class="touche" data-geste="justifier" data-date="${c.date}" data-demi="${c.demi}">${ic('attachment', 'ic-24')}<span>Justifier une absence</span></button></div>`;
   const ecranDuJour = () => {
     const fois = cetteFois();
     const annonce = annonceDuMoment();
@@ -488,14 +531,16 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     } else if (ouvert) {
       reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">L’appel est ouvert</h2><p class="mono">${moment}</p></div>`;
       touche = toucheSigner;
-    } else if (clos && !fois) {
+    } else if (clos && !fois && !justifiee(annonce)) {
       reponse = `${ic('square-alert', 'ic-32')}<div><h2 class="tres-gros">Une absence</h2><p class="mono">${nomDeLaDemiCourante} · appel clos à ${heure(annonce.quand)} par ${qui}</p></div>`;
+      touche = toucheJustifier(annonce);
     } else if (!fois && horsLigne() && appelAttendu()) {
       reponse = `${ic('qr-code', 'ic-32')}<div><h2 class="tres-gros">Ta présence</h2><p class="mono">${moment}</p></div>`;
       touche = toucheSigner;
     } else if (absence) {
       const a = annonces.find((x) => x.date === absence.date && x.demi === absence.demi)!;
       reponse = `${ic('square-alert', 'ic-32')}<div><h2 class="tres-gros">Une absence</h2><p class="mono">${jour(enJour(absence.date).getTime())}, ${nomDeLaDemi(absence.demi)} · appel clos par ${esc(nomDuResponsable(a.par))}</p></div>`;
+      touche = toucheJustifier(absence);
     } else if (appelAttendu() && !fois) {
       reponse = `${ic('clock', 'ic-32')}<div><h2 class="tres-gros">Pas d’appel ouvert</h2><p class="mono">${moment}</p></div>`;
     } else {
@@ -508,7 +553,7 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
       fenetre = accueil(demande);
       if (!surIPhone()) touche = `<div class="gestes"><button class="touche" data-geste="installer">${ic('download', 'ic-24')}<span>Installer</span></button></div>`;
     }
-    const semaine = `<section class="bloc" aria-label="Ma semaine"><p class="etiquette">Ma semaine</p>${semaineHtml(sait())}</section>`;
+    const semaine = `<a class="bloc lien-bloc" href="#" data-geste="presences" aria-label="Mes présences"><p class="etiquette">Ma semaine ${ic('chevron-right')}</p>${semaineHtml(sait())}</a>`;
     const aLire = derniereAnnonce();
     const ecrits = lignesDesNonLus(messages, nomDeLaCle);
     const lire =
@@ -652,9 +697,83 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     });
   };
 
+  // « Mes présences » : les semaines depuis l'entrée dans la classe, huit au plus, la plus récente
+  // d'abord. Sous chacune, ses absences : à justifier, ou justifiées.
+  const ecranPresences = () => {
+    const ce = sait();
+    const cetteSemaine = lundiDe(ce.maintenant.date);
+    let entree = cetteSemaine;
+    try {
+      entree = lundiDe(dateIso(coeur.lire_acceptation(classe.code, classe.acceptation!, responsables()).quand));
+    } catch {
+      // Sans acceptation lisible, seule la semaine en cours.
+    }
+    const court = (d: string) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(enJour(d));
+    const sections = Array.from({ length: HUIT_SEMAINES / 7 }, (_, n) => plusJours(cetteSemaine, -7 * n))
+      .filter((lundi) => lundi >= entree)
+      .map((lundi) => {
+        const vendredi = plusJours(lundi, 4);
+        const debut = enJour(lundi).getMonth() === enJour(vendredi).getMonth() ? String(enJour(lundi).getDate()) : court(lundi);
+        const titre = `${lundi === cetteSemaine ? 'Cette semaine · ' : ''}${debut} au ${court(vendredi)}`;
+        const auCentre = ce.appels.some((a) => a.date >= lundi && a.date <= vendredi) || ce.presences.some((p) => p.date >= lundi && p.date <= vendredi);
+        const lignes = absences(ce, true, lundi)
+          .reverse()
+          .map((a) => {
+            const j = justifications.find((x) => x.date === a.date && x.demi === a.demi);
+            const etat = `<div class="rangee"><div><b>Absence ${esc(lAbsence(a.date, a.demi).replace(/ \S+,/, ','))}</b><span class="mono">${j ? `justifiée · ${esc(leMotif(j.motif))}` : 'pas encore justifiée'}</span></div></div>`;
+            const boutons = j
+              ? ''
+              : `<div class="rangee gestes-rangee"><button class="btn" data-geste="justifier" data-date="${a.date}" data-demi="${a.demi}">${ic('attachment')}Justifier</button><button class="btn" data-geste="erreur" data-date="${a.date}" data-demi="${a.demi}">C’est une erreur</button></div>`;
+            return etat + boutons;
+          });
+        // « pas de cours » ne vaut que pour une semaine finie : celle-ci peut encore en avoir.
+        const sansCoursCetteSemaine = lundi < cetteSemaine && !auCentre;
+        return `<section class="bloc"><p class="etiquette">${esc(titre)}${sansCoursCetteSemaine ? ' · pas de cours' : ''}</p>${dixHtml(ce, lundi)}${lignes.length ? `<div class="liste">${lignes.join('')}</div>` : ''}</section>`;
+      });
+    afficher(
+      'tel',
+      'Mes présences',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Mes présences</h1><span class="mono">${esc(porte.nom)}</span></header>
+       <main class="page">${sections.join('')}</main>
+       <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button></div>${faits(relais)}</footer>`,
+      gestes,
+    );
+  };
+  // Justifier une absence : pourquoi, puis l'envoi aux responsables, que l'écran nomme (règle 1).
+  const ecranAbsence = (v: Extract<Vue, { ecran: 'absence' }>) => {
+    const choix = MOTIFS.map(([id, libelle]) => `<label><input type="radio" name="motif" value="${id}"${v.motif === id ? ' checked' : ''}><span class="rond"></span>${libelle}</label>`).join('');
+    const qui = porte.responsables.map(nomDuResponsableDe);
+    const aQui = qui.length > 1 ? `${qui.slice(0, -1).join(', ')} et ${qui[qui.length - 1]}` : qui[0];
+    afficher(
+      'tel',
+      'Absence',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Absence</h1><span class="mono">${jour(enJour(v.date).getTime())} · ${nomDeLaDemi(v.demi)}</span></header>
+       <main class="page">
+         <section class="bloc"><p class="etiquette" id="pourquoi">Pourquoi</p>
+           <div class="choix" role="radiogroup" aria-labelledby="pourquoi"${v.erreur ? ' aria-describedby="erreur-motif"' : ''}>${choix}</div>
+           ${v.erreur ? `<p class="erreur" id="erreur-motif">${ic('info-box')}<span>${esc(v.erreur)}</span></p>` : ''}
+         </section>
+         <p class="mono">Le motif part seulement aux responsables : ${esc(aQui)}.</p>
+       </main>
+       <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button><button class="touche" data-geste="envoyerJustification">${ic('send', 'ic-24')}<span>Envoyer aux responsables</span></button></div>${faits(relais)}</footer>`,
+      gestes,
+      true,
+    );
+    for (const radio of document.querySelectorAll<HTMLInputElement>('input[name="motif"]')) {
+      // Un motif choisi efface l'erreur sans redessiner : le choix garde le focus.
+      radio.onchange = () => {
+        if (vue.ecran === 'absence') vue = { ...vue, motif: radio.value, erreur: undefined };
+        document.querySelector('#erreur-motif')?.remove();
+        document.querySelector('.choix[role="radiogroup"]')?.removeAttribute('aria-describedby');
+      };
+    }
+  };
+
   const rendre = () => {
     if (arrete || !nav.affichee()) return;
     if (!classe.acceptation) return attente();
+    if (vue.ecran === 'presences') return ecranPresences();
+    if (vue.ecran === 'absence') return ecranAbsence(vue);
     if (vue.ecran === 'messages') return ecranMessages();
     if (vue.ecran === 'conversation') return ecranConversation(vue);
     if (vue.ecran === 'signer') return ecranSigner(vue);

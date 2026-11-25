@@ -27,7 +27,7 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
    --depth=1 origin <version>`.
 3. Vérifier que tout passe, comme le 24 novembre 2026 :
-   - `cd coeur && cargo test` : 83 tests ;
+   - `cd coeur && cargo test` : 86 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
    - `cd ../site && npm run construire && npm run verifier && npm run
@@ -609,6 +609,45 @@ pèse 299,2 Ko, sous le plafond. La vérification regarde maintenant ce que
 l'apprenant télécharge. La capture avant et après vient de
 `node outils/avant-apres.mjs sa-semaine`.
 
+Fait ensuite le 25 novembre 2026, justifier une absence :
+
+- dans le cœur, la justification, signée par l'apprenant, avec son vecteur.
+  Elle ne compte que pour la séance de sa demi-journée. 86 tests ;
+- « Ma semaine » mène à « Mes présences » : les semaines depuis l'entrée
+  dans la classe, huit au plus, et sous chacune ses absences, avec
+  « Justifier » et « C'est une erreur » ;
+- quand une absence de la semaine n'est pas justifiée, la touche de l'écran
+  du jour est « Justifier une absence ». La fenêtre « Absence » demande
+  pourquoi, et nomme les responsables à qui part le motif ;
+- « C'est une erreur » ouvre la conversation avec le responsable qui a clos
+  l'appel, la phrase déjà écrite ;
+- chez les responsables, « Sa semaine » et la ligne d'un absent après la
+  clôture disent si l'absence est justifiée, et pourquoi ;
+- l'annonce de l'appel reste trente jours sur les relais, au lieu d'un, et
+  huit semaines sur le téléphone : un apprenant qui rouvre l'app plus tard
+  apprend encore son absence.
+
+Le scénario le joue : Noah retrouve dans « Mes présences » son absence de
+mardi 17, et « C'est une erreur » prépare son message à Awa. Mercredi, la
+touche du jour mène à « Justifier » ; sans motif, rien ne part. Il choisit
+le transport : la justification arrive chez Awa et Julien, scellée, et la
+semaine de Noah la montre chez Awa. La justification de quelqu'un qui n'est
+pas dans la classe ne compte pas. Les annonces de l'appel restent trente
+jours sur les relais. 153 vérifications.
+
+Dans le cœur, quatre défauts posés exprès font échouer les tests : une
+séance pas comparée, une signature pas vérifiée, un motif inconnu accepté,
+et deux champs inversés. Retirer la vérification de la classe ne se voit
+pas : celle de la séance refuse déjà une justification d'une autre classe.
+Neuf défauts posés exprès dans le site font chacun échouer le scénario :
+une annonce de l'appel gardée un jour, une justification envoyée en clair,
+ou sans motif, une absence justifiée montrée comme les autres, une
+justification gardée quel que soit l'apprenant, « C'est une erreur » qui
+écrit au chef plutôt qu'à celui qui a clos l'appel, « Ma semaine » qui ne
+mène plus à « Mes présences », la touche oubliée, et « Sa semaine » sans les
+justifications. Les captures avant et après viennent de
+`node outils/avant-apres.mjs absences`, et de `jour` pour la touche.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -647,9 +686,9 @@ on construit directement la première version complète
    closes.
 4. Les absences, et la page du tuteur. Fait en partie le 25 novembre 2026 :
    chaque responsable garde les feuilles closes de la classe, et voit la
-   semaine d'un apprenant dans sa conversation. Restent, dans l'ordre :
-   « Mes présences », « Justifier » et « C'est une erreur » chez
-   l'apprenant ; le fichier en morceaux, pour le justificatif ; le tuteur,
+   semaine d'un apprenant dans sa conversation. L'apprenant voit « Mes
+   présences », justifie une absence ou dit « C'est une erreur ». Restent,
+   dans l'ordre : le fichier en morceaux, pour le justificatif ; le tuteur,
    son lien, « Prévenir l'entreprise » et sa page.
 5. Les documents à signer, la feuille exportée en PDF et le registre
    public.
@@ -897,6 +936,17 @@ Pour les annonces (24 novembre 2026) :
   jusqu'à son retrait ;
 - « Écouter » ne se montre que si l'appareil a une voix française à lui.
 
+Pour les absences justifiées (25 novembre 2026) :
+
+- l'annonce de l'appel reste trente jours sur les relais, au lieu d'un ;
+- la justification part sans « Annuler », comme un message : elle ne va
+  qu'aux responsables ;
+- une absence justifiée ne compte plus dans « Une absence » ;
+- la case d'une absence justifiée dit « just. », pour ne pas tenir à la
+  seule couleur ;
+- « Ton tuteur voit ces cases et rien d'autre », dans « Mes présences »,
+  viendra avec le tuteur.
+
 Pour les feuilles closes (25 novembre 2026) :
 
 - la feuille part aux autres responsables quand sa clôture ne s'annule
@@ -975,8 +1025,8 @@ Pour les messages privés (24 novembre 2026) :
   les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour`,
   `signer`, `semaine`, `lire`, `prochain`, `redemande`, `membres`,
   `adjoint`, `passer`, `reglages`, `moi`, `moi-formateur`, `mes-cours`,
-  `deux-classes`, `classe`, `fil`, `messages`, `messages-formateur` et
-  `sa-semaine` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le
+  `deux-classes`, `classe`, `fil`, `messages`, `messages-formateur`,
+  `sa-semaine` et `absences` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le
   geste qui mène à l'écran.
 - Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
   scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans

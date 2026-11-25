@@ -143,6 +143,18 @@ const PLANCHES = [
       ['43-formateur-sa-semaine', 'Sa semaine', 'Dans la conversation avec Noah : son absence de mardi matin, d’après la feuille close qu’Awa garde.'],
     ],
   },
+  {
+    nom: 'planche-8-absences',
+    titre: 'Les absences',
+    sous: 'Noah retrouve son absence de mardi 17 dans « Mes présences ». « C’est une erreur » écrirait à Awa, qui a clos l’appel. Mercredi, la touche du jour mène à « Justifier » : le motif part aux seuls responsables.',
+    colonnes: 3,
+    largeur: 1100,
+    images: [
+      ['44-apprenant-presences', 'Mes présences', 'Les semaines depuis l’entrée dans la classe. Sous chacune, ses absences, avec « Justifier » et « C’est une erreur ».'],
+      ['45-apprenant-absence-a-justifier', 'L’écran du jour', 'Une absence de la semaine pas encore justifiée : c’est ce qui est dû, la touche y mène.'],
+      ['46-apprenant-justifier', 'Justifier', 'Pourquoi, puis l’envoi. L’écran nomme les responsables, seuls à recevoir le motif.'],
+    ],
+  },
 ];
 
 const echappe = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/« /g, '« ').replace(/ »/g, ' »').replace(/ :/g, ' :');
