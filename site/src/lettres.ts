@@ -20,7 +20,8 @@ export type Lettre =
   | { v: 1; t: 'adjoint'; code: string; demande: string; jeton: string }
   | { v: 1; t: 'nom'; code: string; correction: string }
   | { v: 1; t: 'responsables'; code: string; porte: string; passations: string[]; lettre: string }
-  | { v: 1; t: 'message'; code: string; message: string };
+  | { v: 1; t: 'message'; code: string; message: string }
+  | { v: 1; t: 'feuille'; code: string; journal: string };
 
 const UN_JOUR = 24 * 3600;
 const SEPT_JOURS = 7 * UN_JOUR;
@@ -37,10 +38,16 @@ export function envoyer(coeur: Coeur, relais: Relais, boite: string, lettre: Let
   relais.publier(coeur.evenement_nostr(coeur.etiquette_de_boite(boite), jusqua, scellee, maintenant));
 }
 
-/// Un message privé reste trente jours après son arrivée sur les relais : un apprenant en
-/// entreprise trois semaines le reçoit encore à son retour.
+/// Une lettre qui attend un appareil éteint plusieurs semaines : les relais la gardent trente jours
+/// après l'heure donnée, et chaque appareil relit sa boîte sur trente jours.
+export function envoyerPourUnMois(coeur: Coeur, relais: Relais, boite: string, lettre: Lettre, depuis = Date.now()): void {
+  envoyer(coeur, relais, boite, lettre, Math.max(Math.floor(depuis / 1000), secondes()) + TRENTE_JOURS);
+}
+
+/// Un message privé reste trente jours après son arrivée : un apprenant en entreprise trois
+/// semaines le reçoit encore à son retour.
 export function envoyerUnMessage(coeur: Coeur, relais: Relais, boite: string, code: string, message: string, arrivee: number): void {
-  envoyer(coeur, relais, boite, { v: 1, t: 'message', code, message }, Math.max(Math.floor(arrivee / 1000), secondes()) + TRENTE_JOURS);
+  envoyerPourUnMois(coeur, relais, boite, { v: 1, t: 'message', code, message }, arrivee);
 }
 
 // Un seul abonnement par sorte, pour toutes les classes de l'appareil : la boîte, les fils, les

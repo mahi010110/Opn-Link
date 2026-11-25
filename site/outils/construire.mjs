@@ -36,16 +36,29 @@ cpSync(join(SITE, 'src', 'site.css'), join(DIST, 'site.css'));
 writeFileSync(join(DIST, 'style.css'), readFileSync(join(MAQUETTES, 'style.css'), 'utf8') + '@import url("site.css");\n');
 cpSync(join(SITE, 'index.html'), join(DIST, 'index.html'));
 
+// Les écrans des responsables et de la salle partent en morceaux à part, chargés quand il le faut :
+// un apprenant ne les télécharge pas (docs/regles.md, partie 4).
 await build({
   entryPoints: [join(SITE, 'src', 'main.ts')],
   bundle: true,
+  splitting: true,
   format: 'esm',
   target: 'es2020',
   minify: true,
-  outfile: join(DIST, 'app.js'),
+  outdir: DIST,
+  entryNames: 'app',
+  chunkNames: 'morceaux/[name]-[hash]',
   external: ['./coeur/opn_core.js'],
   logLevel: 'warning',
 });
+const morceaux = readdirSync(join(DIST, 'morceaux')).map((f) => `morceaux/${f}`);
+// Ce que charge app.js d'emblée : lui, et les morceaux qu'il importe sans attendre.
+const importesDEmblee = (fichier, vus = new Set()) => {
+  for (const [, chemin] of readFileSync(join(DIST, fichier), 'utf8').matchAll(/(?:from|import)\s*"\.\/(?:\.\.\/)?(morceaux\/[^"]+)"/g)) {
+    if (!vus.has(chemin)) importesDEmblee(chemin, vus.add(chemin));
+  }
+  return vus;
+};
 
 // Les couleurs du manifeste et de l'icône viennent des jetons du matériel, jamais écrites à la main.
 const jetons = readFileSync(join(DIST, 'kit', 'styles', 'tokens', 'colors.css'), 'utf8');
@@ -87,7 +100,7 @@ const source = readdirSync(join(SITE, 'src')).filter((f) => f.endsWith('.ts')).m
 const icones = [...new Set([...source.matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1]))].filter((n) => existsSync(join(DIST, 'kit', 'assets', 'icons', `${n}.svg`)));
 const encoder = (chemin) => chemin.split('/').map(encodeURIComponent).join('/');
 const gardes = [
-  'index.html', 'app.js', 'style.css', 'opn-link.css', 'site.css', 'manifest.webmanifest', 'icone-180.png', 'icone-192.png',
+  'index.html', 'app.js', ...morceaux, 'style.css', 'opn-link.css', 'site.css', 'manifest.webmanifest', 'icone-180.png', 'icone-192.png',
   'coeur/opn_core.js', 'coeur/opn_core_bg.wasm',
   ...readdirSync(join(DIST, 'kit', 'styles', 'tokens')).map((f) => `kit/styles/tokens/${f}`),
   ...['IBMPlexMono-Regular.woff2', 'PublicSans[wght].woff2', 'Silkscreen-Regular.woff2'].map((f) => `kit/assets/fonts/${f}`),
@@ -104,7 +117,7 @@ const ko = (o) => `${(o / 1024).toFixed(1)} Ko`;
 const premier = {
   'le cœur (WebAssembly)': poids(join(DIST, 'coeur', 'opn_core_bg.wasm')),
   'le JavaScript du cœur': poids(join(DIST, 'coeur', 'opn_core.js')),
-  "l'interface": poids(join(DIST, 'app.js')),
+  "l'interface": [...importesDEmblee('app.js')].reduce((o, f) => o + poids(join(DIST, f)), poids(join(DIST, 'app.js'))),
   'les styles': ['style.css', 'opn-link.css', 'site.css', ...readdirSync(join(DIST, 'kit', 'styles', 'tokens')).map((f) => join('kit', 'styles', 'tokens', f))]
     .map((f) => poids(join(DIST, f))).reduce((a, b) => a + b, 0),
   'la page': poids(join(DIST, 'index.html')),

@@ -1,11 +1,9 @@
-import { ouvrirLesClasses, plein } from './classes';
+import { chargerLesEcransDesResponsables, ouvrirLesClasses, plein } from './classes';
 import { chargerCoeur } from './coeur';
-import { creer } from './creer';
 import { rejoindreCommeAdjoint, rejoindreParLien } from './entree';
 import { appliquerLeTheme, classes, clesDeLAppareil, ecran, ecrire, lire, listeDesRelais, rangerParClasse } from './etat';
 import { lireLien, lireLienDAdjoint } from './lettres';
 import { Relais } from './relais';
-import { salle } from './salle';
 
 appliquerLeTheme();
 
@@ -14,9 +12,15 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 chargerCoeur().then((coeur) => {
   const envois = { lire: () => lire<string[]>('envois') ?? [], ecrire: (e: string[]) => ecrire('envois', e) };
   const ctx = { coeur, relais: new Relais(listeDesRelais(), envois), moi: clesDeLAppareil(coeur) };
-  if (ecran === 'salle') return salle(ctx);
+  if (ecran === 'salle') {
+    import('./salle').then(({ salle }) => salle(ctx));
+    return;
+  }
   rangerParClasse();
-  if (location.hash === '#creer') return plein(ctx) || creer(ctx);
+  if (location.hash === '#creer') {
+    if (!plein(ctx)) chargerLesEcransDesResponsables().then((r) => r.creer(ctx));
+    return;
+  }
   const lien = lireLien(location.hash);
   const invitation = lireLienDAdjoint(location.hash);
   const code = (lien ?? invitation)?.code;

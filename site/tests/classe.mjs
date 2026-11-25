@@ -492,6 +492,31 @@ try {
   await telLea.getByText('Prochain appel : lun. 23 nov., 9 h').waitFor({ timeout: 45_000 });
   verifier(surLeFil() === avantLesChangements + 1, `un seul prochain cours est parti, celui de lundi : l’annulé n’a rien envoyé (${surLeFil() - avantLesChangements})`);
 
+  // La feuille close part aux autres responsables quand la clôture ne s'annule plus : Julien la
+  // vérifie et la garde, pour la semaine de chaque apprenant.
+  let feuilleChezJulien;
+  for (let essai = 0; essai < 30 && !feuilleChezJulien; essai++) {
+    const classeChezJulien = JSON.parse(await telJulien.evaluate(() => localStorage.getItem('opl_proto_julien_classes'))).find((c) => c.code === code);
+    feuilleChezJulien = (classeChezJulien.feuilles ?? []).find((f) => f.date === '2026-11-17' && f.demi === 'matin');
+    if (!feuilleChezJulien) await telJulien.waitForTimeout(500);
+  }
+  verifier(
+    !!feuilleChezJulien && Object.keys(feuilleChezJulien.presents).length === 3 && feuilleChezJulien.absents.length === 1,
+    'la feuille close part à Julien, l’autre responsable, qui la vérifie et la garde : trois présents, Noah absent',
+  );
+  // Yanis, qui a le code, envoie à Julien la feuille de son faux appel : elle ne compte pas.
+  const boiteDeJulien = coeur.Appareil.relire(JSON.parse(await telJulien.evaluate(() => localStorage.getItem('opl_proto_julien_cles')))).boite();
+  await publierAuSecours(
+    coeur.etiquette_de_boite(boiteDeJulien),
+    coeur.sceller(boiteDeJulien, JSON.stringify({ v: 1, t: 'feuille', code, journal: fauxAppel.journal() })),
+  );
+  await telJulien.waitForTimeout(1500);
+  const feuillesChezJulien = JSON.parse(await telJulien.evaluate(() => localStorage.getItem('opl_proto_julien_classes'))).find((c) => c.code === code).feuilles;
+  verifier(
+    feuillesChezJulien.length === 1 && feuillesChezJulien[0].par === coeur.Appareil.relire(clesDAwa).cle(),
+    'une feuille tenue par un apprenant ne compte pas : Julien ne garde que celle d’Awa',
+  );
+
   // Yanis écrit à Awa comme un responsable, une lettre signée de sa clé : un autre prochain cours.
   const parYanisLettre = coeur.Appareil.relire(clesDeYanis).ecrire_aux_responsables(
     code,
@@ -990,6 +1015,13 @@ try {
   );
   await tel.fill('#chercher', 'noah');
   verifier((await tel.locator('[data-geste="ecrire"]', { hasText: 'Noah Petit' }).count()) === 1, 'chercher un nom trouve aussi un apprenant à qui Awa n’a pas encore écrit');
+  await tel.locator('[data-geste="ecrire"]', { hasText: 'Noah Petit' }).click();
+  await capturer(tel, '43-formateur-sa-semaine');
+  verifier(
+    (await tel.locator('.rangee', { hasText: 'Sa semaine' }).getByText('1 absence').count()) === 1 && (await tel.locator('.dix .case.absent').count()) === 1,
+    'dans la conversation avec Noah, Awa voit sa semaine, d’après les feuilles closes : son absence de mardi matin',
+  );
+  await tel.click('[data-geste="retour"]');
   await tel.fill('#chercher', 'ines');
   verifier(
     (await tel.locator('[data-geste="ecrire"]', { hasText: 'BTS SIO 1' }).count()) === 1 && (await tel.locator('[data-geste="ecrire"]', { hasText: 'BTS SIO 2' }).count()) === 1,
@@ -1146,6 +1178,7 @@ try {
   );
 
   const poids = [];
+  const scriptsCharges = [];
   const premier = await navigateur.newContext({ ...TEL });
   await premier.addInitScript((url) => localStorage.setItem('opl_proto_neuf_relais', JSON.stringify({ principaux: [url], secours: [] })), secours.url);
   const pageNeuve = await premier.newPage();
@@ -1153,6 +1186,7 @@ try {
     try {
       const corps = await r.body();
       poids.push([new URL(r.url()).pathname, extname(r.url()) === '.woff2' ? corps.length : gzipSync(corps, { level: 9 }).length]);
+      if (extname(r.url()) === '.js') scriptsCharges.push(corps.toString('utf8'));
     } catch {}
   });
   await pageNeuve.goto(`${site}/index.html?appareil=neuf`);
@@ -1162,6 +1196,10 @@ try {
   const polices = poids.filter(([c]) => c.endsWith('.woff2')).reduce((s, [, o]) => s + o, 0);
   console.log(`Premier chargement chez un apprenant : ${(total / 1024).toFixed(1)} Ko compressés, dont ${(polices / 1024).toFixed(1)} Ko de polices`);
   verifier(total <= 300 * 1024, 'le premier chargement tient sous le plafond de 300 Ko');
+  verifier(
+    scriptsCharges.length > 0 && scriptsCharges.every((t) => !t.includes('Clore et signer')),
+    'un apprenant ne télécharge pas les écrans des responsables : « Clore et signer » n’est dans aucun script qu’il charge',
+  );
 
   // La liste par défaut, sans toucher au réseau : Playwright tient le rôle des relais publics.
   // nos.lol refuse les écritures, comme un relais qui bloque l'adresse d'un centre.

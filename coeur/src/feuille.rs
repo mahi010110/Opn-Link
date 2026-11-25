@@ -318,6 +318,11 @@ impl Feuille {
         self.ouverture().4
     }
 
+    /// La clé du formateur qui a ouvert l'appel : elle signe chacune de ses lignes.
+    pub fn formateur(&self) -> &ClePublique {
+        self.ouverture().1
+    }
+
     pub fn date(&self) -> &str {
         self.ouverture().5
     }

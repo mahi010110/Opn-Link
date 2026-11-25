@@ -6,10 +6,8 @@ import { apprenant } from './apprenant';
 import type { Coeur } from './coeur';
 import { type Contexte, faits } from './contexte';
 import { joursEntre } from './creneaux';
-import { creer } from './creer';
 import { attenteDAdjoint, sansClasse } from './entree';
 import { CLASSES_AU_PLUS, type ClasseGardee, classes, ecrire, estResponsable, garderClasse, lire } from './etat';
-import { formateur } from './formateur';
 import { type Correspondance, afficherLesMessages } from './messages';
 import { afficher, dateIso, esc, horaire, ic, jour } from './vue';
 
@@ -60,6 +58,14 @@ export interface Navigation {
 
 let ctx: Contexte | undefined;
 const suivis = new Map<string, Suivi>();
+
+// Les écrans des responsables se chargent à part : un apprenant ne les télécharge pas, et son
+// premier chargement tient sous 300 Ko (docs/regles.md, partie 4).
+let responsables: { formateur: typeof import('./formateur').formateur; creer: typeof import('./creer').creer } | undefined;
+export async function chargerLesEcransDesResponsables(): Promise<NonNullable<typeof responsables>> {
+  responsables ??= { formateur: (await import('./formateur')).formateur, creer: (await import('./creer')).creer };
+  return responsables;
+}
 // La classe à l'écran, ou la dernière, quand « Mes cours » ou « Créer une classe » la recouvre.
 let affichee: string | undefined;
 let aLEcran: 'classe' | 'mes-cours' | 'messages' | 'ailleurs' = 'classe';
@@ -108,7 +114,7 @@ function suivre(classe: ClasseGardee): Suivi {
     messagesChangent: () => aLEcran === 'messages' && ecranMessages(),
   };
   if (classe.role === 'apprenant') return apprenant(ctx!, code, nav);
-  if (estResponsable(classe) && classe.fil) return formateur(ctx!, code, nav);
+  if (estResponsable(classe) && classe.fil) return responsables!.formateur(ctx!, code, nav);
   return attenteDAdjoint(ctx!, code, nav);
 }
 
@@ -116,6 +122,10 @@ function suivre(classe: ClasseGardee): Suivi {
 export function ouvrirLesClasses(contexte: Contexte, code?: string): void {
   ctx = contexte;
   const gardees = classes();
+  if (!responsables && gardees.some((c) => estResponsable(c) && c.fil)) {
+    chargerLesEcransDesResponsables().then(() => ouvrirLesClasses(contexte, code));
+    return;
+  }
   for (const [c, suivi] of suivis) {
     if (gardees.some((g) => g.code === c)) continue;
     suivi.arreter();
@@ -175,6 +185,12 @@ function reconsiderer(): void {
 }
 
 function relancer(code: string): void {
+  // Un adjoint accepté devient responsable : ses écrans se chargent d'abord.
+  const devenu = classes().find((c) => c.code === code);
+  if (!responsables && devenu && estResponsable(devenu) && devenu.fil) {
+    chargerLesEcransDesResponsables().then(() => relancer(code));
+    return;
+  }
   suivis.get(code)?.arreter();
   suivis.delete(code);
   const classe = classes().find((c) => c.code === code);
@@ -227,7 +243,7 @@ function ecranMesCours(): void {
       choisir: (c) => ouvrirLesClasses(ctx!, c.dataset.code),
       creer: () => {
         aLEcran = 'ailleurs';
-        creer(ctx!, undefined, {}, ouvrirMesCours);
+        chargerLesEcransDesResponsables().then((r) => r.creer(ctx!, undefined, {}, ouvrirMesCours));
       },
       retour: () => ouvrirLesClasses(ctx!, affichee),
     },

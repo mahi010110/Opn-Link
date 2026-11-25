@@ -596,3 +596,21 @@ refusés.
   plafond de 300. Une question ouverte, avec une recommandation : séparer ce
   que charge l'apprenant de ce que chargent les responsables, avant l'étape
   5 ([questions-ouvertes.md](questions-ouvertes.md)).
+
+## 25 novembre 2026 : les absences
+
+- Le mainteneur : « Vas-y continue, mais dis-moi aussi à combien de
+  pourcentage le projet est terminé. » Réponse : la conception est finie, et
+  la première version complète l'est à 35 % environ, compté au travail que
+  demande chaque étape. Le travail passe à l'étape 4 de
+  [prototype.md](prototype.md), découpée en quatre morceaux.
+- Chaque responsable garde les feuilles closes de la classe, envoyées par
+  celui qui a tenu l'appel quand la clôture ne s'annule plus. Il ne garde que
+  ce qu'elles disent, huit semaines : le journal entier viendra avec l'export
+  de l'étape 5. Choisi en codant, à valider ([prototype.md](prototype.md),
+  partie « Les choix du prototype, à valider »).
+- Les écrans des responsables se chargent à part : sans ça, le premier
+  chargement de l'apprenant passait à 300 Ko. C'est la moitié de la
+  recommandation de [questions-ouvertes.md](questions-ouvertes.md), partie
+  « Le poids du site de l'apprenant » ; l'autre moitié, le cœur, attend le
+  mainteneur.

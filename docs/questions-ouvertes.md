@@ -137,6 +137,11 @@ crée une classe ou qu'on devient responsable. C'était prévu dans
 [mesures.md](mesures.md), qui pèse déjà le téléphone d'un apprenant à part.
 Le plafond reste à 300 Ko.
 
+Le 25 novembre 2026, les feuilles closes allaient le faire passer à 300 Ko.
+Les écrans des responsables se chargent donc déjà à part : 12,7 Ko de moins
+pour l'apprenant, qui revient à 289 Ko. Reste le cœur, 154 Ko, le plus
+gros morceau, qui demande deux versions compilées.
+
 ## À fixer au prototype
 
 - Le nombre maximum de classes. Les relais acceptent de 20 à 200 abonnements

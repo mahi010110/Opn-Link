@@ -604,6 +604,7 @@ pub struct QrDeLaSalle {
 }
 
 /// Un inscrit et son état, pour la liste du formateur.
+#[derive(Clone)]
 #[wasm_bindgen(getter_with_clone)]
 pub struct Ligne {
     pub prenom: String,
@@ -749,28 +750,7 @@ impl Appel {
     }
 
     pub fn lignes(&self) -> Vec<Ligne> {
-        self.feuille
-            .etat()
-            .into_iter()
-            .map(|e| {
-                let (etat, voie, quand) = match e.presence {
-                    EtatPresence::PasEncore => ("pas-encore", "", 0),
-                    EtatPresence::Absent => ("absent", "", 0),
-                    EtatPresence::Present { quand, voie } => ("present", voie_texte(voie), quand),
-                };
-                Ligne {
-                    prenom: e.prenom,
-                    nom: e.nom,
-                    cle: e.cle.texte(),
-                    etat: etat.into(),
-                    voie: voie.into(),
-                    quand: quand as f64,
-                    retard: e.retard.map(|h| h as f64),
-                    depart: e.depart.map(|h| h as f64),
-                    corrige: e.corrige,
-                }
-            })
-            .collect()
+        lignes_de(&self.feuille)
     }
 
     pub fn journal(&self) -> String {
@@ -780,6 +760,68 @@ impl Appel {
     pub fn empreinte(&self) -> String {
         self.feuille.empreinte()
     }
+}
+
+fn lignes_de(feuille: &Feuille) -> Vec<Ligne> {
+    feuille
+        .etat()
+        .into_iter()
+        .map(|e| {
+            let (etat, voie, quand) = match e.presence {
+                EtatPresence::PasEncore => ("pas-encore", "", 0),
+                EtatPresence::Absent => ("absent", "", 0),
+                EtatPresence::Present { quand, voie } => ("present", voie_texte(voie), quand),
+            };
+            Ligne {
+                prenom: e.prenom,
+                nom: e.nom,
+                cle: e.cle.texte(),
+                etat: etat.into(),
+                voie: voie.into(),
+                quand: quand as f64,
+                retard: e.retard.map(|h| h as f64),
+                depart: e.depart.map(|h| h as f64),
+                corrige: e.corrige,
+            }
+        })
+        .collect()
+}
+
+/// Une feuille close, telle que la garde un responsable qui ne l'a pas tenue.
+#[wasm_bindgen(getter_with_clone)]
+pub struct FeuilleLue {
+    pub seance: String,
+    pub date: String,
+    /// `matin` ou `apres-midi`.
+    pub demi: String,
+    /// La clé du formateur qui a tenu l'appel.
+    pub formateur: String,
+    pub cloture: f64,
+    pub empreinte: String,
+    /// Le nombre de lignes du journal : une correction en ajoute une.
+    pub longueur: u32,
+    pub lignes: Vec<Ligne>,
+}
+
+/// Relit le journal d'une feuille close de la classe, venu d'un autre responsable, et vérifie
+/// chacune de ses lignes.
+#[wasm_bindgen]
+pub fn lire_feuille(code: &str, journal: &str) -> Result<FeuilleLue, Erreur> {
+    let feuille = Feuille::relire(journal, None)?;
+    if feuille.classe() != secrets(code)?.etiquette() {
+        return Err(Erreur::AutreSeance);
+    }
+    let cloture = feuille.cloture_a().ok_or(Erreur::AppelOuvert)?;
+    Ok(FeuilleLue {
+        seance: feuille.seance().texte().to_owned(),
+        date: feuille.date().to_owned(),
+        demi: feuille.demi().texte().to_owned(),
+        formateur: feuille.formateur().texte(),
+        cloture: cloture as f64,
+        empreinte: feuille.empreinte(),
+        longueur: feuille.lignes().len() as u32,
+        lignes: lignes_de(&feuille),
+    })
 }
 
 fn recu(r: Recu) -> Result<String, Erreur> {

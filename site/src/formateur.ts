@@ -8,13 +8,15 @@ import type { Moment, Navigation, Suivi } from './classes';
 import type { Appel } from './coeur';
 import { type Contexte, faits, nomDe } from './contexte';
 import { type Creneau, type Demi, arrivee, bornes, enJour, enTexte, lireCreneau, lundiDe, ouvre, plusJours, proposerLeProchain, rang, suivant } from './creneaux';
+import { ceQueDisentLesFeuilles, dejaGardee, garderLaFeuille, lireFeuille } from './feuilles';
 import { type ClasseGardee, appelGarde, classes, ecrire, garderAppel, garderClasse } from './etat';
 import { type Horaires, champsDesHoraires, lireLesHoraires } from './horaires';
 import { type Erreurs, nomTape } from './entree';
-import { annoncerLAppel, annoncerLeProchain, ecouterLaPorte, ecouterLeFil, envoyer, envoyerUnMessage, lienDAdjoint, lienDeLaClasse, nouveauJeton, publierPorte, publierSurLeFil, recevoir } from './lettres';
+import { annoncerLAppel, annoncerLeProchain, ecouterLaPorte, ecouterLeFil, envoyer, envoyerPourUnMois, envoyerUnMessage, lienDAdjoint, lienDeLaClasse, nouveauJeton, publierPorte, publierSurLeFil, recevoir } from './lettres';
 import { type Correspondant, afficherConversation, avec, bullesHtml, dejaGarde, lignesDesNonLus, lireMessage, marquerLus, phraseDuMessage } from './messages';
 import { type PourQui, afficherMoi, afficherNom } from './moi';
 import { aDeQuoiRepondre, chefActuel, ecrireAuxResponsables, etatChange, fusionner, nomCorrige, nomsAJour, nomsDesResponsables, passationsDe, porteAJour } from './responsables';
+import { absences, dixHtml } from './semaine';
 import { codeDe, phrase } from './textes';
 import { aQuelMoment, afficher, codeAffiche, dateIso, demiJournee, esc, heure, heureCourte, horaire, ic, jour, paves } from './vue';
 
@@ -81,6 +83,8 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   const arrets: (() => void)[] = [];
   let annoncesDeLaClasse = relireLesAnnonces(coeur, classe.fil, classe.annoncesDeLaClasse, responsables());
   let messages = classe.messages ?? [];
+  let feuilles = classe.feuilles ?? [];
+  const huitSemainesAvant = () => plusJours(dateIso(Date.now()), -HUIT_SEMAINES);
   // Ce qui ne regarde que cet appareil, sans lettre aux autres responsables ni à la salle.
   const noter = (nouvelle: ClasseGardee) => {
     classe = nouvelle;
@@ -224,6 +228,19 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     const nouvelle = signerLaPorte(porte.responsables.map(enLigne), attente.matin, attente.apresMidi);
     publierPorte(coeur, relais, classe.code, nouvelle);
     changer({ ...classe, porte: nouvelle, portePubliee: Date.now(), horairesEnAttente: undefined });
+  };
+
+  // La feuille close part aux autres responsables quand sa clôture ne s'annule plus : chacun la
+  // garde, pour la semaine de chaque apprenant.
+  const partagerLaFeuille = () => {
+    if (!appel?.definitive(Date.now())) return;
+    const journal = appel.journal();
+    if (dejaGardee(feuilles, journal)) return;
+    const gardees = garderLaFeuille(feuilles, lireFeuille(coeur, classe.code, journal)!, huitSemainesAvant());
+    if (!gardees) return;
+    for (const r of porte.responsables) if (r.cle !== moi.cle()) envoyerPourUnMois(coeur, relais, r.boite, { v: 1, t: 'feuille', code: classe.code, journal });
+    feuilles = gardees;
+    noter({ ...classe, feuilles });
   };
 
   // Un message part tout de suite : il ne remplace rien, et la barre dit à qui il part (règle 1).
@@ -1001,6 +1018,14 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     if (!a) return 'en réponse à une annonce';
     return `en réponse à ${a.auteur === moi.cle() ? 'ton annonce' : 'l’annonce'} du ${jour(a.arrivee)}`;
   };
+  // La semaine d'un apprenant, telle que la disent les feuilles closes de la classe.
+  const saSemaine = (cle: string) => {
+    const creneau = (ms: number): Creneau => ({ date: dateIso(ms), demi: demiJournee(ms, porte.apres_midi) });
+    const prochain = classe.prochain && { annonce: creneau(classe.prochain.quand), cours: { date: classe.prochain.date, demi: classe.prochain.demi as Demi } };
+    const sait = ceQueDisentLesFeuilles(feuilles, cle, creneau(Date.now()), prochain);
+    const n = absences(sait).length;
+    return `<div class="liste"><div class="rangee"><div><b>Sa semaine</b><span class="mono">${n ? pluriel(n, 'absence') : 'aucune absence'}</span></div>${dixHtml(sait)}</div></div>`;
+  };
   const ecranConversation = (v: Extract<Vue, { ecran: 'conversation' }>) => {
     const c = correspondants().find((x) => x.cle === v.cle);
     if (!c) return avant(Date.now());
@@ -1014,6 +1039,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
     afficherConversation({
       qui: c.nom,
       sous: porte.nom,
+      haut: c.role ? '' : saSemaine(c.cle),
       bulles: bullesHtml(avec(messages, v.cle, maintenant), moi.cle(), reponseA, maintenant),
       libelle: 'Ton message',
       brouillon: v.brouillon,
@@ -1100,6 +1126,15 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
       }
       if (responsables().includes(qui.cle) || candidats().some((c) => c.qui.cle === qui.cle)) return;
       changer({ ...classe, candidats: [...(classe.candidats ?? []), { demande: l.demande, role: invitation.role, jeton: l.jeton }] });
+    } else if (l.t === 'feuille' && l.code === classe.code) {
+      if (dejaGardee(feuilles, l.journal)) return;
+      const f = lireFeuille(coeur, classe.code, l.journal);
+      // Seul un responsable de la classe tient un appel : la feuille d'un autre ne compte pas.
+      const gardees = f && responsables().includes(f.par) && garderLaFeuille(feuilles, f, huitSemainesAvant());
+      if (!gardees) return;
+      feuilles = gardees;
+      noter({ ...classe, feuilles });
+      if (vue.ecran === 'conversation') return rendre();
     } else if (l.t === 'message' && l.code === classe.code) {
       const m = lireMessage(coeur, classe.code, l.message, moi.cle(), correspondants().map((c) => c.cle));
       if (!m || dejaGarde(messages, m)) return;
@@ -1129,6 +1164,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
       nav.messagesChangent();
       if (vue.ecran === 'cours' || vue.ecran === 'conversation') rendre();
     }
+    partagerLaFeuille();
     const annonce = classe.annonceEnAttente;
     envoyerLAnnonceALHeure();
     if (annonce && vue.ecran === 'fil') rendre();
@@ -1151,6 +1187,7 @@ export function formateur(ctx: Contexte, code: string, nav: Navigation): Suivi {
   changerLesHorairesALHeure();
   envoyerMonNomALHeure();
   envoyerLAnnonceALHeure();
+  partagerLaFeuille();
 
   return {
     code,

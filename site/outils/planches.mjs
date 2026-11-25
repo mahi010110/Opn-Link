@@ -140,6 +140,7 @@ const PLANCHES = [
       ['40-formateur-conversation', 'La conversation', 'Le message d’Inès dit à quelle annonce il répond. La réponse part tout de suite.'],
       ['41-apprenant-messages', 'Messages, chez Inès', 'Une ligne par responsable de la classe. Le nouveau message est marqué sur son téléphone, et nulle part ailleurs.'],
       ['42-apprenant-message-soir', 'Le soir', 'La touche dit quand le message arrivera : lundi, une heure avant le cours.'],
+      ['43-formateur-sa-semaine', 'Sa semaine', 'Dans la conversation avec Noah : son absence de mardi matin, d’après la feuille close qu’Awa garde.'],
     ],
   },
 ];

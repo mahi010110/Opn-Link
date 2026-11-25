@@ -96,3 +96,8 @@ button.rangee:first-child {
   padding: 0 14px;
   font-size: var(--text-14);
 }
+
+/* « Sa semaine », dans une conversation chez le formateur : la ligne de dix cases à droite du nom. */
+.rangee > .dix {
+  flex: 0 0 9rem;
+}

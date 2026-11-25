@@ -580,6 +580,35 @@ Le premier chargement de l'apprenant passe à 297 Ko compressés, pour un
 plafond de 300 : une question ouverte, avec une recommandation, avant
 l'étape 5 ([questions-ouvertes.md](questions-ouvertes.md)).
 
+Fait ensuite le 25 novembre 2026, les feuilles closes chez chaque
+responsable, le début de l'étape 4 :
+
+- quand sa clôture ne s'annule plus, la feuille part aux autres
+  responsables, dans une lettre que les relais gardent trente jours. Chacun
+  vérifie le journal ligne à ligne, et garde huit semaines ce qu'il dit : les
+  présents et l'heure de leur présence, les absents. Une feuille tenue par
+  quelqu'un qui n'est pas responsable ne compte pas ;
+- dans une conversation avec un apprenant, le formateur voit « Sa semaine »,
+  d'après ces feuilles, comme dans la maquette ;
+- les écrans des responsables et de la salle se chargent à part : un
+  apprenant ne les télécharge pas. Son premier chargement redescend de 297 à
+  289 Ko, et les absences peuvent s'ajouter.
+
+Le scénario le joue : quand la clôture de mardi ne s'annule plus, Julien
+reçoit la feuille d'Awa et la garde, trois présents et Noah absent. La
+feuille du faux appel de Yanis, qui a le code, ne compte pas. Vendredi, la
+conversation avec Noah montre son absence de mardi matin. Aucun script que
+charge un apprenant ne contient les écrans des responsables. 143
+vérifications.
+
+Quatre défauts posés exprès font chacun échouer le scénario : une feuille
+gardée sans partir aux autres, une feuille gardée quel que soit celui qui
+l'a tenue, « Sa semaine » sans les feuilles, et les écrans des responsables
+remis dans le chargement de l'apprenant. Ce dernier passait d'abord : il
+pèse 299,2 Ko, sous le plafond. La vérification regarde maintenant ce que
+l'apprenant télécharge. La capture avant et après vient de
+`node outils/avant-apres.mjs sa-semaine`.
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -616,7 +645,12 @@ on construit directement la première version complète
    l'apprenant, en haut de sa conversation chez le formateur, viendra avec
    les absences, à l'étape 4 : le formateur ne garde pas encore les feuilles
    closes.
-4. Les absences, et la page du tuteur.
+4. Les absences, et la page du tuteur. Fait en partie le 25 novembre 2026 :
+   chaque responsable garde les feuilles closes de la classe, et voit la
+   semaine d'un apprenant dans sa conversation. Restent, dans l'ordre :
+   « Mes présences », « Justifier » et « C'est une erreur » chez
+   l'apprenant ; le fichier en morceaux, pour le justificatif ; le tuteur,
+   son lien, « Prévenir l'entreprise » et sa page.
 5. Les documents à signer, la feuille exportée en PDF et le registre
    public.
 6. Les demandes suivies et la documentation partagée.
@@ -863,6 +897,16 @@ Pour les annonces (24 novembre 2026) :
   jusqu'à son retrait ;
 - « Écouter » ne se montre que si l'appareil a une voix française à lui.
 
+Pour les feuilles closes (25 novembre 2026) :
+
+- la feuille part aux autres responsables quand sa clôture ne s'annule
+  plus, et reste trente jours sur les relais ;
+- chacun garde huit semaines ce qu'elle dit, pas le journal entier : le
+  stockage du navigateur n'y suffirait pas. Le journal gardé des années
+  viendra avec l'export, à l'étape 5 ;
+- les écrans des responsables, de la salle et de « Créer une classe » se
+  chargent à part.
+
 Pour les messages privés (24 novembre 2026) :
 
 - un message part tout de suite, sans « Annuler » : il ne remplace rien et
@@ -931,8 +975,8 @@ Pour les messages privés (24 novembre 2026) :
   les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour`,
   `signer`, `semaine`, `lire`, `prochain`, `redemande`, `membres`,
   `adjoint`, `passer`, `reglages`, `moi`, `moi-formateur`, `mes-cours`,
-  `deux-classes`, `classe`, `fil`, `messages` et `messages-formateur`
-  existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le
+  `deux-classes`, `classe`, `fil`, `messages`, `messages-formateur` et
+  `sa-semaine` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le
   geste qui mène à l'écran.
 - Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
   scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans

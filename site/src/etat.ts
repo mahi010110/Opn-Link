@@ -3,6 +3,7 @@
 
 import type { Appareil, Coeur } from './coeur';
 import type { Creneau } from './creneaux';
+import type { FeuilleGardee } from './feuilles';
 import type { MessageGarde } from './messages';
 
 export interface Moi {
@@ -86,6 +87,8 @@ export interface ClasseGardee {
   annonceEnAttente?: { id: string; auteur: string; creee?: number; texte?: string; part: number };
   /// Chez chacun, les messages privés écrits et reçus, déjà vérifiés, jusqu'à la fermeture de la classe.
   messages?: MessageGarde[];
+  /// Chez les responsables, les feuilles closes de la classe, huit semaines, déjà vérifiées.
+  feuilles?: FeuilleGardee[];
 }
 
 export const estResponsable = (c: ClasseGardee): boolean => c.role === 'chef' || c.role === 'adjoint';

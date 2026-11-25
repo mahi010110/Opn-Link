@@ -80,6 +80,8 @@ export interface Conversation {
   qui: string;
   /// Sous le nom, dans la barre : son rôle, ou sa classe.
   sous: string;
+  /// Au-dessus des bulles : la semaine d'un apprenant, chez le formateur.
+  haut?: string;
   bulles: string;
   libelle: string;
   brouillon: string;
@@ -110,7 +112,7 @@ export function afficherConversation(c: Conversation): void {
     c.qui,
     `<header class="barre"><h1 class="barre-titre" tabindex="-1">${esc(c.qui)}</h1><span class="mono">${esc(c.sous)}</span></header>
      <main class="page">
-       ${c.bulles}
+       ${c.haut ?? ''}${c.bulles}
        <div style="flex: 1"></div>
        <div class="bloc"><label class="champ-nom" for="message">${esc(c.libelle)}</label>
          <textarea id="message" class="champ${c.erreur ? ' faux' : ''}" rows="3"${c.erreur ? ' aria-describedby="erreur-message"' : ''}>${esc(c.brouillon)}</textarea>

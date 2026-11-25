@@ -190,6 +190,7 @@ fn le_journal_se_relit_et_se_verifie() {
     let relue = Feuille::relire(&journal, None).unwrap();
     assert_eq!(relue.etat(), feuille.etat());
     assert_eq!(relue.empreinte(), feuille.empreinte());
+    assert_eq!((relue.formateur(), relue.classe()), (&c.awa.publique(), c.secrets.etiquette()));
 }
 
 #[test]

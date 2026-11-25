@@ -21,6 +21,8 @@ interface Case {
 
 const NOMS = ['lun', 'mar', 'mer', 'jeu', 'ven'];
 const pareil = (a: Creneau, b: Creneau) => a.date === b.date && a.demi === b.demi;
+const quand = (date: string, demi: Demi) =>
+  `${new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric' }).format(enJour(date))}, ${demi === 'matin' ? 'matin' : 'après-midi'}`;
 
 export function caseDe(c: Creneau, sait: CeQueSaitLeTelephone): Case {
   const presence = sait.presences.find((p) => pareil(p, c));
@@ -44,8 +46,6 @@ export function absences(sait: CeQueSaitLeTelephone): Creneau[] {
 export function semaineHtml(sait: CeQueSaitLeTelephone, enRangs = false): string {
   const lundi = lundiDe(sait.maintenant.date);
   const jours = NOMS.map((nom, n) => ({ nom, date: plusJours(lundi, n) }));
-  const quand = (date: string, demi: Demi) =>
-    `${new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric' }).format(enJour(date))}, ${demi === 'matin' ? 'matin' : 'après-midi'}`;
   const uneCase = (date: string, demi: Demi) => {
     const c = { date, demi };
     const { etat, texte, dit } = caseDe(c, sait);
@@ -61,6 +61,18 @@ export function semaineHtml(sait: CeQueSaitLeTelephone, enRangs = false): string
   }
   const rangee = (nom: string, demi: Demi) => `<span class="rang" aria-hidden="true">${nom}</span>${jours.map((j) => uneCase(j.date, demi)).join('')}`;
   return `<div class="semaine"><span></span>${jours.map((j) => jour(j, true)).join('')}${rangee('Matin', 'matin')}${rangee('Après-<br>midi', 'apres-midi')}</div>`;
+}
+
+/// La même semaine en petit, dix cases sans texte : « Sa semaine », chez le formateur.
+export function dixHtml(sait: CeQueSaitLeTelephone): string {
+  const lundi = lundiDe(sait.maintenant.date);
+  const uneCase = (date: string, demi: Demi) => {
+    const { etat, dit } = caseDe({ date, demi }, sait);
+    return `<span class="case ${etat}" role="img" aria-label="${esc(`${quand(date, demi)} : ${dit}`)}"></span>`;
+  };
+  return `<div class="dix">${NOMS.map((_, n) => plusJours(lundi, n))
+    .map((date) => `<span>${uneCase(date, 'matin')}${uneCase(date, 'apres-midi')}</span>`)
+    .join('')}</div>`;
 }
 
 /// Quand une heure ne tient plus dans sa case, avec le texte agrandi, la semaine passe en rangs.

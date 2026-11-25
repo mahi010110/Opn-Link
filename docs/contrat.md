@@ -551,7 +551,11 @@ données possible ». Pour l'appel :
 - les secrets gardés vivent avec la classe sur l'appareil, et partent avec
   elle ;
 - un message privé reste trente jours après son arrivée sur les relais. Sur
-  les appareils, il vit jusqu'à la fermeture de la classe.
+  les appareils, il vit jusqu'à la fermeture de la classe ;
+- la lettre qui porte une feuille close aux autres responsables reste trente
+  jours sur les relais. Chacun garde huit semaines ce que dit la feuille. Le
+  journal entier, gardé des années chez le chef ou le centre, viendra avec
+  l'export de la feuille, à l'étape 5 de [prototype.md](prototype.md).
 
 ## L'événement Nostr
 
@@ -581,6 +585,7 @@ destinataire. Elles ne sont pas encore figées.
 | `nom` | l'apprenant, à chaque responsable | son nom corrigé (partie « Le nom corrigé ») |
 | `responsables` | un responsable, à chacun des autres | la porte et les passations, puis une lettre entre responsables (partie du même nom) |
 | `message` | l'apprenant ou un responsable, à celui à qui il écrit | le code de la classe, et le message privé signé (partie « Le message privé ») |
+| `feuille` | le responsable qui a tenu l'appel, à chacun des autres | le code de la classe, et le journal de la feuille close, quand la clôture ne s'annule plus |
 
 La lettre entre responsables porte en contenu
 `{"v":1,"t":"classe","etat":{...}}` : la porte, les passations, le secret du
@@ -654,7 +659,9 @@ n'a pas le secret du fil. En plus :
   trente secondes (`prochainEnAttente`), et l'annonce qui part dans trente
   secondes, une nouvelle version ou un retrait (`annonceEnAttente`). `noms`
   y garde aussi la correction la plus récente du nom de chaque membre, qui
-  voyage entre eux ;
+  voyage entre eux. Les feuilles closes de la classe, huit semaines, déjà
+  vérifiées : leur demi-journée, qui a tenu l'appel, l'heure de chaque
+  présence et les absents (`feuilles`) ;
 - chez le chef : les invitations d'adjoint de moins de sept jours
   (`invitations`), les demandes d'adjoint qui attendent son accord
   (`candidats`), la main qu'il passe (`passationEnAttente`) et les horaires
