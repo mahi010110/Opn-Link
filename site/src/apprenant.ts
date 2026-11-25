@@ -8,15 +8,16 @@ import { type AnnonceDeLaClasse, ecouter, enVigueur, garderLaVersion, lireAnnonc
 import { couper, poser, viser } from './camera';
 import { type Moment, type Navigation, type Suivi, titreDesClasses } from './classes';
 import { type Contexte, faits, nomDe } from './contexte';
-import { type Creneau, type Demi, bornes, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
+import { type Creneau, type Demi, arrivee, bornes, enJour, joursEntre, ouvre, plusJours, rang, sansCours } from './creneaux';
 import { type Erreurs, nomTape } from './entree';
 import { type AnnonceGardee, type PresenceGardee, classes, ecrire, garderClasse, lire, oublierClasse } from './etat';
-import { ecouterLaPorte, ecouterLeFil, envoyer, recevoir } from './lettres';
+import { ecouterLaPorte, ecouterLeFil, envoyer, envoyerUnMessage, recevoir } from './lettres';
+import { afficherConversation, avec, bullesHtml, dejaGarde, lignesDesNonLus, lireMessage, marquerLus, nonLus, phraseDuMessage } from './messages';
 import { type PourQui, afficherMoi, afficherNom } from './moi';
 import { nomCorrige, nomsAJour, nomsDesResponsables, passationsDe, porteAJour } from './responsables';
 import { type CeQueSaitLeTelephone, absences, ajusterLaSemaine, semaineHtml } from './semaine';
 import { phrase } from './textes';
-import { afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
+import { aQuelMoment, afficher, dateIso, demiJournee, esc, heure, horaire, ic, installable, installer, jour, surIPhone, surLEcranDAccueil } from './vue';
 
 type Vue =
   | { ecran: 'jour' }
@@ -24,7 +25,9 @@ type Vue =
   | { ecran: 'sans-reseau' }
   | { ecran: 'moi' }
   | { ecran: 'nom'; prenom: string; nom: string; erreurs?: Erreurs }
-  | { ecran: 'classe' };
+  | { ecran: 'classe' }
+  | { ecran: 'messages' }
+  | { ecran: 'conversation'; cle: string; brouillon: string; annonce?: string; erreur?: string; retour: 'jour' | 'classe' | 'messages' };
 
 type Annonce = ReturnType<Contexte['coeur']['lire_annonce_de_l_appel']>;
 interface Prochain extends Creneau {
@@ -41,7 +44,7 @@ const UNE_SEMAINE = 7;
 const SANS_VISITE_JOURS = 7;
 // Le temps de joindre un relais au démarrage, avant de conclure qu'il n'y a pas de réseau.
 const HORS_LIGNE_MS = 5_000;
-const MENU = `<nav class="menu" aria-label="Entrées"><a href="#" data-geste="classe">Classe</a><a href="#">Messages</a><a href="#">Mes documents</a><a href="#" data-geste="moi">Moi</a></nav>`;
+const MENU = `<nav class="menu" aria-label="Entrées"><a href="#" data-geste="classe">Classe</a><a href="#" data-geste="messages">Messages</a><a href="#">Mes documents</a><a href="#" data-geste="moi">Moi</a></nav>`;
 const POUR_LES_RESPONSABLES: PourQui = {
   voit: 'le nom que voient les responsables',
   part: 'part aux responsables',
@@ -66,8 +69,9 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   let prochain = classe.prochain as Prochain | undefined;
   if (prochain && prochain.date < depuis(UNE_SEMAINE)) prochain = undefined;
   let annoncesDeLaClasse = relireLesAnnonces(coeur, classe.fil, classe.annoncesDeLaClasse, porte.responsables.map((r) => r.cle));
+  let messages = classe.messages ?? [];
   const garder = () => {
-    classe = { ...classe, presences, annoncesAppel: annonces, prochain, annoncesDeLaClasse: annoncesDeLaClasse.map((a) => a.signee) };
+    classe = { ...classe, presences, annoncesAppel: annonces, prochain, annoncesDeLaClasse: annoncesDeLaClasse.map((a) => a.signee), messages };
     garderClasse(classe);
   };
 
@@ -357,6 +361,30 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     garder();
   };
 
+  // Un message part tout de suite : il ne remplace rien, et la barre dit à qui il part (règle 1).
+  const envoyerLeMessage = () => {
+    if (vue.ecran !== 'conversation') return;
+    const v = vue;
+    const r = porte.responsables.find((x) => x.cle === v.cle);
+    if (!r) {
+      vue = { ecran: 'messages' };
+      return rendre();
+    }
+    const texte = v.brouillon.trim();
+    const erreur = phraseDuMessage(texte);
+    if (erreur) {
+      vue = { ...v, erreur };
+      return rendre();
+    }
+    const quand = Date.now();
+    const arrive = arrivee(porte, quand);
+    envoyerUnMessage(coeur, relais, r.boite, classe.code, moi.ecrire_message(classe.code, r.cle, v.annonce, texte, quand, arrive), arrive);
+    messages = [...messages, { de: moi.cle(), pour: r.cle, quand, arrivee: arrive, ...(v.annonce ? { annonce: v.annonce } : {}), texte }];
+    garder();
+    vue = { ...v, brouillon: '', annonce: undefined, erreur: undefined };
+    rendre();
+  };
+
   const gestes = {
     plusTard: () => {
       const demande = demandeDAccueil();
@@ -374,9 +402,24 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     effacer,
     retour: () => {
       couper();
-      vue = vue.ecran === 'nom' ? { ecran: 'moi' } : { ecran: 'jour' };
+      vue = vue.ecran === 'nom' ? { ecran: 'moi' } : vue.ecran === 'conversation' ? { ecran: vue.retour } : { ecran: 'jour' };
       rendre();
     },
+    messages: () => {
+      vue = { ecran: 'messages' };
+      rendre();
+    },
+    conversation: (c: HTMLElement) => {
+      vue = { ecran: 'conversation', cle: c.dataset.cle!, brouillon: '', retour: vue.ecran === 'messages' ? 'messages' : 'jour' };
+      rendre();
+    },
+    repondre: (c: HTMLElement) => {
+      const a = annoncesDeLaClasse.find((x) => x.id === c.dataset.annonce);
+      if (!a || !porte.responsables.some((r) => r.cle === a.auteur)) return;
+      vue = { ecran: 'conversation', cle: a.auteur, brouillon: '', annonce: a.id, retour: vue.ecran === 'classe' ? 'classe' : 'jour' };
+      rendre();
+    },
+    envoyerMessage: () => envoyerLeMessage(),
     moi: () => {
       vue = { ecran: 'moi' };
       rendre();
@@ -467,7 +510,11 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     }
     const semaine = `<section class="bloc" aria-label="Ma semaine"><p class="etiquette">Ma semaine</p>${semaineHtml(sait())}</section>`;
     const aLire = derniereAnnonce();
-    const lire = aLire ? `<section class="bloc"><p class="etiquette">À lire</p>${annonceHtml(aLire)}</section>` : '';
+    const ecrits = lignesDesNonLus(messages, nomDeLaCle);
+    const lire =
+      aLire || ecrits.length
+        ? `<section class="bloc"><p class="etiquette">À lire</p>${aLire ? annonceHtml(aLire) : ''}${ecrits.length ? `<div class="liste">${ecrits.join('')}</div>` : ''}</section>`
+        : '';
     afficher(
       'tel',
       'Aujourd’hui',
@@ -526,7 +573,8 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
   // Une annonce, signée de son auteur, tel que la classe le voit.
   const annonceHtml = (a: AnnonceDeLaClasse) => {
     const r = porte.responsables.find((x) => x.cle === a.auteur);
-    return noteHtml(a, r ? nomDuResponsableDe(r) : 'Un responsable', r?.role ?? '', toucheEcouter(a));
+    const repondre = r ? `<button class="btn" data-geste="repondre" data-annonce="${esc(a.id)}">${ic('message-reply')}Répondre</button>` : '';
+    return noteHtml(a, r ? nomDuResponsableDe(r) : 'Un responsable', r?.role ?? '', toucheEcouter(a) + repondre);
   };
   // « À lire » : la dernière annonce arrivée, de la semaine.
   const derniereAnnonce = () =>
@@ -546,9 +594,69 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     );
   };
 
+  const nomDeLaCle = (cle: string) => {
+    const r = porte.responsables.find((x) => x.cle === cle);
+    return r ? nomDuResponsableDe(r) : 'Un responsable';
+  };
+  // « Messages » : une ligne par responsable de la classe, marquée quand il y a du nouveau.
+  const ecranMessages = () => {
+    const maintenant = Date.now();
+    const lignes = porte.responsables.map((r) => {
+      const neuf = nonLus(messages, maintenant).filter((m) => m.de === r.cle).pop();
+      const dernier = avec(messages, r.cle, maintenant).pop();
+      const quand = neuf ? `nouveau message, ${jour(neuf.quand)}` : dernier ? jour(dernier.quand) : '';
+      return `<button class="rangee" data-geste="conversation" data-cle="${r.cle}"><div><b>${esc(nomDuResponsableDe(r))}</b><span class="mono">${esc([r.role, quand].filter(Boolean).join(' · '))}</span></div>${ic('chevron-right')}</button>`;
+    });
+    afficher(
+      'tel',
+      'Messages',
+      `<header class="barre"><h1 class="barre-titre" tabindex="-1">Messages</h1><span class="mono">${esc(porte.nom)}</span></header>
+       <main class="page"><div class="liste">${lignes.join('')}</div><p class="mono">Tu écris en privé aux responsables de ta classe. Les autres apprenants ne voient rien.</p></main>
+       <footer class="bas"><div class="gestes"><button class="btn retour" data-geste="retour">${ic('arrow-left', 'ic-20')}Retour</button></div>${faits(relais)}</footer>`,
+      gestes,
+    );
+  };
+  const reponseA = (id: string) => {
+    const a = annoncesDeLaClasse.find((x) => x.id === id && !x.retiree);
+    return a ? `en réponse à l’annonce du ${jour(a.arrivee)}` : 'en réponse à une annonce';
+  };
+  // La conversation avec un responsable. L'ouvrir marque ses messages comme lus, sur ce téléphone seulement.
+  const ecranConversation = (v: Extract<Vue, { ecran: 'conversation' }>) => {
+    const r = porte.responsables.find((x) => x.cle === v.cle);
+    if (!r) {
+      vue = { ecran: 'messages' };
+      return ecranMessages();
+    }
+    const lus = marquerLus(messages, v.cle);
+    if (lus) {
+      messages = lus;
+      garder();
+    }
+    const maintenant = Date.now();
+    const arrive = arrivee(porte, maintenant);
+    const repondA = v.annonce ? annoncesDeLaClasse.find((a) => a.id === v.annonce) : undefined;
+    afficherConversation({
+      qui: nomDuResponsableDe(r),
+      sous: r.role,
+      bulles: bullesHtml(avec(messages, v.cle, maintenant), moi.cle(), reponseA, maintenant),
+      libelle: repondA ? `Ta réponse à l’annonce du ${jour(repondA.arrivee)}` : 'Ton message',
+      brouillon: v.brouillon,
+      erreur: v.erreur,
+      arrive,
+      horsDesHeures: relais.attend ? '' : `<p class="faits"><span>${heure(maintenant)} · le centre rouvre ${aQuelMoment(arrive, maintenant)}</span></p>`,
+      faits: faits(relais),
+      gestes,
+      saisie: (texte) => {
+        if (vue.ecran === 'conversation') vue = { ...vue, brouillon: texte, erreur: undefined };
+      },
+    });
+  };
+
   const rendre = () => {
     if (arrete || !nav.affichee()) return;
     if (!classe.acceptation) return attente();
+    if (vue.ecran === 'messages') return ecranMessages();
+    if (vue.ecran === 'conversation') return ecranConversation(vue);
     if (vue.ecran === 'signer') return ecranSigner(vue);
     if (vue.ecran === 'moi') return ecranMoi();
     if (vue.ecran === 'classe') return ecranClasse();
@@ -589,6 +697,13 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
       presences = presences.map((p) => (p.seance === l.seance ? { ...p, recu: { quand: l.quand, par: l.par } } : p));
       garder();
       if (vue.ecran === 'sans-reseau') vue = { ecran: 'jour' };
+    } else if (l.t === 'message' && l.code === classe.code) {
+      // Un apprenant ne lit que les messages des responsables de la porte : jamais ceux d'un autre apprenant.
+      const m = lireMessage(coeur, classe.code, l.message, moi.cle(), responsables());
+      if (!m || dejaGarde(messages, m)) return;
+      messages = [...messages, m.de === moi.cle() ? m : { ...m, nouveau: true }];
+      garder();
+      if (vue.ecran !== 'jour' && vue.ecran !== 'messages' && vue.ecran !== 'conversation') return;
     } else if (l.t === 'refus' && presences.some((p) => p.seance === l.seance && !p.recu)) {
       const refusee = presences.find((p) => p.seance === l.seance)!;
       presences = presences.filter((p) => p !== refusee);
@@ -599,15 +714,18 @@ export function apprenant(ctx: Contexte, code: string, nav: Navigation): Suivi {
     }
     rendre();
   }));
-  // Une annonce écrite en dehors des heures de la classe se montre à son heure d'arrivée.
+  // Une annonce ou un message écrits en dehors des heures de la classe se montrent à leur heure d'arrivée.
   let vuJusqua = Date.now();
   const chaqueSeconde = setInterval(() => {
     const avant = classe.nomEnAttente;
     envoyerLeNomALHeure();
     if (avant && vue.ecran === 'moi') rendre();
-    const arrivee = annoncesDeLaClasse.some((a) => a.arrivee > vuJusqua && a.arrivee <= Date.now());
+    const vient = (t: number) => t > vuJusqua && t <= Date.now();
+    const annonceArrivee = annoncesDeLaClasse.some((a) => vient(a.arrivee));
+    const messageArrive = messages.some((m) => vient(m.arrivee));
     vuJusqua = Date.now();
-    if (arrivee && (vue.ecran === 'jour' || vue.ecran === 'classe')) rendre();
+    if (annonceArrivee && (vue.ecran === 'jour' || vue.ecran === 'classe')) rendre();
+    else if (messageArrive && (vue.ecran === 'jour' || vue.ecran === 'messages' || vue.ecran === 'conversation')) rendre();
   }, 1000);
   // Les voix de l'appareil se chargent après la page : « Écouter » apparaît quand elles sont là.
   const voixChargees = () => (vue.ecran === 'jour' || vue.ecran === 'classe') && rendre();

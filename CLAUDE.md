@@ -23,6 +23,7 @@ main et change les horaires, et l'apprenant corrige son nom. Le 24 novembre
 la classe du moment, et « Mes cours » range celles du formateur. Un
 responsable corrige son nom, comme l'apprenant. Les responsables publient
 des annonces sur le fil de la classe, et l'apprenant les lit ou les écoute.
+Il écrit en privé aux responsables, qui lui répondent.
 Les formats sont dans `docs/contrat.md`. Ce qui reste ouvert est dans
 `docs/questions-ouvertes.md`, et ce qui s'est décidé jour après jour dans
 `docs/carnet.md`.

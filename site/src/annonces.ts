@@ -4,6 +4,9 @@
 import type { Coeur } from './coeur';
 import { aQuelMoment, esc, ic, jour } from './vue';
 
+/// Le cœur refuse le texte d'une annonce ou d'un message de plus de 8 Ko (docs/contrat.md).
+export const tropLong = (texte: string): boolean => new TextEncoder().encode(texte).length > 8 * 1024;
+
 /// Une version d'une annonce, déjà vérifiée.
 export interface AnnonceDeLaClasse {
   id: string;

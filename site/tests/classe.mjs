@@ -943,6 +943,155 @@ try {
   await telInes.click('[data-geste="retour"]');
   await tel.click('[data-geste="retour"]');
 
+  // Les messages privés. Vendredi matin, Inès répond en privé à l'annonce d'Awa. Awa le voit dans
+  // « À suivre », puis dans « Messages », pour toutes ses classes, et répond. Ouvrir la réponse
+  // n'envoie rien. Le soir, le message d'Inès n'arrive chez Awa qu'à l'ouverture suivante, lundi.
+  // Yanis, un autre apprenant, ne peut pas écrire à Inès.
+  const evenementsSurLesRelais = () => principal.gardes.length + secours.gardes.length;
+  const vendredi = new Date('2026-11-20T07:40:00+01:00');
+  await pages['awa-tel'].contexte.clock.setSystemTime(vendredi);
+  await pages.ines.contexte.clock.setSystemTime(vendredi);
+  await telInes.locator('article', { hasText: 'Demain, le centre ouvre' }).locator('[data-geste="repondre"]').click();
+  verifier(
+    (await telInes.locator('.barre-titre').textContent()) === 'Awa Diallo-Sow' && (await telInes.getByText('Ta réponse à l’annonce du ven. 20 nov.').count()) === 1,
+    '« Répondre » ouvre la conversation avec l’autrice de l’annonce : la barre dit à qui le message part',
+  );
+  await telInes.fill('#message', 'Je peux venir à 7 h 30 pour finir mon dossier ?');
+  await capturer(telInes, '37-apprenant-repondre');
+  await telInes.click('[data-geste="envoyerMessage"]');
+  await telInes.locator('.bulle.moi', { hasText: 'Je peux venir à 7 h 30' }).waitFor();
+  verifier(
+    (await telInes.locator('.bulle.moi', { hasText: 'en réponse à l’annonce du ven. 20 nov.' }).count()) === 1 && (await telInes.inputValue('#message')) === '',
+    'le message part tout de suite, et la conversation le montre avec l’annonce à laquelle il répond',
+  );
+  await telInes.click('[data-geste="retour"]');
+
+  await tel.locator('section', { hasText: 'À suivre' }).getByText('Inès Roux t’a écrit').waitFor({ timeout: 30_000 });
+  await capturer(tel, '38-formateur-a-suivre-message');
+  verifier(true, 'chez Awa, « À suivre » dit qu’Inès lui a écrit');
+  verifier(
+    [...principal.gardes, ...secours.gardes].every((e) => !e.content.includes('opn-link·message')),
+    'le message part scellé pour la boîte d’Awa : aucun relais ne le lit',
+  );
+  await tel.click('[data-geste="messages"]');
+  const ligneDInes = tel.locator('section', { hasText: 'T’ont écrit' }).locator('[data-geste="ecrire"]', { hasText: 'Inès Roux' });
+  verifier((await ligneDInes.innerText()).includes('BTS SIO 2 · ven. 20 nov. · 7'), '« Messages » range en haut ceux qui attendent une réponse, avec leur classe');
+  await capturer(tel, '39-formateur-messages');
+  await ligneDInes.click();
+  verifier((await tel.locator('.bulle', { hasText: 'en réponse à ton annonce du ven. 20 nov.' }).count()) === 1, 'Awa voit à quelle annonce Inès répond');
+  await tel.fill('#message', 'Oui, la salle B12 sera ouverte.');
+  await capturer(tel, '40-formateur-conversation');
+  await tel.click('[data-geste="envoyerMessage"]');
+  await tel.locator('.bulle.moi', { hasText: 'salle B12 sera ouverte' }).waitFor();
+  await tel.click('[data-geste="retour"]');
+  verifier(
+    (await tel.locator('section', { hasText: 'Tu as répondu' }).getByText('Inès Roux').count()) === 1 && (await tel.getByText('T’ont écrit').count()) === 0,
+    'sa réponse partie, la conversation passe sous « Tu as répondu »',
+  );
+  await tel.fill('#chercher', 'noah');
+  verifier((await tel.locator('[data-geste="ecrire"]', { hasText: 'Noah Petit' }).count()) === 1, 'chercher un nom trouve aussi un apprenant à qui Awa n’a pas encore écrit');
+  await tel.fill('#chercher', 'ines');
+  verifier(
+    (await tel.locator('[data-geste="ecrire"]', { hasText: 'BTS SIO 1' }).count()) === 1 && (await tel.locator('[data-geste="ecrire"]', { hasText: 'BTS SIO 2' }).count()) === 1,
+    'la recherche couvre toutes les classes d’Awa, sans tenir aux accents : Inès est en BTS SIO 1 et en BTS SIO 2',
+  );
+  await tel.fill('#chercher', '');
+  await tel.click('[data-geste="retour"]');
+
+  await telInes.locator('section', { hasText: 'À lire' }).getByText('Awa Diallo-Sow t’a écrit').waitFor({ timeout: 30_000 });
+  await telInes.click('[data-geste="messages"]');
+  verifier(
+    (await telInes.locator('[data-geste="conversation"]', { hasText: 'Awa Diallo-Sow' }).innerText()).includes('nouveau message, ven. 20 nov.'),
+    'chez Inès, « Messages » marque la conversation d’Awa : un nouveau message',
+  );
+  await capturer(telInes, '41-apprenant-messages');
+  const avantDeLire = evenementsSurLesRelais();
+  await telInes.locator('[data-geste="conversation"]', { hasText: 'Awa Diallo-Sow' }).click();
+  await telInes.getByText('Oui, la salle B12 sera ouverte.').waitFor();
+  await telInes.waitForTimeout(1500);
+  verifier(evenementsSurLesRelais() === avantDeLire, 'ouvrir le message n’envoie rien : Awa ne sait pas qu’Inès l’a lu (règle 3)');
+  await telInes.click('[data-geste="retour"]');
+  verifier((await telInes.getByText(/nouveau message/).count()) === 0, 'une fois ouvert, le message n’est plus nouveau');
+
+  await telInes.locator('[data-geste="conversation"]', { hasText: 'Awa Diallo-Sow' }).click();
+  const avantLeTropLong = evenementsSurLesRelais();
+  await telInes.fill('#message', 'x'.repeat(9000));
+  await telInes.click('[data-geste="envoyerMessage"]');
+  verifier(
+    (await telInes.getByText('Ce message est trop long').count()) === 1 && evenementsSurLesRelais() === avantLeTropLong,
+    'un message de plus de 8 Ko ne part pas : l’écran le dit sous le champ',
+  );
+  await telInes.click('[data-geste="retour"]');
+
+  // Le soir, le message attend l'ouverture suivante : lundi, une heure avant le début du matin.
+  await pages.ines.contexte.clock.setSystemTime(new Date('2026-11-20T21:14:00+01:00'));
+  await pages['awa-tel'].contexte.clock.setSystemTime(new Date('2026-11-20T21:20:00+01:00'));
+  await telInes.locator('[data-geste="conversation"]', { hasText: 'Awa Diallo-Sow' }).click();
+  await telInes.fill('#message', 'Mon train de lundi est supprimé. J’arriverai vers 9 h 30.');
+  const toucheDuSoirApprenant = await telInes.locator('[data-geste="envoyerMessage"]').innerText();
+  await capturer(telInes, '42-apprenant-message-soir');
+  verifier(/arrivera lundi à 7\sh\s30/.test(toucheDuSoirApprenant), `écrit le soir, la touche dit quand le message arrivera (${toucheDuSoirApprenant.replace(/\s+/g, ' ')})`);
+  await telInes.click('[data-geste="envoyerMessage"]');
+  await telInes.locator('.bulle.moi', { hasText: 'Mon train de lundi' }).waitFor();
+  await tel.waitForTimeout(3000);
+  verifier((await tel.getByText('Inès Roux t’a écrit').count()) === 0, 'chez Awa, vendredi soir, le message n’est pas encore arrivé');
+  await pages['awa-tel'].contexte.clock.setSystemTime(new Date('2026-11-23T07:31:00+01:00'));
+  await tel.getByText('Inès Roux t’a écrit').waitFor({ timeout: 15_000 });
+  verifier(true, 'lundi à 7 h 31, il est arrivé');
+
+  // Yanis écrit à Inès, signé de sa propre clé et scellé pour sa boîte : un apprenant n'écrit pas
+  // à un autre. Julien lui écrit par le même chemin : son message, lui, arrive.
+  const clesDeJulien = coeur.Appareil.relire(JSON.parse(await telJulien.evaluate(() => localStorage.getItem('opl_proto_julien_cles'))));
+  const versInes = new WebSocket(secours.url);
+  await new Promise((ok) => versInes.on('open', ok));
+  for (const [qui, texte] of [[coeur.Appareil.relire(clesDeYanis), 'Tu me passes tes notes ?'], [clesDeJulien, 'Pense à ta convention de stage.']]) {
+    const message = qui.ecrire_message(code, ines.cle(), undefined, texte, horloge(), horloge());
+    const scellee = coeur.sceller(ines.boite(), JSON.stringify({ v: 1, t: 'message', code, message }));
+    const maintenant = Math.floor(Date.now() / 1000);
+    versInes.send(`["EVENT",${coeur.evenement_nostr(coeur.etiquette_de_boite(ines.boite()), maintenant + 3600, scellee, maintenant)}]`);
+    await new Promise((ok) => versInes.once('message', ok));
+  }
+  versInes.close();
+  await telInes.click('[data-geste="retour"]');
+  await telInes.locator('[data-geste="conversation"]', { hasText: 'Julien Morel' }).getByText(/nouveau message/).waitFor({ timeout: 15_000 });
+  const gardesChezInes = JSON.parse(await telInes.evaluate(() => localStorage.getItem('opl_proto_ines_classes'))).find((c) => c.code === code).messages ?? [];
+  verifier(
+    (await telInes.locator('[data-geste="conversation"]').count()) === 2 &&
+      (await telInes.getByText('Tu me passes tes notes').count()) === 0 &&
+      !gardesChezInes.some((m) => m.texte.includes('notes')),
+    'un apprenant n’écrit pas à un autre : le téléphone d’Inès ne garde rien du message de Yanis, et garde celui de Julien',
+  );
+  await telInes.click('[data-geste="retour"]');
+
+  // Noah rouvre l'app dix jours après un message de Julien, écrit pendant qu'elle était fermée :
+  // la boîte se relit sur trente jours.
+  const noahPlusTard = new Date('2026-11-30T10:00:00+01:00').getTime();
+  const ecritAvant = noahPlusTard - 10 * 86_400_000;
+  const noah = coeur.Appareil.relire(JSON.parse(await telNoah.evaluate(() => localStorage.getItem('opl_proto_noah_cles'))));
+  await telNoah.goto('about:blank');
+  const versNoah = new WebSocket(secours.url);
+  await new Promise((ok) => versNoah.on('open', ok));
+  const pourNoah = clesDeJulien.ecrire_message(code, noah.cle(), undefined, 'Ta convention de stage est arrivée.', ecritAvant, ecritAvant);
+  const scelleePourNoah = coeur.sceller(noah.boite(), JSON.stringify({ v: 1, t: 'message', code, message: pourNoah }));
+  const ecritAvantSecondes = Math.floor(ecritAvant / 1000);
+  versNoah.send(`["EVENT",${coeur.evenement_nostr(coeur.etiquette_de_boite(noah.boite()), ecritAvantSecondes + 30 * 86_400, scelleePourNoah, ecritAvantSecondes)}]`);
+  await new Promise((ok) => versNoah.once('message', ok));
+  versNoah.close();
+  await pages.noah.contexte.clock.setSystemTime(new Date(noahPlusTard));
+  await telNoah.goto(`${site}/index.html?appareil=noah`);
+  await telNoah.getByText('Julien Morel t’a écrit').waitFor({ timeout: 20_000 });
+  verifier(true, 'Noah rouvre l’app dix jours après un message de Julien : il le reçoit, la boîte se relit sur trente jours');
+
+  // Une annonce de plus de 8 Ko : le cœur refuserait de la signer, l'écran le dit tout de suite.
+  await tel.click('[data-geste="classe"]');
+  await tel.fill('#annonce', 'x'.repeat(9000));
+  await tel.click('[data-geste="publier"]');
+  verifier(
+    (await tel.getByText('Cette annonce est trop longue').count()) === 1 && (await tel.locator('[data-geste="annulerAnnonce"]').count()) === 0,
+    'une annonce de plus de 8 Ko ne part pas : l’écran le dit sous le champ',
+  );
+  await tel.click('[data-geste="retour"]');
+
   // Dix classes au plus : Sandrine Robert, au centre, en tient dix, puis essaie d'en créer une
   // onzième et d'en rejoindre une autre.
   const sandrine = new coeur.Appareil();

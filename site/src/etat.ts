@@ -3,6 +3,7 @@
 
 import type { Appareil, Coeur } from './coeur';
 import type { Creneau } from './creneaux';
+import type { MessageGarde } from './messages';
 
 export interface Moi {
   prenom: string;
@@ -83,6 +84,8 @@ export interface ClasseGardee {
   /// Le responsable : l'annonce qui part dans trente secondes, une nouvelle version ou un retrait,
   /// le temps d'annuler. Sans texte, c'est un retrait ; sans création, une annonce neuve.
   annonceEnAttente?: { id: string; auteur: string; creee?: number; texte?: string; part: number };
+  /// Chez chacun, les messages privés écrits et reçus, déjà vérifiés, jusqu'à la fermeture de la classe.
+  messages?: MessageGarde[];
 }
 
 export const estResponsable = (c: ClasseGardee): boolean => c.role === 'chef' || c.role === 'adjoint';

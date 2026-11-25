@@ -10,6 +10,7 @@ import { creer } from './creer';
 import { attenteDAdjoint, sansClasse } from './entree';
 import { CLASSES_AU_PLUS, type ClasseGardee, classes, ecrire, estResponsable, garderClasse, lire } from './etat';
 import { formateur } from './formateur';
+import { type Correspondance, afficherLesMessages } from './messages';
 import { afficher, dateIso, esc, horaire, ic, jour } from './vue';
 
 /// Ce qu'une classe dit de maintenant : de quoi choisir la classe du moment et ranger « Mes cours ».
@@ -33,6 +34,10 @@ export interface Suivi {
   /// Le réseau a changé : la ligne de faits suit.
   reseau(): void;
   arreter(): void;
+  /// Chez un responsable : ceux à qui il peut écrire dans la classe, et ce qu'ils se sont écrit.
+  correspondances?(): Correspondance[];
+  /// Chez un responsable : ouvre la conversation avec quelqu'un de la classe.
+  conversation?(cle: string): void;
 }
 
 /// Ce que l'app offre au suivi d'une classe.
@@ -46,13 +51,18 @@ export interface Navigation {
   aChange(): void;
   /// Sa classe a changé de nature, ou n'est plus là : un adjoint accepté, une demande retirée.
   relancer(): void;
+  /// « Messages » chez un responsable, pour toutes ses classes. Depuis les entrées, la recherche
+  /// repart de zéro ; au retour d'une conversation, elle reste.
+  messages(depuisLeMenu?: boolean): void;
+  /// Un message est arrivé, ou a été lu : la liste de « Messages » suit, si elle est à l'écran.
+  messagesChangent(): void;
 }
 
 let ctx: Contexte | undefined;
 const suivis = new Map<string, Suivi>();
 // La classe à l'écran, ou la dernière, quand « Mes cours » ou « Créer une classe » la recouvre.
 let affichee: string | undefined;
-let aLEcran: 'classe' | 'mes-cours' | 'ailleurs' = 'classe';
+let aLEcran: 'classe' | 'mes-cours' | 'messages' | 'ailleurs' = 'classe';
 let visibiliteEcoutee = false;
 
 /// « Mes cours » chez un formateur ou le centre, « Mes classes » chez un apprenant.
@@ -94,6 +104,8 @@ function suivre(classe: ClasseGardee): Suivi {
     mesCours: ouvrirMesCours,
     aChange: reconsiderer,
     relancer: () => relancer(code),
+    messages: (depuisLeMenu = false) => ouvrirMessages(depuisLeMenu),
+    messagesChangent: () => aLEcran === 'messages' && ecranMessages(),
   };
   if (classe.role === 'apprenant') return apprenant(ctx!, code, nav);
   if (estResponsable(classe) && classe.fil) return formateur(ctx!, code, nav);
@@ -116,6 +128,7 @@ export function ouvrirLesClasses(contexte: Contexte, code?: string): void {
   }
   contexte.relais.changement = () => {
     if (aLEcran === 'mes-cours') ecranMesCours();
+    else if (aLEcran === 'messages') ecranMessages();
     else if (aLEcran === 'classe') suivis.get(affichee ?? '')?.reseau();
   };
   if (!visibiliteEcoutee) {
@@ -219,4 +232,32 @@ function ecranMesCours(): void {
       retour: () => ouvrirLesClasses(ctx!, affichee),
     },
   );
+}
+
+// « Messages » chez un responsable : toutes ses classes, rangées par ce qui attend une réponse.
+function ouvrirMessages(depuisLeMenu: boolean): void {
+  aLEcran = 'messages';
+  ecranMessages(depuisLeMenu);
+}
+
+function ecranMessages(depuisLeMenu = false): void {
+  const moi = lire<{ prenom: string; nom: string }>('moi');
+  afficherLesMessages({
+    qui: moi ? `${moi.prenom} ${moi.nom}` : '',
+    correspondances: [...suivis.values()].flatMap((s) => s.correspondances?.() ?? []),
+    faits: faits(ctx!.relais),
+    depuisLeMenu,
+    gestes: {
+      ecrire: (c) => {
+        const suivi = suivis.get(c.dataset.code!);
+        if (!suivi?.conversation) return;
+        if (affichee !== suivi.code) suivis.get(affichee ?? '')?.revenir();
+        affichee = suivi.code;
+        aLEcran = 'classe';
+        ecrire('derniere-classe', suivi.code);
+        suivi.conversation(c.dataset.cle!);
+      },
+      retour: () => ouvrirLesClasses(ctx!, affichee),
+    },
+  });
 }

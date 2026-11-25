@@ -578,3 +578,21 @@ refusés.
 - La lettre qui tient l'ordinateur de la salle au courant ne porte plus que
   ce que la salle utilise : avec les annonces, elle aurait pu dépasser les
   60 Ko qu'un relais accepte ([mesures.md](mesures.md)).
+- Les messages privés sont faits. L'apprenant écrit aux responsables de sa
+  classe, un responsable à un apprenant ou à un autre responsable. Le
+  message est signé et part scellé dans la boîte de celui à qui il est
+  écrit ([contrat.md](contrat.md), partie « Le message privé »). Écrit en
+  dehors des heures de la classe, il arrive à l'ouverture suivante.
+- Les relais gardent un message trente jours, au lieu de sept pour les
+  autres lettres : un apprenant en entreprise trois semaines le reçoit
+  encore. Choisi en codant, à valider, avec le message qui part sans
+  « Annuler » et « Messages » qui couvre toutes les classes du formateur
+  ([prototype.md](prototype.md), partie « Les choix du prototype, à
+  valider »).
+- Corrigé en passant : une annonce de plus de 8 Ko restait bloquée sur
+  « part à la classe », le cœur refusant de la signer. L'écran le dit
+  maintenant sous le champ.
+- Le premier chargement de l'apprenant passe à 297 Ko compressés, pour un
+  plafond de 300. Une question ouverte, avec une recommandation : séparer ce
+  que charge l'apprenant de ce que chargent les responsables, avant l'étape
+  5 ([questions-ouvertes.md](questions-ouvertes.md)).

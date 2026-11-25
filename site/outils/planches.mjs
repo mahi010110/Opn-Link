@@ -127,6 +127,21 @@ const PLANCHES = [
       ['36-julien-fil', 'Chez Julien', 'Il peut retirer les annonces d’Awa, pas les modifier. Son horloge retarde de deux jours : la première lui semble encore à venir.'],
     ],
   },
+  {
+    nom: 'planche-7-messages',
+    titre: 'Les messages privés',
+    sous: 'Vendredi, Inès répond en privé à une annonce d’Awa. Awa le voit dans « À suivre », puis dans « Messages », et répond. Inès lit la réponse : rien ne part quand elle l’ouvre. Le soir, son message n’arrive chez Awa que lundi à 7 h 30.',
+    colonnes: 3,
+    largeur: 1100,
+    images: [
+      ['37-apprenant-repondre', 'Répondre', '« Répondre », sous l’annonce, ouvre la conversation avec son autrice. La barre dit à qui le message part.'],
+      ['38-formateur-a-suivre-message', 'Chez Awa', '« À suivre » dit qu’Inès a écrit, jusqu’à ce qu’Awa ouvre la conversation.'],
+      ['39-formateur-messages', 'Messages', 'Toutes ses classes : ceux qui attendent une réponse, le plus ancien d’abord, puis ceux à qui elle a répondu.'],
+      ['40-formateur-conversation', 'La conversation', 'Le message d’Inès dit à quelle annonce il répond. La réponse part tout de suite.'],
+      ['41-apprenant-messages', 'Messages, chez Inès', 'Une ligne par responsable de la classe. Le nouveau message est marqué sur son téléphone, et nulle part ailleurs.'],
+      ['42-apprenant-message-soir', 'Le soir', 'La touche dit quand le message arrivera : lundi, une heure avant le cours.'],
+    ],
+  },
 ];
 
 const echappe = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/« /g, '« ').replace(/ »/g, ' »').replace(/ :/g, ' :');

@@ -19,7 +19,8 @@ export type Lettre =
   | { v: 1; t: 'reouvert'; seance: string }
   | { v: 1; t: 'adjoint'; code: string; demande: string; jeton: string }
   | { v: 1; t: 'nom'; code: string; correction: string }
-  | { v: 1; t: 'responsables'; code: string; porte: string; passations: string[]; lettre: string };
+  | { v: 1; t: 'responsables'; code: string; porte: string; passations: string[]; lettre: string }
+  | { v: 1; t: 'message'; code: string; message: string };
 
 const UN_JOUR = 24 * 3600;
 const SEPT_JOURS = 7 * UN_JOUR;
@@ -28,10 +29,18 @@ const HUIT_SEMAINES = 56 * UN_JOUR;
 const TRENTE_JOURS = 30 * 24 * 3600;
 const secondes = () => Math.floor(Date.now() / 1000);
 
-export function envoyer(coeur: Coeur, relais: Relais, boite: string, lettre: Lettre): void {
+/// Scelle une lettre pour une boîte et la confie aux relais, qui la gardent sept jours, ou jusqu'à
+/// l'heure donnée, en secondes.
+export function envoyer(coeur: Coeur, relais: Relais, boite: string, lettre: Lettre, jusqua = secondes() + SEPT_JOURS): void {
   const maintenant = secondes();
   const scellee = coeur.sceller(boite, JSON.stringify(lettre));
-  relais.publier(coeur.evenement_nostr(coeur.etiquette_de_boite(boite), maintenant + SEPT_JOURS, scellee, maintenant));
+  relais.publier(coeur.evenement_nostr(coeur.etiquette_de_boite(boite), jusqua, scellee, maintenant));
+}
+
+/// Un message privé reste trente jours après son arrivée sur les relais : un apprenant en
+/// entreprise trois semaines le reçoit encore à son retour.
+export function envoyerUnMessage(coeur: Coeur, relais: Relais, boite: string, code: string, message: string, arrivee: number): void {
+  envoyer(coeur, relais, boite, { v: 1, t: 'message', code, message }, Math.max(Math.floor(arrivee / 1000), secondes()) + TRENTE_JOURS);
 }
 
 // Un seul abonnement par sorte, pour toutes les classes de l'appareil : la boîte, les fils, les
@@ -40,12 +49,13 @@ export function envoyer(coeur: Coeur, relais: Relais, boite: string, lettre: Let
 const lecteursDeLettres = new Set<(l: Lettre) => void>();
 let boiteEcoutee = false;
 
-/// Les lettres de la boîte de cet appareil. Rend de quoi arrêter de les lire.
+/// Les lettres de la boîte de cet appareil, celles du mois : un message privé reste trente jours
+/// sur les relais, les autres lettres sept. Rend de quoi arrêter de les lire.
 export function recevoir(coeur: Coeur, relais: Relais, appareil: Appareil, rappel: (l: Lettre) => void): () => void {
   lecteursDeLettres.add(rappel);
   if (!boiteEcoutee) {
     boiteEcoutee = true;
-    relais.ecouter('boite', { kinds: [8571], '#x': [coeur.etiquette_de_boite(appareil.boite())], since: secondes() - SEPT_JOURS }, (e) => {
+    relais.ecouter('boite', { kinds: [8571], '#x': [coeur.etiquette_de_boite(appareil.boite())], since: secondes() - TRENTE_JOURS }, (e) => {
       let lettre: Lettre;
       try {
         lettre = JSON.parse(appareil.ouvrir(e.content));

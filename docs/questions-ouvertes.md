@@ -30,7 +30,11 @@ responsables : le jeton de l'invitation d'adjoint, sept jours, et la fusion
 de l'état partagé entre responsables, où rien ne se retire. Puis, le 24
 novembre 2026, plusieurs classes : la façon de choisir la classe du moment,
 le nom de la classe dans la barre de l'apprenant, et les secrets de chaque
-classe gardés sur l'appareil.
+classe gardés sur l'appareil. Puis les annonces : « Classe » qui s'ouvre sur
+ses onglets, la republication après trois semaines, « Écouter » avec une
+voix de l'appareil. Puis les messages : partis sans « Annuler », gardés
+trente jours sur les relais, et « Messages » pour toutes les classes du
+formateur.
 
 ### Rejoindre une autre classe
 
@@ -115,6 +119,23 @@ quand la caméra ne marche pas, le QR quand il n'y a pas de réseau.
 - La caméra de vrais iPhone et de vieux Android, avec le site ajouté à
   l'écran d'accueil ou non.
 - La vitesse de lecture d'un QR sur un vieux téléphone.
+
+### Le poids du site de l'apprenant
+
+Le site de l'apprenant pèse au plus 300 Ko compressés au premier chargement
+([regles.md](regles.md), partie 4). Mesuré par le scénario : 265 Ko le
+17 novembre 2026 avec la caméra, 291 Ko avec les annonces, 297 Ko avec les
+messages, le 24 novembre 2026. Les polices en font 88. L'apprenant charge
+aujourd'hui tout le site, les écrans et le cœur des responsables compris.
+L'étape 5 ajoute le travail sur les PDF, qui pèse 300 Ko de plus
+([mesures.md](mesures.md)).
+
+Recommandation : avant l'étape 5, séparer ce que charge l'apprenant de ce
+que chargent les responsables. Les écrans des responsables et la partie du
+cœur qui ne sert qu'à eux se chargeraient à part, la première fois qu'on
+crée une classe ou qu'on devient responsable. C'était prévu dans
+[mesures.md](mesures.md), qui pèse déjà le téléphone d'un apprenant à part.
+Le plafond reste à 300 Ko.
 
 ## À fixer au prototype
 

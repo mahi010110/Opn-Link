@@ -27,7 +27,7 @@ Pour une nouvelle discussion, dans un conteneur neuf.
    `maquettes/outils/prendre-style.mjs`) : `git -C Open-Contact fetch
    --depth=1 origin <version>`.
 3. Vérifier que tout passe, comme le 24 novembre 2026 :
-   - `cd coeur && cargo test` : 79 tests ;
+   - `cd coeur && cargo test` : 83 tests ;
    - `cargo test --target wasm32-unknown-unknown` : les mêmes, dans
      Chromium ;
    - `cd ../site && npm run construire && npm run verifier && npm run
@@ -526,6 +526,60 @@ l'appareil, des responsables qui n'écoutent pas le fil, et « À lire » sans
 l'annonce. Les captures avant et après viennent de
 `node outils/avant-apres.mjs classe` et `node outils/avant-apres.mjs fil`.
 
+Fait ensuite le 24 novembre 2026, les messages privés, la fin de
+l'étape 3 :
+
+- dans le cœur, le message privé, signé par celui qui l'écrit, avec son
+  vecteur. Il ne compte qu'entre les deux clés qu'il porte : un apprenant ne
+  lit que ceux des responsables, un responsable ceux des responsables et des
+  apprenants acceptés. 83 tests ;
+- chez l'apprenant, « Messages » montre une ligne par responsable de la
+  classe, puis la conversation. « Répondre », sous une annonce, ouvre celle
+  de son auteur. Un message reçu s'annonce sous « À lire » jusqu'à ce qu'on
+  l'ouvre ;
+- chez le formateur, « À suivre » dit qui a écrit. « Messages » couvre
+  toutes ses classes : ceux qui attendent une réponse, le plus ancien
+  d'abord, puis ceux à qui il a répondu, et un champ pour chercher un nom ;
+- un message part tout de suite, scellé dans la boîte de celui à qui il est
+  écrit. Écrit en dehors des heures de la classe, il arrive à l'ouverture
+  suivante, comme une annonce, et la touche le dit ;
+- ouvrir un message n'envoie rien : il n'est marqué comme lu que sur le
+  téléphone qui l'ouvre ;
+- les relais gardent un message trente jours, et chaque appareil relit sa
+  boîte sur trente jours.
+
+Le scénario le joue, vendredi : Inès répond en privé à l'annonce d'Awa.
+Awa le voit dans « À suivre », puis dans « Messages », et répond. Inès lit
+la réponse, et rien ne part quand elle l'ouvre. Le soir, son message
+n'arrive chez Awa que lundi à 7 h 30. Le message que Yanis, un apprenant,
+écrit à Inès ne compte pas, celui de Julien, si. Noah rouvre l'app dix jours
+après un message de Julien, et le reçoit. Un message ou une annonce de plus
+de 8 Ko ne part pas. 139 vérifications.
+
+Six défauts posés exprès dans le cœur font échouer ses tests : un message
+lu sans regarder entre qui il est, sans vérifier sa signature, écrit à
+soi-même, venu d'une autre classe, avec deux champs inversés, ou qui perd
+son annonce. Onze défauts posés exprès dans le site font chacun échouer le
+scénario : un message envoyé en clair, un apprenant qui croit l'auteur d'un
+message, un message ouvert qui prévient l'autre, un message montré avant
+son heure, un message reçu jamais marqué nouveau, ou jamais marqué lu,
+« Répondre » qui oublie l'annonce, la boîte relue sur sept jours,
+« Messages » réduit à une classe, « Retour » qui ramène au cours, et un
+message du soir qui arrive tout de suite. Deux d'entre eux passaient
+d'abord : une vérification regardait l'écran et pas ce que garde le
+téléphone, l'autre envoyait le message de Julien à Noah l'app ouverte.
+Elles sont renforcées. Les captures avant et après viennent de
+`node outils/avant-apres.mjs messages` et
+`node outils/avant-apres.mjs messages-formateur`.
+
+Corrigé en passant : une annonce de plus de 8 Ko restait bloquée sur « part
+à la classe », le cœur refusant de la signer. L'écran le dit maintenant
+sous le champ, comme pour un message.
+
+Le premier chargement de l'apprenant passe à 297 Ko compressés, pour un
+plafond de 300 : une question ouverte, avec une recommandation, avant
+l'étape 5 ([questions-ouvertes.md](questions-ouvertes.md)).
+
 ## La suite : la première version complète
 
 Le mainteneur ne veut ni bêta ni essai avec une classe (17 novembre 2026) :
@@ -556,10 +610,12 @@ on construit directement la première version complète
    d'entrée : « Ensuite » et les documents dans « À lire », qui viendront
    avec les documents, et l'écran d'entrée du centre et du tuteur, qui
    viendront avec eux.
-3. Les annonces et les messages privés. Les annonces sont faites le 24
-   novembre 2026. Restent les messages privés, et « Répondre » à une
-   annonce, qui passe par eux. « Joindre » viendra avec les documents, à
-   l'étape 5.
+3. Les annonces et les messages privés. Les annonces, puis les messages
+   privés et « Répondre » à une annonce, sont faits le 24 novembre 2026.
+   « Joindre » viendra avec les documents, à l'étape 5. La semaine de
+   l'apprenant, en haut de sa conversation chez le formateur, viendra avec
+   les absences, à l'étape 4 : le formateur ne garde pas encore les feuilles
+   closes.
 4. Les absences, et la page du tuteur.
 5. Les documents à signer, la feuille exportée en PDF et le registre
    public.
@@ -807,6 +863,26 @@ Pour les annonces (24 novembre 2026) :
   jusqu'à son retrait ;
 - « Écouter » ne se montre que si l'appareil a une voix française à lui.
 
+Pour les messages privés (24 novembre 2026) :
+
+- un message part tout de suite, sans « Annuler » : il ne remplace rien et
+  ne va qu'à une personne. La règle 6 vise les envois à toute la classe ;
+- les relais gardent un message trente jours, et chaque appareil relit sa
+  boîte sur trente jours, au lieu de sept : un apprenant en entreprise trois
+  semaines le reçoit encore ;
+- « Répondre » garde l'annonce à laquelle on répond. La conversation le
+  dit sous le message : « en réponse à l'annonce du ven. 20 nov. » ;
+- « Messages » chez le formateur couvre toutes ses classes, comme le veut
+  la maquette. Chercher un nom trouve aussi ceux à qui il n'a pas encore
+  écrit. Un responsable qui partage plusieurs classes avec lui a une ligne
+  par classe, avec le nom de la classe ;
+- « À lire » et « À suivre » montrent une ligne par personne qui a écrit,
+  jusqu'à ce qu'on ouvre la conversation. « T'ont écrit » la garde jusqu'à
+  la réponse ;
+- dans une conversation, la date s'écrit quand le jour change. Chez celui
+  qui l'a écrit, un message qui attend l'ouverture de la classe dit
+  « arrivera lundi à 7 h 30 ».
+
 ## Ce qu'il tranche
 
 - Le poids réel du site, face au plafond de 300 Ko compressés
@@ -855,8 +931,9 @@ Pour les annonces (24 novembre 2026) :
   les deux, et écrit `captures/avant-apres-<cas>.png`. Les cas `jour`,
   `signer`, `semaine`, `lire`, `prochain`, `redemande`, `membres`,
   `adjoint`, `passer`, `reglages`, `moi`, `moi-formateur`, `mes-cours`,
-  `deux-classes`, `classe` et `fil` existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le geste
-  qui mène à l'écran.
+  `deux-classes`, `classe`, `fil`, `messages` et `messages-formateur`
+  existent. Un écran neuf ajoute le sien dans `CAS` : ses états, et le
+  geste qui mène à l'écran.
 - Un contrôle neuf se prouve en cassant exprès ce qu'il garde : le
   scénario doit échouer ([regles.md](regles.md), partie 4). On casse dans
   une copie du site hors du dépôt, faite comme le fait `avant-apres.mjs`

@@ -445,6 +445,43 @@ Vecteur : `coeur/tests/vecteurs/annonce-v1.txt`, publiée par Awa pour le
 même fil le dimanche 22 novembre 2026 à 21 h 14, et qui arrive le lundi à
 8 h.
 
+## Le message privé
+
+Un apprenant écrit à un responsable, un responsable à un apprenant ou à un
+autre responsable. Deux apprenants ne s'écrivent pas.
+
+```
+opn-link·message·v1
+<étiquette de la classe>
+<clé de celui qui écrit>
+<clé de celui à qui il écrit>
+<heure>
+<arrivée>
+<annonce>
+<texte>
+<signature de celui qui écrit>
+```
+
+- Il part scellé dans la boîte de celui à qui il est écrit. Il est signé :
+  la boîte d'un responsable est dans la porte, que tout apprenant lit.
+- Il ne compte qu'entre les deux clés qu'il porte. Un apprenant ne lit que
+  ceux des responsables de la porte, un responsable ceux des autres
+  responsables et des apprenants acceptés.
+- L'annonce est l'identifiant de l'annonce à laquelle il répond, ou `-`.
+- Le texte s'écrit en base64url, comme celui d'une annonce, et fait 8 Ko
+  au plus.
+- L'arrivée suit les heures de la classe, comme pour une annonce. C'est
+  l'appareil qui le reçoit qui attend pour le montrer.
+
+L'événement qui le porte expire trente jours après son arrivée, et chaque
+appareil relit sa boîte sur trente jours : un apprenant en entreprise trois
+semaines le reçoit encore à son retour. Sur les appareils, il vit jusqu'à la
+fermeture de la classe. Ouvrir un message n'envoie rien (règle 3).
+
+Vecteur : `coeur/tests/vecteurs/message-v1.txt`, écrit par Léa à Awa le
+lundi 23 novembre 2026 à 21 h 14, en réponse à l'annonce ci-dessus, et qui
+arrive le mardi à 8 h.
+
 ## La feuille de présence
 
 Un journal où l'on ne peut qu'ajouter. La première ligne vaut
@@ -498,7 +535,7 @@ données possible ». Pour l'appel :
   autres, jusqu'à la fermeture de la classe ;
 - un envoi qu'aucun relais n'a encore accepté vit sur l'appareil jusqu'à ce
   qu'un relais l'accepte, au plus jusqu'à l'expiration de son événement :
-  7 jours pour une lettre, 30 pour la porte ;
+  7 jours pour une lettre, 30 pour un message privé et pour la porte ;
 - l'annonce de l'appel reste un jour sur les relais. Sur le téléphone de
   l'apprenant, sept jours, pour dessiner sa semaine ;
 - le prochain cours reste sur les relais jusqu'au surlendemain du cours. Sur
@@ -512,7 +549,9 @@ données possible ». Pour l'appel :
 - une invitation d'adjoint vit sept jours chez le chef. Les passations vivent
   avec la porte, jusqu'à la fermeture de la classe ;
 - les secrets gardés vivent avec la classe sur l'appareil, et partent avec
-  elle.
+  elle ;
+- un message privé reste trente jours après son arrivée sur les relais. Sur
+  les appareils, il vit jusqu'à la fermeture de la classe.
 
 ## L'événement Nostr
 
@@ -541,6 +580,7 @@ destinataire. Elles ne sont pas encore figées.
 | `adjoint` | l'adjoint invité, au chef seul | sa demande, signée comme celle d'un apprenant, et le jeton de l'invitation |
 | `nom` | l'apprenant, à chaque responsable | son nom corrigé (partie « Le nom corrigé ») |
 | `responsables` | un responsable, à chacun des autres | la porte et les passations, puis une lettre entre responsables (partie du même nom) |
+| `message` | l'apprenant ou un responsable, à celui à qui il écrit | le code de la classe, et le message privé signé (partie « Le message privé ») |
 
 La lettre entre responsables porte en contenu
 `{"v":1,"t":"classe","etat":{...}}` : la porte, les passations, le secret du
@@ -599,8 +639,10 @@ n'a pas le secret du fil. En plus :
 
 - chez chacun : le nom corrigé qui part dans trente secondes
   (`nomEnAttente`), la correction la plus récente du nom de chaque
-  responsable (`noms`), et les annonces à la classe, signées, la dernière
-  version de chacune, retraits compris (`annoncesDeLaClasse`) ;
+  responsable (`noms`), les annonces à la classe, signées, la dernière
+  version de chacune, retraits compris (`annoncesDeLaClasse`), et les
+  messages privés écrits et reçus, déjà vérifiés, ceux qu'on n'a pas encore
+  ouverts marqués `nouveau` (`messages`) ;
 - chez l'apprenant : son acceptation, ou sa demande tant qu'il attend, ses
   présences signées avec leur demi-journée et leur réception
   (`presences`), les annonces de l'appel des sept derniers jours, une par
@@ -631,4 +673,4 @@ l'empreinte des fichiers gardés. Une nouvelle version efface l'ancienne.
 ## Ce qui n'est pas encore écrit
 
 - Les clés de stockage, dans le navigateur et dans l'app pour ordinateur.
-- Les messages privés, les documents et les demandes.
+- Les documents et les demandes.

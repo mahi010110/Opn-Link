@@ -17,6 +17,8 @@
 //   node outils/avant-apres.mjs moi-formateur  « Moi » chez le formateur, puis la fenêtre « Nom »
 //   node outils/avant-apres.mjs classe    l'apprenant : « À lire » sur l'écran du jour, puis « Classe »
 //   node outils/avant-apres.mjs fil       le formateur : le fil de la classe, puis l'onglet « Membres »
+//   node outils/avant-apres.mjs messages  l'apprenant : « À lire » avec un message, « Messages », la conversation, le soir
+//   node outils/avant-apres.mjs messages-formateur  le formateur : « À suivre », « Messages », la conversation
 //   node outils/avant-apres.mjs mes-cours « Mes cours » chez le formateur, trois classes, puis « Créer une classe »
 //   node outils/avant-apres.mjs deux-classes  Léa dans deux classes : la barre, « Mes classes », l'appel de l'autre classe
 //   node outils/avant-apres.mjs signer bc08a5f   comparer à un autre commit que main
@@ -99,6 +101,13 @@ const seance = coeur.seance(code, '2026-11-17', 'matin');
 const signee = OUVERTURE + 60_000;
 const presenceDeLea = lea.signer_code(seance, '123456', signee);
 const recu = { quand: signee + 2000, par: 'Awa Diallo' };
+// Les messages, comme dans les maquettes : déjà vérifiés, tels que les garde le téléphone.
+const MARDI_MIDI = new Date('2026-11-17T12:40:00+01:00').getTime();
+const MARDI_APRES_MIDI = new Date('2026-11-17T14:10:00+01:00').getTime();
+const MARDI_SOIR = new Date('2026-11-17T21:14:00+01:00').getTime();
+const LUNDI_SOIR = new Date('2026-11-16T17:22:00+01:00').getTime();
+const messageDAwa = { de: awa.cle(), pour: lea.cle(), quand: MARDI_MIDI, arrivee: MARDI_MIDI, texte: 'Pense à ton attestation avant vendredi.', nouveau: true };
+const messageDeLea = { de: lea.cle(), pour: awa.cle(), quand: LUNDI_SOIR, arrivee: LUNDI_SOIR, texte: 'Bonjour, l’entreprise n’a pas encore signé ma convention. Je peux l’envoyer lundi ?', nouveau: true };
 
 async function relaisAvec(...annonces) {
   const relais = await lancerRelais();
@@ -154,6 +163,7 @@ const awaTientLaClasse = (heure, appelGarde, enPlus = {}) => ({
   appel: appelGarde,
 });
 
+const leaAUnMessage = { ...leaASigne, classes: [{ code, role: 'apprenant', porte, fil, acceptation, annoncesDeLaClasse: [annonceDAwa], messages: [messageDAwa] }] };
 const leaDansDeuxClasses = { ...leaASigne, classes: [{ code, role: 'apprenant', porte, fil, acceptation }, { code: code1, role: 'apprenant', porte: porte1, fil: fil1, acceptation: acceptation1 }] };
 const awaTientTroisClasses = {
   cles: awa.secrets(),
@@ -343,6 +353,61 @@ const CAS = {
         geste: (page) => page.locator('[data-geste="classe"]').click({ timeout: 5000 }),
       },
       { nom: 'L’onglet « Membres »', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { annoncesDeLaClasse: [annonceDAwa] }), geste: ouvrirMembres },
+    ],
+  },
+  messages: {
+    titre: 'Les messages, chez l’apprenant',
+    etats: [
+      { nom: '« À lire » : un message d’Awa', relais: relaisProchain, heure: MARDI_APRES_MIDI, voix: true, stockage: leaAUnMessage },
+      { nom: '« Messages »', relais: relaisProchain, heure: MARDI_APRES_MIDI, stockage: leaAUnMessage, geste: (page) => page.locator('[data-geste="messages"]').click({ timeout: 5000 }) },
+      {
+        nom: 'La conversation',
+        relais: relaisProchain,
+        heure: MARDI_APRES_MIDI,
+        stockage: leaAUnMessage,
+        geste: async (page) => {
+          await page.locator('[data-geste="messages"]').click({ timeout: 5000 });
+          await page.locator('[data-geste="conversation"]').first().click({ timeout: 5000 });
+          await page.fill('#message', 'Oui, je l’envoie ce soir.');
+        },
+      },
+      {
+        nom: 'Le soir, à 21 h 14',
+        relais: relaisProchain,
+        heure: MARDI_SOIR,
+        stockage: leaAUnMessage,
+        geste: async (page) => {
+          await page.locator('[data-geste="messages"]').click({ timeout: 5000 });
+          await page.locator('[data-geste="conversation"]').first().click({ timeout: 5000 });
+          await page.fill('#message', 'Bonsoir, mon train de demain est supprimé. J’arriverai vers 9 h 30.');
+        },
+      },
+    ],
+  },
+  'messages-formateur': {
+    titre: 'Les messages, chez le formateur',
+    etats: [
+      { nom: '« À suivre » : Léa a écrit', qui: 'awa', relais: relaisVide, heure: OUVERTURE - 6 * 60_000, stockage: awaTientLaClasse(OUVERTURE, undefined, { messages: [messageDeLea] }) },
+      {
+        nom: '« Messages »',
+        qui: 'awa',
+        relais: relaisVide,
+        heure: OUVERTURE - 6 * 60_000,
+        stockage: awaTientLaClasse(OUVERTURE, undefined, { messages: [messageDeLea] }),
+        geste: (page) => page.locator('[data-geste="messages"]').click({ timeout: 5000 }),
+      },
+      {
+        nom: 'La conversation',
+        qui: 'awa',
+        relais: relaisVide,
+        heure: OUVERTURE - 6 * 60_000,
+        stockage: awaTientLaClasse(OUVERTURE, undefined, { messages: [messageDeLea] }),
+        geste: async (page) => {
+          await page.locator('[data-geste="messages"]').click({ timeout: 5000 });
+          await page.locator('[data-geste="ecrire"]').first().click({ timeout: 5000 });
+          await page.fill('#message', 'Oui, lundi. Envoie-la dans la demande « Convention de stage » : elle arrive aussi au centre.');
+        },
+      },
     ],
   },
   lire: {
